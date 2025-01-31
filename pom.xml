@@ -30,7 +30,9 @@
 		<versions.jakarta.servlet>6.0.0</versions.jakarta.servlet>
 		<versions.eclipse.jetty>12.0.16</versions.eclipse.jetty>
 		<versions.mariadb.jdbc>3.5.1</versions.mariadb.jdbc>
-		
+
+		<versions.eclipse.jgit>7.0.0.202409031743-r</versions.eclipse.jgit>
+
 		<config.testbase>../project-tests</config.testbase>
 	</properties>
 
@@ -152,6 +154,13 @@
 			<groupId>org.mariadb.jdbc</groupId>
 			<artifactId>mariadb-java-client</artifactId>
 			<version>${versions.mariadb.jdbc}</version>
+		</dependency>
+
+		<!-- for git in java -->
+		<dependency>
+			<groupId>org.eclipse.jgit</groupId>
+			<artifactId>org.eclipse.jgit</artifactId>
+			<version>${versions.eclipse.jgit}</version>
 		</dependency>
 	</dependencies>
 </project>
