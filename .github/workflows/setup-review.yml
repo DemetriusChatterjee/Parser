@@ -1,0 +1,12 @@
+name: Setup Review
+
+on:
+  pull_request:
+    types: [ready_for_review]
+
+jobs:
+  main:
+    name: 'Run'
+    uses: usf-cs272n-spring2025/cs272n-bot/.github/workflows/setup-review.yml@main
+    secrets: inherit
+    permissions: write-all
