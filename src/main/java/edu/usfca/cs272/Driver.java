@@ -9,7 +9,7 @@ import java.util.Arrays;
  * Class responsible for running this project based on the provided command-line
  * arguments. See the README for details.
  *
- * @author TODO Add Name Here
+ * @author Demetrius Chatterjee
  * @author CS 272 Software Development (University of San Francisco)
  * @version Spring 2025
  */

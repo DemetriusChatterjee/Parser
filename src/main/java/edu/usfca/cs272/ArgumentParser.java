@@ -1,0 +1,345 @@
+package edu.usfca.cs272;
+
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Objects;
+
+/**
+ * Parses and stores command-line arguments into simple flag/value pairs.
+ *
+ * @author CS 272 Software Development (University of San Francisco)
+ * @version Spring 2025
+ */
+public class ArgumentParser {
+	/**
+	 * Stores command-line arguments in flag/value pairs.
+	 */
+	private final HashMap<String, String> map;
+
+	/**
+	 * Initializes this argument map.
+	 */
+	public ArgumentParser() {
+		this.map = new HashMap<>();
+	}
+
+	/**
+	 * Initializes this argument map and then parsers the arguments into flag/value
+	 * pairs where possible. Some flags may not have associated values. If a flag is
+	 * repeated, its value is overwritten.
+	 *
+	 * @param args the command line arguments to parse
+	 */
+	public ArgumentParser(String[] args) {
+		this();
+		parse(args);
+	}
+
+	/**
+	 * Determines whether the argument is a flag. The argument is considered a flag
+	 * if it is a dash "-" character followed by any character that is not a digit
+	 * or whitespace. For example, "-hello" and "-@world" are considered flags, but
+	 * "-10" and "- hello" are not.
+	 *
+	 * @param arg the argument to test if its a flag
+	 * @return {@code true} if the argument is a flag
+	 *
+	 * @see String#startsWith(String)
+	 * @see String#length()
+	 * @see String#isEmpty()
+	 * @see String#codePointAt(int)
+	 * @see Character#isDigit(int)
+	 * @see Character#isWhitespace(int)
+	 */
+	public static boolean isFlag(String arg) {
+		// Check for null argument
+		if (arg == null) {
+			return false;
+		}
+
+		// Check if argument is too short to be a flag
+		if (arg.length() < 2) {
+			return false;
+		}
+
+		// Check if argument starts with a dash
+		if (!arg.startsWith("-")) {
+			return false;
+		}
+
+		// Get the character after the dash
+		char secondChar = arg.charAt(1);
+
+		// Check if the second character is a digit
+		if (Character.isDigit(secondChar)) {
+			return false;
+		}
+
+		// Check if the second character is whitespace
+		if (Character.isWhitespace(secondChar)) {
+			return false;
+		}
+
+		// If we've passed all checks, this is a valid flag
+		return true;
+	}
+
+	/**
+	 * Determines whether the argument is a value. Anything that is not a flag is
+	 * considered a value.
+	 *
+	 * @param arg the argument to test if its a value
+	 * @return {@code true} if the argument is a value
+	 */
+	public static boolean isValue(String arg) {
+		return !isFlag(arg);
+	}
+
+	/**
+	 * Parses the arguments into flag/value pairs where possible. Some flags may not
+	 * have associated values. If a flag is repeated, its value will be overwritten.
+	 *
+	 * @param args the command line arguments to parse
+	 *
+	 * @see #isFlag(String)
+	 * @see #isValue(String)
+	 */
+	public final void parse(String[] args) {
+		// Check for null args array
+		if (args == null) {
+			throw new NullPointerException();
+		}
+
+		// Empty array is valid, just results in no flags
+		if (args.length == 0) {
+			return;
+		}
+
+		// Loop through all arguments
+		for (int i = 0; i < args.length; i++) {
+			// Throw exception for null arguments
+			if (args[i] == null) {
+				throw new NullPointerException();
+			}
+
+			// If current argument is a flag...
+			if (isFlag(args[i])) {
+				// Get the flag without the "-" symbol
+				String flag = args[i];
+
+				// Check if there is a next argument and it is a value
+				if (i + 1 < args.length && isValue(args[i + 1])) {
+					// Store flag/value pair and skip the value
+					map.put(flag, args[i + 1]);
+					i++;
+				}
+				else {
+					// Store flag with null value
+					map.put(flag, null);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Returns the number of unique flags.
+	 *
+	 * @return number of unique flags
+	 */
+	public int numFlags() {
+		// Return the size of the map, which represents the number of unique flags
+		return map.size();
+	}
+
+	/**
+	 * Determines whether the specified flag exists.
+	 *
+	 * @param flag the flag check
+	 * @return {@code true} if the flag exists
+	 */
+	public boolean hasFlag(String flag) {
+		// Check if the flag exists in the map
+		if (flag == null) {
+			return false;
+		}
+
+		// Return true if the map contains this flag as a key
+		return map.containsKey(flag);
+	}
+
+	/**
+	 * Determines whether the specified flag is mapped to a non-null value.
+	 *
+	 * @param flag the flag to find
+	 * @return {@code true} if the flag is mapped to a non-null value
+	 */
+	public boolean hasValue(String flag) {
+		// Check if flag is null
+		if (flag == null) {
+			return false;
+		}
+
+		// Add dash if flag doesn't start with one
+		flag = flag.startsWith("-") ? flag : "-" + flag;
+
+		// Return true if the flag exists and has a non-null value
+		return map.containsKey(flag) && map.get(flag) != null;
+	}
+
+	/**
+	 * Returns the value to which the specified flag is mapped as a {@link String}
+	 * or the backup value if there is no mapping.
+	 *
+	 * @param flag the flag whose associated value is to be returned
+	 * @param backup the backup value to return if there is no mapping
+	 * @return the value to which the specified flag is mapped,
+	 *   or the backup value if there is no mapping
+	 *
+	 * @see Objects#requireNonNullElse(Object, Object)
+	 */
+	public String getString(String flag, String backup) {
+		if (flag == null) {
+			return backup;
+		}
+
+		// Return the value of the flag or the backup value if the flag is not in the map
+		return Objects.requireNonNullElse(map.get(flag), backup);
+	}
+
+	/**
+	 * Returns the value to which the specified flag is mapped as a {@link String}
+	 * or null if there is no mapping.
+	 *
+	 * @param flag the flag whose associated value is to be returned
+	 * @return the value to which the specified flag is mapped or {@code null} if
+	 *   there is no mapping
+	 */
+	public String getString(String flag) {
+		if (flag == null) {
+			return null;
+		}
+
+		// Return the value of the flag or null if the flag is not in the map
+		return map.get(flag);
+	}
+
+	/**
+	 * Returns the value the specified flag is mapped as a {@link Path}, or the
+	 * backup value if unable to retrieve this mapping (including being unable to
+	 * convert the value to a {@link Path} or if no value exists).
+	 *
+	 * This method should not throw any exceptions!
+	 *
+	 * @param flag the flag whose associated value will be returned
+	 * @param backup the backup value to return if there is no valid mapping
+	 * @return the value the specified flag is mapped as a {@link Path}, or the
+	 *   backup value if there is no valid mapping
+	 *
+	 * @see Path#of(String, String...)
+	 */
+	public Path getPath(String flag, Path backup) {
+		// Get the string value for the flag
+		String value = getString(flag);
+		
+		// If no value found, return backup
+		if (value == null) {
+			return backup;
+		}
+		
+		try {
+			// Try to convert the string to a path
+			// reference: https://stackoverflow.com/questions/58631724/paths-get-vs-path-of
+			return Path.of(value);
+		}
+		catch (Exception e) {
+			// Return backup if any exception occurs
+			return backup;
+		}
+	}
+
+	/**
+	 * Returns the value to which the specified flag is mapped as a {@link Path}, or
+	 * {@code null} if unable to retrieve this mapping (including being unable to
+	 * convert the value to a {@link Path} or no value exists).
+	 *
+	 * This method should not throw any exceptions!
+	 *
+	 * @param flag the flag whose associated value is to be returned
+	 * @return the value to which the specified flag is mapped, or {@code null} if
+	 *   unable to retrieve this mapping
+	 *
+	 * @see #getPath(String, Path)
+	 */
+	public Path getPath(String flag) {
+		// Use the other getPath method with null as backup
+		return getPath(flag, null);
+	}
+
+	/**
+	 * Returns the value the specified flag is mapped as an int value, or the backup
+	 * value if unable to retrieve this mapping (including being unable to convert
+	 * the value to an int or if no value exists).
+	 *
+	 * @param flag the flag whose associated value will be returned
+	 * @param backup the backup value to return if there is no valid mapping
+	 * @return the value the specified flag is mapped as an int, or the backup value
+	 *   if there is no valid mapping
+	 *
+	 * @see Integer#parseInt(String)
+	 */
+	public int getInteger(String flag, int backup) {
+		// Get the string value for the flag
+		String value = getString(flag);
+		
+		// If no value found, return backup
+		if (value == null) {
+			return backup;
+		}
+		
+		try {
+			return Integer.parseInt(value);
+		}
+		catch (NumberFormatException e) {
+			return backup;
+		}
+	}
+
+	/**
+	 * Returns the value the specified flag is mapped as an int value, or 0 if
+	 * unable to retrieve this mapping (including being unable to convert the value
+	 * to an int or if no value exists).
+	 *
+	 * @param flag the flag whose associated value will be returned
+	 * @return the value the specified flag is mapped as an int, or 0 if there is no
+	 *   valid mapping
+	 *
+	 * @see #getInteger(String, int)
+	 */
+	public int getInteger(String flag) {
+		// Use the other getInteger method with 0 as backup
+		return getInteger(flag, 0);
+	}
+
+	@Override
+	public String toString() {
+		return this.map.toString();
+	}
+
+	/**
+	 * Demonstrates this class.
+	 *
+	 * @param args the arguments to test
+	 */
+	public static void main(String[] args) {
+		// Feel free to modify or delete this method for debugging
+		if (args.length < 1) {
+			args = new String[] { "-max", "false", "-min", "0", "-min", "-10", "hello", "-@debug",
+					"-f", "output.txt", "-verbose" };
+		}
+
+		// expected output:
+		// {-max=false, -min=-10, -verbose=null, -f=output.txt, -@debug=null}
+		ArgumentParser map = new ArgumentParser(args);
+		System.out.println(map);
+	}
+}
