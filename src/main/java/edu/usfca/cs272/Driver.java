@@ -1,9 +1,12 @@
 package edu.usfca.cs272;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.Map;
 
 /**
  * Class responsible for running this project based on the provided command-line
@@ -15,6 +18,26 @@ import java.util.Arrays;
  */
 public class Driver {
 	/**
+	 * Processes the input file and writes the word count to the output file.
+	 * 
+	 * @param inputPath the path to read from
+	 * @param outputPath the path to write to
+	 * @throws IOException if an IO error occurs
+	 */
+	private static void processFile(Path inputPath, Path outputPath) throws IOException {
+		String fileContents = Files.readString(inputPath);
+		System.out.println("\nInput file contents:");
+		System.out.println(fileContents);
+
+		String[] words = FileStemmer.parse(fileContents);
+		int wordCount = words.length;
+		System.out.println("\nWord count: " + wordCount);
+
+		JsonWriter.writeObject(Map.of("counts", wordCount), outputPath);
+		System.out.println("\nWord count written to: " + outputPath);
+	}
+
+	/**
 	 * Initializes the classes necessary based on the provided command-line
 	 * arguments. This includes (but is not limited to) how to build or search an
 	 * inverted index.
@@ -22,37 +45,25 @@ public class Driver {
 	 * @param args flag/value pairs used to start this program
 	 */
 	public static void main(String[] args) {
-		// store initial start time
 		Instant start = Instant.now();
+		System.out.println("Command-line arguments: " + Arrays.toString(args));
 
-		// TODO Fill in and modify as needed
-		// TODO Can delete this output or keep it
-		System.out.println("Working Directory: " + Path.of(".").toAbsolutePath().normalize());
-		System.out.println("Arguments: " + Arrays.toString(args));
+		ArgumentParser parser = new ArgumentParser(args);
+		Path inputPath = parser.getPath("-text");
+		Path outputPath = parser.getPath("-counts");
 
-		// calculate time elapsed and output
-		long elapsed = Duration.between(start, Instant.now()).toMillis();
-		double seconds = (double) elapsed / Duration.ofSeconds(1).toMillis();
-		System.out.printf("Elapsed: %f seconds%n", seconds);
+		try {
+			processFile(inputPath, outputPath);
+		}
+		catch (IOException e) {
+			System.err.println("Error processing files: " + e.getMessage());
+		}
+
+		long elapsedMs = Duration.between(start, Instant.now()).toMillis();
+		double elapsedSec = (double) elapsedMs / Duration.ofSeconds(1).toMillis();
+		System.out.printf("Elapsed: %f seconds%n", elapsedSec);
 	}
 
 	/** Prevent instantiating this class of static methods. */
 	private Driver() {}
-
-	/*
-	 * Generally, "Driver" classes are responsible for setting up and calling other
-	 * classes, usually from a main() method that parses command-line parameters.
-	 * Generalized reusable code are usually placed outside of the Driver class.
-	 * They are sometimes called "Main" classes too, since they usually include the
-	 * main() method.
-	 *
-	 * If the driver were only responsible for a single class, we use that class
-	 * name. For example, "TaxiDriver" is what we would name a driver class that
-	 * just sets up and calls the "Taxi" class.
-	 *
-	 * The starter code (calculating elapsed time) is not necessary. It can be
-	 * removed from the main method.
-	 *
-	 * TODO Delete this comment after reading.
-	 */
 }
