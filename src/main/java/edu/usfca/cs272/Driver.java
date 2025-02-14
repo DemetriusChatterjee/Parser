@@ -25,42 +25,41 @@ public class Driver {
 	 * @throws IOException if an IO error occurs
 	 */
 	private static void processFile(Path inputPath, Path outputPath) throws IOException {
-        // Handle directory case
-        if (Files.isDirectory(inputPath)) {
-            // Find all .txt and .text files recursively
-            var finder = Files.walk(inputPath)
-                .filter(path -> Files.isRegularFile(path))
-                .filter(path -> {
-                    String name = path.toString().toLowerCase();
-                    return name.endsWith(".txt") || name.endsWith(".text");
-                });
-                
-            // Process each file and sum the counts
-            int totalCount = 0;
-            try (var files = finder) {
-                for (Path file : (Iterable<Path>) files::iterator) {
-                    var stems = FileStemmer.listStems(file);
-                    totalCount += stems.size();
-                }
-            }
-            
-            // Write total counts if output path is provided
-            if (outputPath != null) {
-                Map<String, Integer> counts = Map.of("counts", totalCount);
-                JsonWriter.writeObject(counts, outputPath);
-            }
-        }
-        // Handle single file case - process regardless of extension
-        else {
-            var stems = FileStemmer.listStems(inputPath);
-            
-            // Write counts if output path is provided
-            if (outputPath != null) {
-                Map<String, Integer> counts = Map.of("counts", stems.size());
-                JsonWriter.writeObject(counts, outputPath);
-            }
-        }
-    }
+		if (Files.isDirectory(inputPath)) {
+			// Use Files.walk for recursive directory traversal instead of manual recursion
+			var finder = Files.walk(inputPath)
+				.filter(path -> Files.isRegularFile(path))
+				.filter(path -> {
+					// Case-insensitive check to handle both upper and lowercase extensions
+					String name = path.toString().toLowerCase();
+					return name.endsWith(".txt") || name.endsWith(".text");
+				});
+				
+			// Track total stems across all files to avoid multiple JSON writes
+			int totalCount = 0;
+			try (var files = finder) {
+				// Use iterator pattern to avoid loading all paths into memory at once
+				for (Path file : (Iterable<Path>) files::iterator) {
+					var stems = FileStemmer.listStems(file);
+					totalCount += stems.size();
+				}
+			}
+			
+			if (outputPath != null) {
+				Map<String, Integer> counts = Map.of("counts", totalCount);
+				JsonWriter.writeObject(counts, outputPath);
+			}
+		}
+		else {
+			// Single file case - no extension filtering needed per requirements
+			var stems = FileStemmer.listStems(inputPath);
+			
+			if (outputPath != null) {
+				Map<String, Integer> counts = Map.of("counts", stems.size());
+				JsonWriter.writeObject(counts, outputPath);
+			}
+		}
+	}
 
 	/**
 	 * Initializes the classes necessary based on the provided command-line
