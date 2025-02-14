@@ -30,7 +30,7 @@ public class Driver {
 			var finder = Files.walk(inputPath)
 				.filter(path -> Files.isRegularFile(path))
 				.filter(path -> {
-					// Case-insensitive check to handle both upper and lowercase extensions
+					// Use toString() instead of toPath() to preserve original format
 					String name = path.toString().toLowerCase();
 					return name.endsWith(".txt") || name.endsWith(".text");
 				});
@@ -48,7 +48,8 @@ public class Driver {
 			if (outputPath != null) {
 				// TreeMap automatically sorts keys alphabetically
 				TreeMap<String, Integer> counts = new TreeMap<>();
-				counts.put("counts", totalCount);
+				// Use toString() to preserve original path format
+				counts.put(inputPath.toString(), totalCount);
 				JsonWriter.writeObject(counts, outputPath);
 			}
 		}
@@ -59,7 +60,8 @@ public class Driver {
 			if (outputPath != null) {
 				// TreeMap automatically sorts keys alphabetically
 				TreeMap<String, Integer> counts = new TreeMap<>();
-				counts.put("counts", stems.size());
+				// Use toString() to preserve original path format
+				counts.put(inputPath.toString(), stems.size());
 				JsonWriter.writeObject(counts, outputPath);
 			}
 		}
