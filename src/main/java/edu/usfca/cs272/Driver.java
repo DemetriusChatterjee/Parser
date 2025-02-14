@@ -25,17 +25,44 @@ public class Driver {
 	 * @throws IOException if an IO error occurs
 	 */
 	private static void processFile(Path inputPath, Path outputPath) throws IOException {
-		String fileContents = Files.readString(inputPath);
-		System.out.println("\nInput file contents:");
-		System.out.println(fileContents);
-
-		String[] words = FileStemmer.parse(fileContents);
-		int wordCount = words.length;
-		System.out.println("\nWord count: " + wordCount);
-
-		JsonWriter.writeObject(Map.of("counts", wordCount), outputPath);
-		System.out.println("\nWord count written to: " + outputPath);
-	}
+        // Handle directory case
+        if (Files.isDirectory(inputPath)) {
+            // Find all .txt and .text files recursively
+            var finder = Files.walk(inputPath)
+                .filter(path -> Files.isRegularFile(path))
+                .filter(path -> {
+                    String name = path.toString().toLowerCase();
+                    return name.endsWith(".txt") || name.endsWith(".text");
+                });
+                
+            // Process each file and sum the counts
+            int totalCount = 0;
+            try (var files = finder) {
+                for (Path file : (Iterable<Path>) files::iterator) {
+                    String content = Files.readString(file);
+                    String[] words = FileStemmer.parse(content);
+                    totalCount += words.length;
+                }
+            }
+            
+            // Write total counts if output path is provided
+            if (outputPath != null) {
+                Map<String, Integer> counts = Map.of("counts", totalCount);
+                JsonWriter.writeObject(counts, outputPath);
+            }
+        }
+        // Handle single file case
+        else {
+            String fileContents = Files.readString(inputPath);
+            String[] words = FileStemmer.parse(fileContents);
+            
+            // Write counts if output path is provided
+            if (outputPath != null) {
+                Map<String, Integer> counts = Map.of("counts", words.length);
+                JsonWriter.writeObject(counts, outputPath);
+            }
+        }
+    }
 
 	/**
 	 * Initializes the classes necessary based on the provided command-line
@@ -46,18 +73,26 @@ public class Driver {
 	 */
 	public static void main(String[] args) {
 		Instant start = Instant.now();
-		System.out.println("Command-line arguments: " + Arrays.toString(args));
+        System.out.println("Command-line arguments: " + Arrays.toString(args));
 
-		ArgumentParser parser = new ArgumentParser(args);
-		Path inputPath = parser.getPath("-text");
-		Path outputPath = parser.getPath("-counts");
+        ArgumentParser parser = new ArgumentParser(args);
+        Path inputPath = parser.getPath("text");
+        
+        // Use default path if -counts flag is present but no path provided
+        Path outputPath = parser.hasFlag("counts") ? 
+            parser.getPath("counts", Path.of("counts.json")) : 
+            null;
 
-		try {
-			processFile(inputPath, outputPath);
-		}
-		catch (IOException e) {
-			System.err.println("Error processing files: " + e.getMessage());
-		}
+        try {
+            if (inputPath == null) {
+                System.err.println("No input path provided with -text flag");
+                return;
+            }
+            processFile(inputPath, outputPath);
+        }
+        catch (IOException e) {
+            System.err.println("Error processing files: " + e.getMessage());
+        }
 
 		long elapsedMs = Duration.between(start, Instant.now()).toMillis();
 		double elapsedSec = (double) elapsedMs / Duration.ofSeconds(1).toMillis();
