@@ -47,6 +47,8 @@ public class Driver {
 			}
 			
 			if (outputPath != null) {
+				// Create parent directories if they don't exist
+				Files.createDirectories(outputPath.getParent());
 				JsonWriter.writeObject(counts, outputPath);
 			}
 		}
@@ -58,6 +60,8 @@ public class Driver {
 				TreeMap<String, Integer> counts = new TreeMap<>();
 				// Use toString() to preserve original path format
 				counts.put(inputPath.toString(), stems.size());
+				// Create parent directories if they don't exist
+				Files.createDirectories(outputPath.getParent());
 				JsonWriter.writeObject(counts, outputPath);
 			}
 		}
