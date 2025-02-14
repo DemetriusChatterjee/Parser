@@ -76,26 +76,42 @@ public class Driver {
 	 */
 	public static void main(String[] args) {
 		Instant start = Instant.now();
-        System.out.println("Command-line arguments: " + Arrays.toString(args));
+		System.out.println("Command-line arguments: " + Arrays.toString(args));
 
-        ArgumentParser parser = new ArgumentParser(args);
-        Path inputPath = parser.getPath("text");
-        
-        // Use default path if -counts flag is present but no path provided
-        Path outputPath = parser.hasFlag("counts") ? 
-            parser.getPath("counts", Path.of("counts.json")) : 
-            null;
+		ArgumentParser parser = new ArgumentParser(args);
+		Path inputPath = parser.getPath("text");
+		
+		// Get all output paths
+		Path countsPath = parser.hasFlag("counts") ? 
+			parser.getPath("counts", Path.of("counts.json")) : 
+			null;
+		Path indexPath = parser.getPath("index");
+		Path resultsPath = parser.getPath("results");
 
-        try {
-            if (inputPath == null) {
-                System.err.println("No input path provided with -text flag");
-                return;
-            }
-            processFile(inputPath, outputPath);
-        }
-        catch (IOException e) {
-            System.err.println("Error processing files: " + e.getMessage());
-        }
+		try {
+			if (inputPath == null) {
+				System.err.println("No input path provided with -text flag");
+				return;
+			}
+
+			// Create parent directories for all output paths
+			if (countsPath != null) {
+				Files.createDirectories(countsPath.getParent());
+			}
+			if (indexPath != null) {
+				Files.createDirectories(indexPath.getParent());
+			}
+			if (resultsPath != null) {
+				Files.createDirectories(resultsPath.getParent());
+			}
+
+			processFile(inputPath, countsPath);
+			// TODO: Add processing for index and results files
+
+		}
+		catch (IOException e) {
+			System.err.println("Error processing files: " + e.getMessage());
+		}
 
 		long elapsedMs = Duration.between(start, Instant.now()).toMillis();
 		double elapsedSec = (double) elapsedMs / Duration.ofSeconds(1).toMillis();
