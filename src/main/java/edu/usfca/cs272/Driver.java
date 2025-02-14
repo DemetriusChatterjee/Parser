@@ -39,9 +39,8 @@ public class Driver {
             int totalCount = 0;
             try (var files = finder) {
                 for (Path file : (Iterable<Path>) files::iterator) {
-                    String content = Files.readString(file);
-                    String[] words = FileStemmer.parse(content);
-                    totalCount += words.length;
+                    var stems = FileStemmer.listStems(file);
+                    totalCount += stems.size();
                 }
             }
             
@@ -51,14 +50,13 @@ public class Driver {
                 JsonWriter.writeObject(counts, outputPath);
             }
         }
-        // Handle single file case
+        // Handle single file case - process regardless of extension
         else {
-            String fileContents = Files.readString(inputPath);
-            String[] words = FileStemmer.parse(fileContents);
+            var stems = FileStemmer.listStems(inputPath);
             
             // Write counts if output path is provided
             if (outputPath != null) {
-                Map<String, Integer> counts = Map.of("counts", words.length);
+                Map<String, Integer> counts = Map.of("counts", stems.size());
                 JsonWriter.writeObject(counts, outputPath);
             }
         }
