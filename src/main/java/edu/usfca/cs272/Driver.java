@@ -6,7 +6,7 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
-import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Class responsible for running this project based on the provided command-line
@@ -46,7 +46,9 @@ public class Driver {
 			}
 			
 			if (outputPath != null) {
-				Map<String, Integer> counts = Map.of("counts", totalCount);
+				// TreeMap automatically sorts keys alphabetically
+				TreeMap<String, Integer> counts = new TreeMap<>();
+				counts.put("counts", totalCount);
 				JsonWriter.writeObject(counts, outputPath);
 			}
 		}
@@ -55,7 +57,9 @@ public class Driver {
 			var stems = FileStemmer.listStems(inputPath);
 			
 			if (outputPath != null) {
-				Map<String, Integer> counts = Map.of("counts", stems.size());
+				// TreeMap automatically sorts keys alphabetically
+				TreeMap<String, Integer> counts = new TreeMap<>();
+				counts.put("counts", stems.size());
 				JsonWriter.writeObject(counts, outputPath);
 			}
 		}
