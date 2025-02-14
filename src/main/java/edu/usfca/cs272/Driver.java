@@ -35,26 +35,22 @@ public class Driver {
 					return name.endsWith(".txt") || name.endsWith(".text");
 				});
 				
-			// Track total stems across all files to avoid multiple JSON writes
-			int totalCount = 0;
+			// Store counts for each file in a sorted map
+			TreeMap<String, Integer> counts = new TreeMap<>();
 			try (var files = finder) {
 				// Use iterator pattern to avoid loading all paths into memory at once
 				for (Path file : (Iterable<Path>) files::iterator) {
 					var stems = FileStemmer.listStems(file);
-					totalCount += stems.size();
+					// Use toString() to preserve original path format
+					counts.put(file.toString(), stems.size());
 				}
 			}
 			
 			if (outputPath != null) {
-				// TreeMap automatically sorts keys alphabetically
-				TreeMap<String, Integer> counts = new TreeMap<>();
-				// Use toString() to preserve original path format
-				counts.put(inputPath.toString(), totalCount);
 				JsonWriter.writeObject(counts, outputPath);
 			}
 		}
 		else {
-			// Single file case - no extension filtering needed per requirements
 			var stems = FileStemmer.listStems(inputPath);
 			
 			if (outputPath != null) {
