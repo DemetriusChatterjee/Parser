@@ -26,11 +26,10 @@ public class Driver {
 	 */
 	private static void processFile(Path inputPath, Path outputPath) throws IOException {
 		if (Files.isDirectory(inputPath)) {
-			// Use Files.walk for recursive directory traversal instead of manual recursion
+			// Use Files.walk for recursive directory traversal
 			var finder = Files.walk(inputPath)
 				.filter(path -> Files.isRegularFile(path))
 				.filter(path -> {
-					// Use toString() instead of toPath() to preserve original format
 					String name = path.toString().toLowerCase();
 					return name.endsWith(".txt") || name.endsWith(".text");
 				});
@@ -40,28 +39,21 @@ public class Driver {
 			try (var files = finder) {
 				// Use iterator pattern to avoid loading all paths into memory at once
 				for (Path file : (Iterable<Path>) files::iterator) {
-					var stems = FileStemmer.listStems(file);
-					// Use toString() to preserve original path format
+					var stems = FileStemmer.uniqueStems(file);  // Changed to uniqueStems for unique word count
 					counts.put(file.toString(), stems.size());
 				}
 			}
 			
 			if (outputPath != null) {
-				// Create parent directories if they don't exist
-				Files.createDirectories(outputPath.getParent());
 				JsonWriter.writeObject(counts, outputPath);
 			}
 		}
 		else {
-			var stems = FileStemmer.listStems(inputPath);
+			var stems = FileStemmer.uniqueStems(inputPath);  // Changed to uniqueStems for unique word count
 			
 			if (outputPath != null) {
-				// TreeMap automatically sorts keys alphabetically
 				TreeMap<String, Integer> counts = new TreeMap<>();
-				// Use toString() to preserve original path format
 				counts.put(inputPath.toString(), stems.size());
-				// Create parent directories if they don't exist
-				Files.createDirectories(outputPath.getParent());
 				JsonWriter.writeObject(counts, outputPath);
 			}
 		}
