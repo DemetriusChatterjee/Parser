@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Collection;
 import java.util.TreeMap;
 import java.util.TreeSet;
 /**
@@ -134,12 +133,7 @@ public class Driver {
 				
 				// Write index if path provided
 				if (indexPath != null) {
-					// Transform nested structure to format expected by JsonWriter
-					TreeMap<String, TreeMap<String, Collection<Integer>>> transformed = new TreeMap<>();
-					for (var entry : index.entrySet()) {
-						transformed.put(entry.getKey(), entry.getValue());
-					}
-					JsonWriter.writeObjectArrays(transformed, indexPath);
+					JsonWriter.writeObjectPretty(index, indexPath);
 				}
 			}
 			
