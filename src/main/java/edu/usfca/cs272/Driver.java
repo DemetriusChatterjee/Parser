@@ -18,7 +18,7 @@ public class Driver {
 	/**
 	 * The inverted index to store word locations
 	 */
-	private static final InvertedIndex index = new InvertedIndex();
+	private static final TreeMap<String, TreeMap<String, Integer>> index = new TreeMap<>();
 
 	/**
 	 * Processes the input file, building both word counts and inverted index.
@@ -37,7 +37,7 @@ public class Driver {
 			var stems = FileStemmer.listStems(startDir.toPath());
 			if (stems.size() > 0) {
 				counts.put(startDir.toString(), stems.size());
-				index.addAll(stems, startDir.toString());  // Add to inverted index
+				addToIndex(stems, startDir.toString());  // Add to inverted index
 			}
 			if (outputPath != null) {
 				JsonWriter.writeObject(counts, outputPath);
@@ -66,7 +66,7 @@ public class Driver {
 					var stems = FileStemmer.listStems(current.toPath());
 					if (stems.size() > 0) {
 						counts.put(current.toString(), stems.size());
-						index.addAll(stems, current.toString());  // Add to inverted index
+						addToIndex(stems, current.toString());  // Add to inverted index
 					}
 				}
 			}
@@ -78,6 +78,19 @@ public class Driver {
 		}
 		
 		return counts;
+	}
+
+	/**
+	 * Adds stems to the inverted index
+	 * 
+	 * @param stems the stems to add
+	 * @param location the file location
+	 */
+	private static void addToIndex(java.util.Collection<String> stems, String location) {
+		for (String stem : stems) {
+			index.putIfAbsent(stem, new TreeMap<>());
+			index.get(stem).merge(location, 1, Integer::sum);
+		}
 	}
 
 	/**
@@ -116,7 +129,7 @@ public class Driver {
 				
 				// Write index if path provided
 				if (indexPath != null) {
-					JsonWriter.writeObjectPretty(index, indexPath);
+					JsonWriter.writeObject(index, indexPath);
 				}
 			}
 			
