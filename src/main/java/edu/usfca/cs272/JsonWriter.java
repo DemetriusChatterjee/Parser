@@ -171,7 +171,8 @@ public class JsonWriter {
 			
 			// Write first key-value pair (no preceding comma needed)
 			var entry = iterator.next();
-			writeQuote(entry.getKey(), writer, indent + 1);
+			writeIndent(writer, indent + 1);
+			writeQuote(entry.getKey(), writer, 0);
 			writer.write(": ");
 			writer.write(entry.getValue().toString());
 			
@@ -179,7 +180,8 @@ public class JsonWriter {
 			while (iterator.hasNext()) {
 				writer.write(",\n");
 				entry = iterator.next();
-				writeQuote(entry.getKey(), writer, indent + 1);
+				writeIndent(writer, indent + 1);
+				writeQuote(entry.getKey(), writer, 0);
 				writer.write(": ");
 				writer.write(entry.getValue().toString());
 			}
