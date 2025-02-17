@@ -61,11 +61,13 @@ public class Driver {
 		Instant start = Instant.now();
 		try {
 			ArgumentParser parser = new ArgumentParser(args);
+			parser.parse(args);
 			Path inputPath = parser.getPath("-text");
 			Path outputPath = parser.getPath("-counts");
 			if (inputPath != null) {
 				processFile(inputPath, outputPath);
 			}
+			System.out.println(parser);
 		} catch (IOException e) {
 			return;
 			//System.err.println("Error processing files: " + e.getMessage());

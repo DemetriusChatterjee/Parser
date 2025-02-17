@@ -416,7 +416,7 @@ public class JsonWriter {
 	 *
 	 * @param args unused
 	 */
-	public static void main(String[] args) {
+	/*public static void main(String[] args) {
 		Set<Integer> empty = Collections.emptySet();
 		Set<Integer> single = Set.of(42);
 		List<Integer> simple = List.of(65, 66, 67);
@@ -440,5 +440,5 @@ public class JsonWriter {
 		System.out.println(writeArrayObjects(Collections.emptyList()));
 		System.out.println(writeArrayObjects(Set.of(Map.of("hello", 3.12))));
 		System.out.println(writeArrayObjects(Set.of(Map.of("hello", 3.12, "world", 2.04), Map.of("apple", 0.04))));
-	}
+	}*/
 }
