@@ -26,6 +26,18 @@ public class Driver {
 		TreeMap<String, Integer> counts = new TreeMap<>();
 		File startDir = new File(inputPath.toString());
 		
+		// If it's a single file and it's .md, process it directly
+		if (startDir.isFile() && startDir.getName().toLowerCase().endsWith(".md")) {
+			var stems = FileStemmer.listStems(startDir.toPath());
+			if (stems.size() > 0) {
+				counts.put(startDir.toString(), stems.size());
+			}
+			if (outputPath != null) {
+				JsonWriter.writeObject(counts, outputPath);
+			}
+			return counts;
+		}
+		
 		// Stack to keep track of directories to process
 		java.util.ArrayDeque<File> stack = new java.util.ArrayDeque<>();
 		stack.push(startDir);
@@ -37,7 +49,6 @@ public class Driver {
 			if (current.isDirectory()) {
 				File[] contents = current.listFiles();
 				if (contents != null) {
-					// Add all contents to stack
 					for (File file : contents) {
 						stack.push(file);
 					}
