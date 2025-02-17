@@ -122,17 +122,13 @@ public class Driver {
 				}
 			}
 			
-			// Handle index output
-			if (parser.hasFlag("-index")) {
-				indexPath = parser.getPath("-index", Path.of("index.json"));
-			}
-			
-			// Process input if provided
+			// Process input if provided (will build inverted index regardless of -index flag)
 			if (inputPath != null) {
 				processFile(inputPath, outputPath);
 				
-				// Write index if path provided
-				if (indexPath != null) {
+				// Only write index to file if -index flag is provided
+				if (parser.hasFlag("-index")) {
+					indexPath = parser.getPath("-index", Path.of("index.json"));
 					JsonWriter.writeObject(index, indexPath);
 				}
 			}
