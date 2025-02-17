@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.TreeMap;
+import java.util.TreeSet;
 /**
  * Class responsible for running this project based on the provided command-line
  * arguments. See the README for details.
@@ -18,7 +19,7 @@ public class Driver {
 	/**
 	 * The inverted index to store word locations
 	 */
-	private static final TreeMap<String, TreeMap<String, Integer>> index = new TreeMap<>();
+	private static final TreeMap<String, TreeMap<String, TreeSet<Integer>>> index = new TreeMap<>();
 
 	/**
 	 * Processes the input file, building both word counts and inverted index.
@@ -86,10 +87,13 @@ public class Driver {
 	 * @param stems the stems to add
 	 * @param location the file location
 	 */
-	private static void addToIndex(java.util.Collection<String> stems, String location) {
-		for (String stem : stems) {
+	private static void addToIndex(java.util.List<String> stems, String location) {
+		// Keep track of position (starting at 1)
+		for (int i = 0; i < stems.size(); i++) {
+			String stem = stems.get(i);
 			index.putIfAbsent(stem, new TreeMap<>());
-			index.get(stem).merge(location, 1, Integer::sum);
+			index.get(stem).putIfAbsent(location, new TreeSet<>());
+			index.get(stem).get(location).add(i + 1);  // Add position (1-based)
 		}
 	}
 
