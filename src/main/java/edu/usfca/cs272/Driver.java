@@ -72,6 +72,10 @@ public class Driver {
 			Path outputPath = null;
 			if (parser.hasFlag("-counts")) {
 				outputPath = parser.getPath("-counts", Path.of("counts.json"));
+				// Create an empty TreeMap and write it if only -counts is provided
+				if (inputPath == null) {
+					JsonWriter.writeObject(new TreeMap<String, Integer>(), outputPath);
+				}
 			}
 			
 			// Only process if we have an input path
