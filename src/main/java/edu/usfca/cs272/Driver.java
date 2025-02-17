@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
 /**
@@ -19,7 +20,7 @@ public class Driver {
 	/**
 	 * The inverted index to store word locations
 	 */
-	private static final TreeMap<String, TreeMap<String, TreeSet<Integer>>> index = new TreeMap<>();
+	private static final Map<String, TreeMap<String, TreeSet<Integer>>> index = new TreeMap<>();
 
 	/**
 	 * Processes the input file, building both word counts and inverted index.
@@ -129,7 +130,12 @@ public class Driver {
 				// Only write index to file if -index flag is provided
 				if (parser.hasFlag("-index")) {
 					indexPath = parser.getPath("-index", Path.of("index.json"));
-					JsonWriter.writeObject(index, indexPath);
+					Map<String, Integer> wordCounts = new TreeMap<>();
+					// Convert the inverted index to word counts
+					for (var entry : index.entrySet()) {
+						wordCounts.put(entry.getKey(), entry.getValue().size());
+					}
+					JsonWriter.writeObject(wordCounts, indexPath);
 				}
 			}
 			
