@@ -3,6 +3,7 @@ package edu.usfca.cs272;
 import static java.nio.charset.StandardCharsets.*;
 import static opennlp.tools.stemmer.snowball.SnowballStemmer.ALGORITHM.*;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -158,23 +159,14 @@ public class FileStemmer {
 	 * @see #listStems(String, Stemmer)
 	 */
 	public static ArrayList<String> listStems(Path input) throws IOException {
-		// Create a new English snowball stemmer
 		Stemmer stemmer = new SnowballStemmer(ENGLISH);
-		
-		// Create ArrayList to store all stems 
 		ArrayList<String> stems = new ArrayList<>();
-		
-		try {
-			// Read file line by line using UTF_8 encoding
-			for (String line : Files.readAllLines(input, UTF_8)) {
-				// Process each line and add stems to list
+		try (BufferedReader reader = Files.newBufferedReader(input, UTF_8)) {
+			String line;
+			while ((line = reader.readLine()) != null) {
 				addStems(line, stemmer, stems);
 			}
 		}
-		catch (IOException e) {
-			throw new IOException("Unable to read file: " + input, e);
-		}
-		
 		return stems;
 	}
 

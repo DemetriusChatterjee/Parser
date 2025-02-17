@@ -52,36 +52,13 @@ public class ArgumentParser {
 	 * @see Character#isWhitespace(int)
 	 */
 	public static boolean isFlag(String arg) {
-		// Check for null argument
-		if (arg == null) {
+		if (arg == null || arg.length() < 2 || !arg.startsWith("-")) {
 			return false;
 		}
 
-		// Check if argument is too short to be a flag
-		if (arg.length() < 2) {
-			return false;
-		}
+		int secondChar = arg.codePointAt(1);
+		return !(Character.isDigit(secondChar) || Character.isWhitespace(secondChar));
 
-		// Check if argument starts with a dash
-		if (!arg.startsWith("-")) {
-			return false;
-		}
-
-		// Get the character after the dash
-		char secondChar = arg.charAt(1);
-
-		// Check if the second character is a digit
-		if (Character.isDigit(secondChar)) {
-			return false;
-		}
-
-		// Check if the second character is whitespace
-		if (Character.isWhitespace(secondChar)) {
-			return false;
-		}
-
-		// If we've passed all checks, this is a valid flag
-		return true;
 	}
 
 	/**
@@ -105,36 +82,14 @@ public class ArgumentParser {
 	 * @see #isValue(String)
 	 */
 	public final void parse(String[] args) {
-		// Check for null args array
-		if (args == null) {
-			throw new NullPointerException();
-		}
-
-		// Empty array is valid, just results in no flags
-		if (args.length == 0) {
-			return;
-		}
-
-		// Loop through all arguments
 		for (int i = 0; i < args.length; i++) {
-			// Throw exception for null arguments
-			if (args[i] == null) {
-				throw new NullPointerException();
-			}
-
-			// If current argument is a flag...
 			if (isFlag(args[i])) {
-				// Get the flag without the "-" symbol
 				String flag = args[i];
-
-				// Check if there is a next argument and it is a value
 				if (i + 1 < args.length && isValue(args[i + 1])) {
-					// Store flag/value pair and skip the value
 					map.put(flag, args[i + 1]);
 					i++;
 				}
 				else {
-					// Store flag with null value
 					map.put(flag, null);
 				}
 			}
