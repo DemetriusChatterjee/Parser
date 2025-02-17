@@ -69,7 +69,10 @@ public class Driver {
 			ArgumentParser parser = new ArgumentParser(args);
 			parser.parse(args);
 			Path inputPath = parser.getPath("-text");
-			Path outputPath = parser.getPath("-counts");
+			Path outputPath = null;
+			if (parser.hasFlag("-counts")) {
+				outputPath = parser.getPath("-counts", Path.of("counts.json"));
+			}
 			
 			// Only process if we have an input path
 			if (inputPath != null) {
