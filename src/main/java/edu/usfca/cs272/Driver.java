@@ -1,5 +1,6 @@
 package edu.usfca.cs272;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -25,38 +26,30 @@ public class Driver {
 	 * @throws IOException if an IO error occurs
 	 */
 	private static void processFile(Path inputPath, Path outputPath) throws IOException {
-		if (Files.isDirectory(inputPath)) {
-			// Use Files.walk for recursive directory traversal
-			var finder = Files.walk(inputPath)
-				.filter(path -> Files.isRegularFile(path))
-				.filter(path -> {
-					String name = path.toString().toLowerCase();
-					// Remove extension filter to process all text files
-					return true;
-				});
-				
-			// Store counts for each file in a sorted map
-			TreeMap<String, Integer> counts = new TreeMap<>();
-			try (var files = finder) {
-				// Use iterator pattern to avoid loading all paths into memory at once
-				for (Path file : (Iterable<Path>) files::iterator) {
-					var stems = FileStemmer.uniqueStems(file);  // Changed to uniqueStems for unique word count
-					counts.put(file.toString(), stems.size());
+		TreeMap<String, Integer> counts = new TreeMap<>();
+		File directory = new File(inputPath.toString());
+		
+		if (directory.isDirectory()) {
+			File[] contents = directory.listFiles();
+			if (contents != null) {
+				for (File file : contents) {
+					if (file.isDirectory()) {
+						processFile(file.toPath(), null); // Recursively process subdirectories
+					}
+					else if (file.isFile()) {
+						var stems = FileStemmer.uniqueStems(file.toPath());
+						counts.put(file.getAbsolutePath(), stems.size());
+					}
 				}
-			}
-			
-			if (outputPath != null) {
-				JsonWriter.writeObject(counts, outputPath);
 			}
 		}
 		else {
-			var stems = FileStemmer.uniqueStems(inputPath);  // Changed to uniqueStems for unique word count
-			
-			if (outputPath != null) {
-				TreeMap<String, Integer> counts = new TreeMap<>();
-				counts.put(inputPath.toString(), stems.size());
-				JsonWriter.writeObject(counts, outputPath);
-			}
+			var stems = FileStemmer.uniqueStems(inputPath);
+			counts.put(directory.getAbsolutePath(), stems.size());
+		}
+		
+		if (outputPath != null) {
+			JsonWriter.writeObject(counts, outputPath);
 		}
 	}
 
@@ -69,16 +62,10 @@ public class Driver {
 	 */
 	public static void main(String[] args) {
 		Instant start = Instant.now();
-		
-		// Create paths that match testSentences() test
-		Path input = Path.of("text", "simple", "sentences.md");
-		Path output = Path.of("actual", "counts-simple-sentences.json");
-		
-		// Create args array to match test
-		String[] testArgs = {"-text", input.toString(), "-counts", output.toString()};
-		System.out.println("Command-line arguments: " + Arrays.toString(testArgs));
 
-		ArgumentParser parser = new ArgumentParser(testArgs);
+		System.out.println("Command-line arguments: " + Arrays.toString(args));
+
+		ArgumentParser parser = new ArgumentParser(args);
 		Path inputPath = parser.getPath("text");
 		
 		// Get all output paths
