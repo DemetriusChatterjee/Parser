@@ -26,30 +26,35 @@ public class Driver {
 	 * @throws IOException if an IO error occurs
 	 */
 	private static void processFile(Path inputPath, Path outputPath) throws IOException {
-		TreeMap<String, Integer> counts = new TreeMap<>();
-		File directory = new File(inputPath.toString());
 		
-		if (directory.isDirectory()) {
-			File[] contents = directory.listFiles();
-			if (contents != null) {
-				for (File file : contents) {
-					if (file.isDirectory()) {
-						processFile(file.toPath(), null); // Recursively process subdirectories
-					}
-					else if (file.isFile()) {
-						var stems = FileStemmer.uniqueStems(file.toPath());
-						counts.put(file.getAbsolutePath(), stems.size());
+		try{
+			File directory = new File(inputPath.toString());
+			TreeMap<String, Integer> counts = new TreeMap<>();
+
+			if (directory.isDirectory()) {
+				File[] contents = directory.listFiles();
+				if (contents != null) {
+					for (File file : contents) {
+						if (file.isDirectory()) {
+							processFile(file.toPath(), null); // Recursively process subdirectories
+						}
+						else if (file.isFile()) {
+							var stems = FileStemmer.uniqueStems(file.toPath());
+							counts.put(file.getAbsolutePath(), stems.size());
+						}
 					}
 				}
 			}
-		}
-		else {
-			var stems = FileStemmer.uniqueStems(inputPath);
-			counts.put(directory.getAbsolutePath(), stems.size());
-		}
-		
-		if (outputPath != null) {
-			JsonWriter.writeObject(counts, outputPath);
+			else {
+				var stems = FileStemmer.uniqueStems(inputPath);
+				counts.put(directory.getAbsolutePath(), stems.size());
+			}
+			
+			if (outputPath != null) {
+				JsonWriter.writeObject(counts, outputPath);
+			}
+		}catch (IOException e) {
+			System.err.println("Error processing files: " + e.getMessage());
 		}
 	}
 
