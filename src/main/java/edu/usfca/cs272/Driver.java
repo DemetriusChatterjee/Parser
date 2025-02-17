@@ -21,6 +21,7 @@ public class Driver {
 	 * @param inputPath the path to read from
 	 * @param outputPath the path to write to
 	 * @throws IOException if an IO error occurs
+	 * @return a TreeMap of the word counts
 	 */
 	private static TreeMap<String, Integer> processFile(Path inputPath, Path outputPath) throws IOException {
 		TreeMap<String, Integer> counts = new TreeMap<>();
