@@ -37,13 +37,13 @@ public class Driver {
 					}
 					else if (file.isFile()) {
 						var stems = FileStemmer.uniqueStems(file.toPath());
-						counts.put(file.getAbsolutePath(), stems.size());
+						counts.put(file.toString(), stems.size());
 					}
 				}
 			}
 		}else {
 			var stems = FileStemmer.uniqueStems(inputPath);
-			counts.put(directory.getAbsolutePath(), stems.size());
+			counts.put(directory.toString(), stems.size());
 		}
 		
 		if (outputPath != null) {
