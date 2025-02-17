@@ -16,10 +16,15 @@ import java.util.TreeMap;
  */
 public class Driver {
 	/**
-	 * Processes the input file and writes the word count to the output file.
+	 * The inverted index to store word locations
+	 */
+	private static final InvertedIndex index = new InvertedIndex();
+
+	/**
+	 * Processes the input file, building both word counts and inverted index.
 	 * 
 	 * @param inputPath the path to read from
-	 * @param outputPath the path to write to
+	 * @param outputPath the path to write word counts to
 	 * @throws IOException if an IO error occurs
 	 * @return a TreeMap of the word counts
 	 */
@@ -32,6 +37,7 @@ public class Driver {
 			var stems = FileStemmer.listStems(startDir.toPath());
 			if (stems.size() > 0) {
 				counts.put(startDir.toString(), stems.size());
+				index.addAll(stems, startDir.toString());  // Add to inverted index
 			}
 			if (outputPath != null) {
 				JsonWriter.writeObject(counts, outputPath);
@@ -60,6 +66,7 @@ public class Driver {
 					var stems = FileStemmer.listStems(current.toPath());
 					if (stems.size() > 0) {
 						counts.put(current.toString(), stems.size());
+						index.addAll(stems, current.toString());  // Add to inverted index
 					}
 				}
 			}
@@ -85,20 +92,34 @@ public class Driver {
 		try {
 			ArgumentParser parser = new ArgumentParser(args);
 			parser.parse(args);
+			
 			Path inputPath = parser.getPath("-text");
 			Path outputPath = null;
+			Path indexPath = null;
+			
+			// Handle counts output
 			if (parser.hasFlag("-counts")) {
 				outputPath = parser.getPath("-counts", Path.of("counts.json"));
-				// Create an empty TreeMap and write it if only -counts is provided
 				if (inputPath == null) {
 					JsonWriter.writeObject(new TreeMap<String, Integer>(), outputPath);
 				}
 			}
 			
-			// Only process if we have an input path
+			// Handle index output
+			if (parser.hasFlag("-index")) {
+				indexPath = parser.getPath("-index", Path.of("index.json"));
+			}
+			
+			// Process input if provided
 			if (inputPath != null) {
 				processFile(inputPath, outputPath);
+				
+				// Write index if path provided
+				if (indexPath != null) {
+					JsonWriter.writeObjectPretty(index, indexPath);
+				}
 			}
+			
 			System.out.println(parser);
 		} catch (IOException e) {
 			System.err.println("Error processing files: " + e.getMessage());
