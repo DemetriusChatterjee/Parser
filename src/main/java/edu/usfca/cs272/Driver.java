@@ -6,7 +6,6 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.TreeMap;
-
 /**
  * Class responsible for running this project based on the provided command-line
  * arguments. See the README for details.
@@ -62,13 +61,14 @@ public class Driver {
 		Instant start = Instant.now();
 		try {
 			ArgumentParser parser = new ArgumentParser(args);
-			for (int i = 0; i < args.length-1; i++) {
-					Path inputPath = parser.getPath(args[i]);
-					Path countsPath = parser.getPath(args[i+1]);
-					processFile(inputPath, countsPath);
-				}
+			Path inputPath = parser.getPath("-text");
+			Path outputPath = parser.getPath("-counts");
+			if (inputPath != null) {
+				processFile(inputPath, outputPath);
+			}
 		} catch (IOException e) {
-			System.err.println("Error processing files: " + e.getMessage());
+			return;
+			//System.err.println("Error processing files: " + e.getMessage());
 		}
 
 		long elapsedMs = Duration.between(start, Instant.now()).toMillis();
