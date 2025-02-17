@@ -22,8 +22,7 @@ public class Driver {
 	 * @param outputPath the path to write to
 	 * @throws IOException if an IO error occurs
 	 */
-	private static void processFile(Path inputPath, Path outputPath) throws IOException {
-		
+	private static TreeMap<String, Integer> processFile(Path inputPath, Path outputPath) throws IOException {
 		File directory = new File(inputPath.toString());
 		TreeMap<String, Integer> counts = new TreeMap<>();
 
@@ -32,7 +31,9 @@ public class Driver {
 			if (contents != null) {
 				for (File file : contents) {
 					if (file.isDirectory()) {
-						processFile(file.toPath(), null); // Recursively process subdirectories
+						// Process subdirectory and add its counts to the main counts
+						TreeMap<String, Integer> subCounts = processFile(file.toPath(), null);
+						counts.putAll(subCounts);
 					}
 					else if (file.isFile()) {
 						var stems = FileStemmer.uniqueStems(file.toPath());
@@ -40,14 +41,17 @@ public class Driver {
 					}
 				}
 			}
-		}else {
+		} else {
 			var stems = FileStemmer.uniqueStems(inputPath);
 			counts.put(directory.toString(), stems.size());
 		}
 		
+		// Move the output writing outside the if-else block
 		if (outputPath != null) {
 			JsonWriter.writeObject(counts, outputPath);
 		}
+		
+		return counts;
 	}
 
 	/**
@@ -64,13 +68,15 @@ public class Driver {
 			parser.parse(args);
 			Path inputPath = parser.getPath("-text");
 			Path outputPath = parser.getPath("-counts");
+			
+			// Only process if we have an input path
 			if (inputPath != null) {
 				processFile(inputPath, outputPath);
 			}
 			System.out.println(parser);
 		} catch (IOException e) {
+			System.err.println("Error processing files: " + e.getMessage());
 			return;
-			//System.err.println("Error processing files: " + e.getMessage());
 		}
 
 		long elapsedMs = Duration.between(start, Instant.now()).toMillis();
