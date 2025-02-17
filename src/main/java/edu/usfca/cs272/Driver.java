@@ -2,11 +2,9 @@ package edu.usfca.cs272;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.TreeMap;
 
 /**
@@ -27,34 +25,29 @@ public class Driver {
 	 */
 	private static void processFile(Path inputPath, Path outputPath) throws IOException {
 		
-		try{
-			File directory = new File(inputPath.toString());
-			TreeMap<String, Integer> counts = new TreeMap<>();
+		File directory = new File(inputPath.toString());
+		TreeMap<String, Integer> counts = new TreeMap<>();
 
-			if (directory.isDirectory()) {
-				File[] contents = directory.listFiles();
-				if (contents != null) {
-					for (File file : contents) {
-						if (file.isDirectory()) {
-							processFile(file.toPath(), null); // Recursively process subdirectories
-						}
-						else if (file.isFile()) {
-							var stems = FileStemmer.uniqueStems(file.toPath());
-							counts.put(file.getAbsolutePath(), stems.size());
-						}
+		if (directory.isDirectory()) {
+			File[] contents = directory.listFiles();
+			if (contents != null) {
+				for (File file : contents) {
+					if (file.isDirectory()) {
+						processFile(file.toPath(), null); // Recursively process subdirectories
+					}
+					else if (file.isFile()) {
+						var stems = FileStemmer.uniqueStems(file.toPath());
+						counts.put(file.getAbsolutePath(), stems.size());
 					}
 				}
 			}
-			else {
-				var stems = FileStemmer.uniqueStems(inputPath);
-				counts.put(directory.getAbsolutePath(), stems.size());
-			}
-			
-			if (outputPath != null) {
-				JsonWriter.writeObject(counts, outputPath);
-			}
-		}catch (IOException e) {
-			System.err.println("Error processing files: " + e.getMessage());
+		}else {
+			var stems = FileStemmer.uniqueStems(inputPath);
+			counts.put(directory.getAbsolutePath(), stems.size());
+		}
+		
+		if (outputPath != null) {
+			JsonWriter.writeObject(counts, outputPath);
 		}
 	}
 
@@ -67,41 +60,14 @@ public class Driver {
 	 */
 	public static void main(String[] args) {
 		Instant start = Instant.now();
-
-		System.out.println("Command-line arguments: " + Arrays.toString(args));
-
-		ArgumentParser parser = new ArgumentParser(args);
-		Path inputPath = parser.getPath("text");
-		
-		// Get all output paths
-		Path countsPath = parser.hasFlag("counts") ? 
-			parser.getPath("counts", Path.of("counts.json")) : 
-			null;
-		Path indexPath = parser.getPath("index");
-		Path resultsPath = parser.getPath("results");
-
 		try {
-			if (inputPath == null) {
-				System.err.println("No input path provided with -text flag");
-				return;
-			}
-
-			// Create parent directories for all output paths
-			if (countsPath != null) {
-				Files.createDirectories(countsPath.getParent());
-			}
-			if (indexPath != null) {
-				Files.createDirectories(indexPath.getParent());
-			}
-			if (resultsPath != null) {
-				Files.createDirectories(resultsPath.getParent());
-			}
-
-			processFile(inputPath, countsPath);
-			// TODO: Add processing for index and results files
-
-		}
-		catch (IOException e) {
+			ArgumentParser parser = new ArgumentParser(args);
+			for (int i = 0; i < args.length-1; i++) {
+					Path inputPath = parser.getPath(args[i]);
+					Path countsPath = parser.getPath(args[i+1]);
+					processFile(inputPath, countsPath);
+				}
+		} catch (IOException e) {
 			System.err.println("Error processing files: " + e.getMessage());
 		}
 
