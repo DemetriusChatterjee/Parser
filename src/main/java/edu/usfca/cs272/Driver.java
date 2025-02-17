@@ -44,12 +44,11 @@ public class Driver {
 				}
 			} else if (current.isFile()) {
 				String fileName = current.getName().toLowerCase();
-				// Only process files with .txt or .text extensions (case insensitive)
 				if (fileName.endsWith(".txt") || fileName.endsWith(".text")) {
 					var stems = FileStemmer.listStems(current.toPath());
-					// Normalize path separators to forward slashes
-					String normalizedPath = current.toString().replace('\\', '/');
-					counts.put(normalizedPath, stems.size());
+					if (stems.size() > 0) {
+						counts.put(current.toString(), stems.size());
+					}
 				}
 			}
 		}
