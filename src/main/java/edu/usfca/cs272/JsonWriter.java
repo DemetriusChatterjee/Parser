@@ -10,10 +10,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * Outputs several simple data structures in "pretty" JSON format where newlines
@@ -404,6 +402,39 @@ public class JsonWriter {
 		}
 		catch (IOException e) {
 			return null;
+		}
+	}
+
+	/**
+	 * Writes the word counts to the specified path in JSON format.
+	 *
+	 * @param counts the word counts to write
+	 * @param path the path to write to
+	 * @throws IOException if an IO error occurs
+	 */
+	public static void writeObject(TreeMap<String, Integer> counts, Path path) throws IOException {
+		try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
+			writer.write("{\n");
+			
+			// Get all entries to check for last element
+			var entries = counts.entrySet();
+			int size = entries.size();
+			int current = 0;
+			
+			// Write each entry
+			for (var entry : entries) {
+				current++;
+				writer.write("  \"" + entry.getKey() + "\": " + entry.getValue());
+				
+				// Add comma and newline if not the last element
+				if (current < size) {
+					writer.write(",\n");
+				} else {
+					writer.write("\n");
+				}
+			}
+			
+			writer.write("}");
 		}
 	}
 

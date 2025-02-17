@@ -23,30 +23,32 @@ public class Driver {
 	 * @throws IOException if an IO error occurs
 	 */
 	private static TreeMap<String, Integer> processFile(Path inputPath, Path outputPath) throws IOException {
-		File directory = new File(inputPath.toString());
 		TreeMap<String, Integer> counts = new TreeMap<>();
-
-		if (directory.isDirectory()) {
-			File[] contents = directory.listFiles();
-			if (contents != null) {
-				for (File file : contents) {
-					if (file.isDirectory()) {
-						// Process subdirectory and add its counts to the main counts
-						TreeMap<String, Integer> subCounts = processFile(file.toPath(), null);
-						counts.putAll(subCounts);
-					}
-					else if (file.isFile()) {
-						var stems = FileStemmer.uniqueStems(file.toPath());
-						counts.put(file.toString(), stems.size());
+		File startDir = new File(inputPath.toString());
+		
+		// Stack to keep track of directories to process
+		java.util.ArrayDeque<File> stack = new java.util.ArrayDeque<>();
+		stack.push(startDir);
+		
+		// Process all directories and files
+		while (!stack.isEmpty()) {
+			File current = stack.pop();
+			
+			if (current.isDirectory()) {
+				File[] contents = current.listFiles();
+				if (contents != null) {
+					// Add all contents to stack
+					for (File file : contents) {
+						stack.push(file);
 					}
 				}
+			} else if (current.isFile()) {
+				var stems = FileStemmer.listStems(current.toPath());
+				counts.put(current.toString(), stems.size());
 			}
-		} else {
-			var stems = FileStemmer.uniqueStems(inputPath);
-			counts.put(directory.toString(), stems.size());
 		}
 		
-		// Move the output writing outside the if-else block
+		// Write results at the end
 		if (outputPath != null) {
 			JsonWriter.writeObject(counts, outputPath);
 		}
