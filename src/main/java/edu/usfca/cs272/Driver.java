@@ -133,7 +133,7 @@ public class Driver {
 				
 				// Write index if path provided
 				if (indexPath != null) {
-					JsonWriter.writeObjectPretty(index, indexPath);
+					JsonWriter.writeObject(index, indexPath);
 				}
 			}
 			
