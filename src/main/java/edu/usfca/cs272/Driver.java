@@ -8,6 +8,7 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.Collection;
 /**
  * Class responsible for running this project based on the provided command-line
  * arguments. See the README for details.
@@ -130,12 +131,24 @@ public class Driver {
 				// Only write index to file if -index flag is provided
 				if (parser.hasFlag("-index")) {
 					indexPath = parser.getPath("-index", Path.of("index.json"));
-					Map<String, Integer> wordCounts = new TreeMap<>();
-					// Convert the inverted index to word counts
+					
+					// Transform the nested map structure for JSON writing
+					TreeMap<String, Collection<Integer>> transformed = new TreeMap<>();
+					
+					// For each word in the index
 					for (var entry : index.entrySet()) {
-						wordCounts.put(entry.getKey(), entry.getValue().size());
+						// Create a list to store all positions from all files
+						TreeSet<Integer> allPositions = new TreeSet<>();
+						
+						// Add all positions from each file
+						for (var fileEntry : entry.getValue().entrySet()) {
+							allPositions.addAll(fileEntry.getValue());
+						}
+						
+						transformed.put(entry.getKey(), allPositions);
 					}
-					JsonWriter.writeObject(wordCounts, indexPath);
+					
+					JsonWriter.writeObjectArrays(transformed, indexPath);
 				}
 			}
 			
