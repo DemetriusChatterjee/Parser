@@ -34,8 +34,8 @@ public class Driver {
 		TreeMap<String, Integer> counts = new TreeMap<>();
 		File startDir = new File(inputPath.toString());
 		
-		// If it's a single file and it's .md, process it directly
-		if (startDir.isFile() && startDir.getName().toLowerCase().endsWith(".md")) {
+		// If it's a single file and it's .html, process it directly
+		if (startDir.isFile() && startDir.getName().toLowerCase().endsWith(".html")) {
 			var stems = FileStemmer.listStems(startDir.toPath());
 			if (stems.size() > 0) {
 				counts.put(startDir.toString(), stems.size());
@@ -64,7 +64,7 @@ public class Driver {
 				}
 			} else if (current.isFile()) {
 				String fileName = current.getName().toLowerCase();
-				if (fileName.contains(".txt") || fileName.contains(".text")) {
+				if (fileName.endsWith(".txt") || fileName.endsWith(".text")) {
 					var stems = FileStemmer.listStems(current.toPath());
 					if (stems.size() > 0) {
 						counts.put(current.toString(), stems.size());
