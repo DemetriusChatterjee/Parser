@@ -23,6 +23,15 @@ import java.util.Map;
  * @version Spring 2025
  */
 public class JsonWriter {
+	
+	/**
+     * Initializes a JsonWriter object. Private constructor to prevent instantiation
+     * of utility class.
+     */
+    private JsonWriter() {
+        // Do not instantiate.
+    }
+	
 	/**
 	 * Indents the writer by the specified number of times. Does nothing if the
 	 * indentation level is 0 or less.
