@@ -25,10 +25,10 @@ public class Driver {
 	/**
 	 * Processes the input file, building both word counts and inverted index.
 	 * 
-	 * @param inputPath the path to read from
-	 * @param outputPath the path to write word counts to
-	 * @throws IOException if an IO error occurs
-	 * @return a TreeMap of the word counts
+	 * @param inputPath the path to process text files from, can be a single file or directory
+	 * @param outputPath the path to write word counts to, or null if no output needed
+	 * @throws IOException if an IO error occurs while reading or writing files
+	 * @return a TreeMap containing file paths and their word counts
 	 */
 	private static TreeMap<String, Integer> processFile(Path inputPath, Path outputPath) throws IOException {
 		TreeMap<String, Integer> counts = new TreeMap<>();
@@ -83,10 +83,10 @@ public class Driver {
 	}
 
 	/**
-	 * Adds stems to the inverted index
+	 * Adds stems to the inverted index with their positions
 	 * 
-	 * @param stems the stems to add
-	 * @param location the file location
+	 * @param stems the list of stemmed words to add
+	 * @param location the file path where the stems were found
 	 */
 	private static void addToIndex(java.util.List<String> stems, String location) {
 		// Keep track of position (starting at 1)
@@ -103,7 +103,10 @@ public class Driver {
 	 * arguments. This includes (but is not limited to) how to build or search an
 	 * inverted index.
 	 *
-	 * @param args flag/value pairs used to start this program
+	 * @param args flag/value pairs used to start this program. Supported flags include:
+	 *             "-text" for input file/directory path
+	 *             "-counts" for word counts output path
+	 *             "-index" for inverted index output path
 	 */
 	public static void main(String[] args) {
 		Instant start = Instant.now();
