@@ -108,6 +108,9 @@ public class Driver {
 	public static void main(String[] args) {
 		Instant start = Instant.now();
 		try {
+			// Clear the index at the start of each run
+			index.clear();
+			
 			ArgumentParser parser = new ArgumentParser(args);
 			parser.parse(args);
 			
