@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  * Outputs several simple data structures in "pretty" JSON format where newlines
@@ -428,6 +429,79 @@ public class JsonWriter {
 				
 				// Add comma and newline if not the last element
 				if (current < size) {
+					writer.write(",\n");
+				} else {
+					writer.write("\n");
+				}
+			}
+			
+			writer.write("}");
+		}
+	}
+
+	/**
+	 * Writes the inverted index to the specified path in JSON format.
+	 *
+	 * @param index the inverted index to write
+	 * @param path the path to write to
+	 * @throws IOException if an IO error occurs
+	 */
+	public static void writeInvertedIndex(Map<String, TreeMap<String, TreeSet<Integer>>> index, Path path) throws IOException {
+		try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
+			writer.write("{\n");
+			
+			// Get all word entries
+			var words = index.entrySet();
+			int wordSize = words.size();
+			int wordCount = 0;
+			
+			// Write each word
+			for (var wordEntry : words) {
+				wordCount++;
+				writer.write("  \"" + wordEntry.getKey() + "\": {\n");
+				
+				// Get all location entries for this word
+				var locations = wordEntry.getValue().entrySet();
+				int locationSize = locations.size();
+				int locationCount = 0;
+				
+				// Write each location
+				for (var locationEntry : locations) {
+					locationCount++;
+					writer.write("    \"" + locationEntry.getKey() + "\": [\n");
+					
+					// Get all positions for this location
+					var positions = locationEntry.getValue();
+					int positionSize = positions.size();
+					int positionCount = 0;
+					
+					// Write each position
+					for (var position : positions) {
+						positionCount++;
+						writer.write("      " + position);
+						
+						// Add comma if not the last position
+						if (positionCount < positionSize) {
+							writer.write(",\n");
+						} else {
+							writer.write("\n");
+						}
+					}
+					
+					writer.write("    ]");
+					
+					// Add comma if not the last location
+					if (locationCount < locationSize) {
+						writer.write(",\n");
+					} else {
+						writer.write("\n");
+					}
+				}
+				
+				writer.write("  }");
+				
+				// Add comma if not the last word
+				if (wordCount < wordSize) {
 					writer.write(",\n");
 				} else {
 					writer.write("\n");
