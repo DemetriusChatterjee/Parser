@@ -35,7 +35,7 @@ public class Driver {
 		File startDir = new File(inputPath.toString());
 		
 		// If it's a single file and it's .html, process it directly
-		if (startDir.isFile() && startDir.getName().toLowerCase().endsWith(".html")) {
+		if (startDir.isFile()) {
 			var stems = FileStemmer.listStems(startDir.toPath());
 			if (stems.size() > 0) {
 				counts.put(startDir.toString(), stems.size());
