@@ -64,7 +64,7 @@ public class Driver {
 				}
 			} else if (current.isFile()) {
 				String fileName = current.getName().toLowerCase();
-				if (fileName.endsWith(".txt") || fileName.endsWith(".text")) {
+				if (fileName.contains(".txt") || fileName.contains(".text")) {
 					var stems = FileStemmer.listStems(current.toPath());
 					if (stems.size() > 0) {
 						counts.put(current.toString(), stems.size());
