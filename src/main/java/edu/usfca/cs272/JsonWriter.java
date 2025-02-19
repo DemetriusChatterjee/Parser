@@ -449,10 +449,9 @@ public class JsonWriter {
 	public static void writeInvertedIndex(Map<String, TreeMap<String, TreeSet<Integer>>> index, Path path) throws IOException {
 		try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
 			writer.write("{");
+			writer.write("\n");
 			
 			if (!index.isEmpty()) {
-				writer.write("\n");
-				
 				// Get all word entries
 				var words = index.entrySet();
 				int wordSize = words.size();
