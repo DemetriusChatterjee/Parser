@@ -448,66 +448,66 @@ public class JsonWriter {
 	 */
 	public static void writeInvertedIndex(Map<String, TreeMap<String, TreeSet<Integer>>> index, Path path) throws IOException {
 		try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
-			writer.write("{\n");
+			writer.write("{");
 			
-			// Get all word entries
-			var words = index.entrySet();
-			int wordSize = words.size();
-			int wordCount = 0;
-			
-			// Write each word
-			for (var wordEntry : words) {
-				wordCount++;
-				writer.write("  \"" + wordEntry.getKey() + "\": {\n");
+			if (!index.isEmpty()) {
+				writer.write("\n");
 				
-				// Get all location entries for this word
-				var locations = wordEntry.getValue().entrySet();
-				int locationSize = locations.size();
-				int locationCount = 0;
+				// Get all word entries
+				var words = index.entrySet();
+				int wordSize = words.size();
+				int wordCount = 0;
 				
-				// Write each location
-				for (var locationEntry : locations) {
-					locationCount++;
-					writer.write("    \"" + locationEntry.getKey() + "\": [\n");
+				// Write each word
+				for (var wordEntry : words) {
+					wordCount++;
+					writer.write("  \"" + wordEntry.getKey() + "\": {");
 					
-					// Get all positions for this location
-					var positions = locationEntry.getValue();
-					int positionSize = positions.size();
-					int positionCount = 0;
-					
-					// Write each position
-					for (var position : positions) {
-						positionCount++;
-						writer.write("      " + position);
-						
-						// Add comma if not the last position
-						if (positionCount < positionSize) {
-							writer.write(",\n");
-						} else {
-							writer.write("\n");
-						}
-					}
-					
-					writer.write("    ]");
-					
-					// Add comma if not the last location
-					if (locationCount < locationSize) {
-						writer.write(",\n");
-					} else {
+					// Get all location entries for this word
+					var locations = wordEntry.getValue().entrySet();
+					if (!locations.isEmpty()) {
 						writer.write("\n");
+						int locationSize = locations.size();
+						int locationCount = 0;
+						
+						// Write each location
+						for (var locationEntry : locations) {
+							locationCount++;
+							writer.write("    \"" + locationEntry.getKey() + "\": [");
+							
+							// Get all positions for this location
+							var positions = locationEntry.getValue();
+							int positionSize = positions.size();
+							int positionCount = 0;
+							
+							// Write each position
+							for (var position : positions) {
+								writer.write("\n      " + position.toString());
+								positionCount++;
+								if (positionCount < positionSize) {
+									writer.write(",");
+								}
+							}
+							
+							writer.write("\n    ]");  // Added newline before closing bracket
+							
+							// Add comma and newline if not the last location
+							if (locationCount < locationSize) {
+								writer.write(",\n");
+							}
+						}
+						writer.write("\n  }");
+					} else {
+						writer.write("}");
+					}
+					
+					// Add comma and newline if not the last word
+					if (wordCount < wordSize) {
+						writer.write(",\n");
 					}
 				}
-				
-				writer.write("  }");
-				
-				// Add comma if not the last word
-				if (wordCount < wordSize) {
-					writer.write(",\n");
-				} else {
-					writer.write("\n");
-				}
+				writer.write("\n");
 			}
-			
 			writer.write("}");
 		}
 	}
