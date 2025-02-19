@@ -40,7 +40,7 @@ public class Driver {
 		else if (Files.isDirectory(inputPath)) {
 			Files.walk(inputPath)
 				.filter(path -> path.toString().toLowerCase().endsWith(".txt") || 
-							  path.toString().toLowerCase().endsWith(".text"))
+							path.toString().toLowerCase().endsWith(".text"))
 				.forEach(path -> {
 					try {
 						processPath(path, counts);
