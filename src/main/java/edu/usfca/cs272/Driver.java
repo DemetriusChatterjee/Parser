@@ -26,11 +26,12 @@ public class Driver {
 	 * Processes the input file, building both word counts and inverted index.
 	 * 
 	 * @param inputPath the path to process text files from, can be a single file or directory
-	 * @param outputPath the path to write word counts to, or null if no output needed
+	 * @param countsPath the path to write word counts to, or null if no output needed
+	 * @param indexPath the path to write inverted index to, or null if no output needed
 	 * @throws IOException if an IO error occurs while reading or writing files
 	 * @return a TreeMap containing file paths and their word counts
 	 */
-	private static TreeMap<String, Integer> processFile(Path inputPath, Path outputPath) throws IOException {
+	private static TreeMap<String, Integer> processFile(Path inputPath, Path countsPath, Path indexPath) throws IOException {
 		TreeMap<String, Integer> counts = new TreeMap<>();
 		
 		// Process single file or directory
@@ -51,9 +52,12 @@ public class Driver {
 				});
 		}
 		
-		// Write results if output path provided
-		if (outputPath != null) {
-			JsonWriter.writeObject(counts, outputPath);
+		// Write results if output paths provided
+		if (countsPath != null) {
+			JsonWriter.writeObject(counts, countsPath);
+		}
+		if (indexPath != null) {
+			JsonWriter.writeObject(index, indexPath);  // Use modified JsonWriter method
 		}
 		
 		return counts;
@@ -107,25 +111,22 @@ public class Driver {
 		try {
 			index.clear();
 			Path inputPath = parser.getPath("-text");
-			Path countsPath = parser.getPath("-counts", Path.of("counts.json"));
-			Path indexPath = parser.getPath("-index", Path.of("index.json"));
+			Path countsPath = parser.hasFlag("-counts") ? parser.getPath("-counts", Path.of("counts.json")) : null;
+			Path indexPath = parser.hasFlag("-index") ? parser.getPath("-index", Path.of("index.json")) : null;
 			
 			// Handle empty input case
 			if (inputPath == null) {
-				if (parser.hasFlag("-counts")) {
+				if (countsPath != null) {
 					JsonWriter.writeObject(new TreeMap<>(), countsPath);
 				}
-				if (parser.hasFlag("-index")) {
-					JsonWriter.writeInvertedIndex(new TreeMap<>(), indexPath);
+				if (indexPath != null) {
+					JsonWriter.writeObject(new TreeMap<>(), indexPath);  // Use modified JsonWriter method
 				}
 				return;
 			}
 			
 			// Process input and write outputs
-			processFile(inputPath, parser.hasFlag("-counts") ? countsPath : null);
-			if (parser.hasFlag("-index")) {
-				JsonWriter.writeInvertedIndex(index, indexPath);
-			}
+			processFile(inputPath, countsPath, indexPath);
 			
 			Duration elapsed = Duration.between(start, Instant.now());
 			System.out.printf("Elapsed: %.3f seconds%n", elapsed.toMillis() / 1000.0);

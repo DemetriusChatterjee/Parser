@@ -11,8 +11,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Map;
-import java.util.TreeMap;
-import java.util.TreeSet;
 
 /**
  * Outputs several simple data structures in "pretty" JSON format where newlines
@@ -82,8 +80,7 @@ public class JsonWriter {
 	 * @see #writeIndent(Writer, int)
 	 * @see #writeIndent(String, Writer, int)
 	 */
-	public static void writeArray(Collection<? extends Number> elements,
-			Writer writer, int indent) throws IOException {
+	public static void writeArray(Collection<?> elements, Writer writer, int indent) throws IOException {
 		writer.write('[');
 		writer.write('\n');
 		
@@ -160,29 +157,53 @@ public class JsonWriter {
 	 * @see #writeIndent(Writer, int)
 	 * @see #writeIndent(String, Writer, int)
 	 */
-	public static void writeObject(Map<String, ? extends Number> elements,
-			Writer writer, int indent) throws IOException {
+	public static void writeObject(Map<String, ?> elements, Writer writer, int indent) throws IOException {
 		writer.write('{');
 		writer.write('\n');
 		
 		if (!elements.isEmpty()) {
 			var iterator = elements.entrySet().iterator();
 			
-			// Write first key-value pair (no preceding comma needed)
+			// Write first key-value pair
 			var entry = iterator.next();
 			writeIndent(writer, indent + 1);
 			writeQuote(entry.getKey(), writer, 0);
 			writer.write(": ");
-			writer.write(entry.getValue().toString());
 			
-			// Write remaining key-value pairs (preceded by commas)
+			// Handle different value types
+			Object value = entry.getValue();
+			if (value instanceof Number) {
+				writer.write(value.toString());
+			}
+			else if (value instanceof Map<?, ?>) {
+				@SuppressWarnings("unchecked")
+				Map<String, ?> nested = (Map<String, ?>) value;
+				writeObject(nested, writer, indent + 1);
+			}
+			else if (value instanceof Collection) {
+				writeArray((Collection<?>) value, writer, indent + 1);
+			}
+			
+			// Write remaining pairs
 			while (iterator.hasNext()) {
 				writer.write(",\n");
 				entry = iterator.next();
 				writeIndent(writer, indent + 1);
 				writeQuote(entry.getKey(), writer, 0);
 				writer.write(": ");
-				writer.write(entry.getValue().toString());
+				
+				value = entry.getValue();
+				if (value instanceof Number) {
+					writer.write(value.toString());
+				}
+				else if (value instanceof Map<?, ?>) {
+					@SuppressWarnings("unchecked")
+					Map<String, ?> nested = (Map<String, ?>) value;
+					writeObject(nested, writer, indent + 1);
+				}
+				else if (value instanceof Collection) {
+					writeArray((Collection<?>) value, writer, indent + 1);
+				}
 			}
 			
 			writer.write('\n');
@@ -203,8 +224,7 @@ public class JsonWriter {
 	 * @see StandardCharsets#UTF_8
 	 * @see #writeObject(Map, Writer, int)
 	 */
-	public static void writeObject(Map<String, ? extends Number> elements,
-			Path path) throws IOException {
+	public static void writeObject(Map<String, ?> elements, Path path) throws IOException {
 		try (BufferedWriter writer = Files.newBufferedWriter(path, UTF_8)) {
 			writeObject(elements, writer, 0);
 		}
@@ -219,7 +239,7 @@ public class JsonWriter {
 	 * @see StringWriter
 	 * @see #writeObject(Map, Writer, int)
 	 */
-	public static String writeObject(Map<String, ? extends Number> elements) {
+	public static String writeObject(Map<String, ?> elements) {
 		try {
 			StringWriter writer = new StringWriter();
 			writeObject(elements, writer, 0);
@@ -404,115 +424,6 @@ public class JsonWriter {
 		catch (IOException e) {
 			return null;
 		}
-	}
-
-	/**
-	 * Writes the word counts to the specified path in JSON format.
-	 *
-	 * @param counts the word counts to write
-	 * @param path the path to write to
-	 * @throws IOException if an IO error occurs
-	 */
-	public static void writeObject(TreeMap<String, Integer> counts, Path path) throws IOException {
-		try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
-			writer.write("{\n");
-			
-			// Get all entries to check for last element
-			var entries = counts.entrySet();
-			int size = entries.size();
-			int current = 0;
-			
-			// Write each entry
-			for (var entry : entries) {
-				current++;
-				writer.write("  \"" + entry.getKey() + "\": " + entry.getValue());
-				
-				// Add comma and newline if not the last element
-				if (current < size) {
-					writer.write(",\n");
-				} else {
-					writer.write("\n");
-				}
-			}
-			
-			writer.write("}");
-		}
-	}
-
-	/**
-	 * Writes the inverted index to the specified path in JSON format.
-	 *
-	 * @param index the inverted index to write
-	 * @param path the path to write to
-	 * @throws IOException if an IO error occurs
-	 */
-	public static void writeInvertedIndex(Map<String, TreeMap<String, TreeSet<Integer>>> index, Path path) throws IOException {
-		try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
-			writer.write("{");
-			writer.write("\n");
-			
-			if (!index.isEmpty()) {
-				// Get all word entries
-				var words = index.entrySet();
-				int wordSize = words.size();
-				int wordCount = 0;
-				
-				// Write each word
-				for (var wordEntry : words) {
-					wordCount++;
-					writer.write("  \"" + wordEntry.getKey() + "\": {");
-					
-					// Get all location entries for this word
-					var locations = wordEntry.getValue().entrySet();
-					if (!locations.isEmpty()) {
-						writer.write("\n");
-						int locationSize = locations.size();
-						int locationCount = 0;
-						
-						// Write each location
-						for (var locationEntry : locations) {
-							locationCount++;
-							writer.write("    \"" + locationEntry.getKey() + "\": [");
-							
-							// Get all positions for this location
-							var positions = locationEntry.getValue();
-							int positionSize = positions.size();
-							int positionCount = 0;
-							
-							// Write each position
-							for (var position : positions) {
-								writer.write("\n      " + position.toString());
-								positionCount++;
-								if (positionCount < positionSize) {
-									writer.write(",");
-								}
-							}
-							
-							writer.write("\n    ]");  // Added newline before closing bracket
-							
-							// Add comma and newline if not the last location
-							if (locationCount < locationSize) {
-								writer.write(",\n");
-							}
-						}
-						writer.write("\n  }");
-					} else {
-						writer.write("}");
-					}
-					
-					// Add comma and newline if not the last word
-					if (wordCount < wordSize) {
-						writer.write(",\n");
-					}
-				}
-				writer.write("\n");
-			}
-			writer.write("}");
-		}
-	}
-
-	/** Prevent instantiating this class of static methods. */
-	private JsonWriter() {
 	}
 
 	/**
