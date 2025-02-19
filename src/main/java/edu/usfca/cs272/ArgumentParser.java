@@ -137,6 +137,8 @@ public class ArgumentParser {
 		// Add dash if flag doesn't start with one
 		flag = flag.startsWith("-") ? flag : "-" + flag;
 
+		// TODO Just need return map.get(flag) != null;
+		
 		// Return true if the flag exists and has a non-null value
 		return map.containsKey(flag) && map.get(flag) != null;
 	}
@@ -153,7 +155,7 @@ public class ArgumentParser {
 	 * @see Objects#requireNonNullElse(Object, Object)
 	 */
 	public String getString(String flag, String backup) {
-		if (flag == null) {
+		if (flag == null) { // TODO Remove
 			return backup;
 		}
 
@@ -170,7 +172,7 @@ public class ArgumentParser {
 	 *   there is no mapping
 	 */
 	public String getString(String flag) {
-		if (flag == null) {
+		if (flag == null) { // TODO Remove
 			return null;
 		}
 
@@ -201,10 +203,13 @@ public class ArgumentParser {
 			return backup;
 		}
 		
+		// TODO Remove logic above
+		
 		try {
 			// Try to convert the string to a path
 			// reference: https://stackoverflow.com/questions/58631724/paths-get-vs-path-of
 			return Path.of(value);
+			// TODO return Path.of(map.get(flag));
 		}
 		catch (Exception e) {
 			// Return backup if any exception occurs
@@ -242,7 +247,7 @@ public class ArgumentParser {
 	 *
 	 * @see Integer#parseInt(String)
 	 */
-	public int getInteger(String flag, int backup) {
+	public int getInteger(String flag, int backup) { // TODO Make similar changes here
 		// Get the string value for the flag
 		String value = getString(flag);
 		

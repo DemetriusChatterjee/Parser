@@ -17,6 +17,19 @@ import java.util.TreeSet;
  * @version Spring 2025
  */
 public class Driver {
+	/*
+	 * TODO
+	 * Create 2 new classes:
+	 * 
+	 * 1) InvertedIndex data structure class that holds both the index and word
+	 * count tree maps.
+	 * 
+	 * 2) "Builder" class, TextFileIndexer or InvertedIndexBuilder that handles
+	 * the file IO, directory traversing, and stemming stuff. 
+	 */
+		
+		
+	// TODO Move this to data structure class, keep the final keyword but don't use the static keyword
 	/**
 	 * The inverted index to store word locations
 	 */
@@ -31,15 +44,16 @@ public class Driver {
 	 * @throws IOException if an IO error occurs while reading or writing files
 	 * @return a TreeMap containing file paths and their word counts
 	 */
+	// TODO public static void processFile(Path inputPath, InvertedIndex index)
 	private static TreeMap<String, Integer> processFile(Path inputPath, Path countsPath, Path indexPath) throws IOException {
-		TreeMap<String, Integer> counts = new TreeMap<>();
+		TreeMap<String, Integer> counts = new TreeMap<>(); // TODO Move into the data structure class
 		
 		// Process single file or directory
 		if (Files.isRegularFile(inputPath)) {
 			processPath(inputPath, counts);
 		}
 		else if (Files.isDirectory(inputPath)) {
-			Files.walk(inputPath)
+			Files.walk(inputPath) // TODO Where did this come from? (Missing a citation)
 				.filter(path -> path.toString().toLowerCase().endsWith(".txt") || 
 							path.toString().toLowerCase().endsWith(".text"))
 				.forEach(path -> {
@@ -52,6 +66,7 @@ public class Driver {
 				});
 		}
 		
+		// TODO Move the logic below back into the main method
 		// Write results if output paths provided
 		if (countsPath != null) {
 			JsonWriter.writeObject(counts, countsPath);
@@ -86,8 +101,10 @@ public class Driver {
 	 */
 	private static void addToIndex(java.util.List<String> stems, String location) {
 		// Keep track of position (starting at 1)
-		for (int i = 0; i < stems.size(); i++) {
+		for (int i = 0; i < stems.size(); i++) { // TODO This loop would be a great addAll method
 			String stem = stems.get(i);
+			
+			// TODO This logic below would make a great InvertedIndex.add method
 			index.putIfAbsent(stem, new TreeMap<>());
 			index.get(stem).putIfAbsent(location, new TreeSet<>());
 			index.get(stem).get(location).add(i + 1);  // Add position (1-based)
@@ -107,10 +124,26 @@ public class Driver {
 	public static void main(String[] args) {
 		Instant start = Instant.now();
 		ArgumentParser parser = new ArgumentParser(args);
+		/* TODO 
+		InvertedIndex index = new InvertedIndex();
+		
+		if (parser.hasFlag("-text")) {
+			Path inputPath = parser.getPath("-text");
+			
+			try {
+					trigger the building/indexing process
+			}
+			catch ( ) {
+					Unable to index the files at path: ...
+			}
+		}
+		*/
 		
 		try {
 			index.clear();
 			Path inputPath = parser.getPath("-text");
+			
+			// TODO Use parser.getPath("-counts", Path.of("counts.json"));
 			Path countsPath = parser.hasFlag("-counts") ? parser.getPath("-counts", Path.of("counts.json")) : null;
 			Path indexPath = parser.hasFlag("-index") ? parser.getPath("-index", Path.of("index.json")) : null;
 			

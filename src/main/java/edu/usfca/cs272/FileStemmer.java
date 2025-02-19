@@ -86,7 +86,7 @@ public class FileStemmer {
 	 */
 	public static void addStems(String line, Stemmer stemmer, Collection<String> stems) {
 		// Check for null inputs
-		if (line == null || stemmer == null || stems == null) {
+		if (line == null || stemmer == null || stems == null) { // TODO Remove
 			return;
 		}
 
@@ -231,6 +231,7 @@ public class FileStemmer {
 		TreeSet<String> stems = new TreeSet<>();
 		
 		try {
+			// TODO try (BufferedReader reader = Files.newBufferedReader(input, UTF_8)) {
 			// Read file line by line using UTF_8 encoding
 			for (String line : Files.readAllLines(input, UTF_8)) {
 				// Process each line and add stems to set
@@ -274,7 +275,7 @@ public class FileStemmer {
 				results.add(stems);
 			}
 		}
-		catch (IOException e) {
+		catch (IOException e) { // TODO Remove catch
 			throw new IOException("Unable to read file: " + input, e);
 		}
 		
