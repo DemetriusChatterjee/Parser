@@ -1,7 +1,7 @@
 package edu.usfca.cs272;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
@@ -32,54 +32,46 @@ public class Driver {
 	 */
 	private static TreeMap<String, Integer> processFile(Path inputPath, Path outputPath) throws IOException {
 		TreeMap<String, Integer> counts = new TreeMap<>();
-		File startDir = new File(inputPath.toString());
 		
-		// If it's a single file, process it directly
-		if (startDir.isFile()) {
-			var stems = FileStemmer.listStems(startDir.toPath());
-			if (stems.size() > 0) {
-				counts.put(startDir.toString(), stems.size());
-				addToIndex(stems, startDir.toString());  // Add to inverted index
-			}
-			if (outputPath != null) {
-				JsonWriter.writeObject(counts, outputPath);
-			}
-			return counts;
+		// Process single file or directory
+		if (Files.isRegularFile(inputPath)) {
+			processPath(inputPath, counts);
+		}
+		else if (Files.isDirectory(inputPath)) {
+			Files.walk(inputPath)
+				.filter(path -> path.toString().toLowerCase().endsWith(".txt") || 
+							  path.toString().toLowerCase().endsWith(".text"))
+				.forEach(path -> {
+					try {
+						processPath(path, counts);
+					}
+					catch (IOException e) {
+						// Skip files with IO errors
+					}
+				});
 		}
 		
-		// Stack to keep track of directories to process
-		java.util.ArrayDeque<File> stack = new java.util.ArrayDeque<>();
-		stack.push(startDir);
-		
-		// Process all directories and files
-		while (!stack.isEmpty()) {
-			File current = stack.pop();
-			
-			if (current.isDirectory()) {
-				File[] contents = current.listFiles();
-				if (contents != null) {
-					for (File file : contents) {
-						stack.push(file);
-					}
-				}
-			} else if (current.isFile()) {
-				String fileName = current.getName().toLowerCase();
-				if (fileName.endsWith(".txt") || fileName.endsWith(".text")) {
-					var stems = FileStemmer.listStems(current.toPath());
-					if (stems.size() > 0) {
-						counts.put(current.toString(), stems.size());
-						addToIndex(stems, current.toString());  // Add to inverted index
-					}
-				}
-			}
-		}
-		
-		// Write results at the end
+		// Write results if output path provided
 		if (outputPath != null) {
 			JsonWriter.writeObject(counts, outputPath);
 		}
 		
 		return counts;
+	}
+
+	/**
+	 * Processes a single file, adding its stems to the counts and index.
+	 *
+	 * @param path the file path to process
+	 * @param counts the map to store word counts
+	 * @throws IOException if an IO error occurs
+	 */
+	private static void processPath(Path path, TreeMap<String, Integer> counts) throws IOException {
+		var stems = FileStemmer.listStems(path);
+		if (!stems.isEmpty()) {
+			counts.put(path.toString(), stems.size());
+			addToIndex(stems, path.toString());
+		}
 	}
 
 	/**
@@ -110,52 +102,37 @@ public class Driver {
 	 */
 	public static void main(String[] args) {
 		Instant start = Instant.now();
+		ArgumentParser parser = new ArgumentParser(args);
+		
 		try {
-			// Clear the index at the start of each run
 			index.clear();
-			
-			ArgumentParser parser = new ArgumentParser(args);
-			parser.parse(args);
-			
 			Path inputPath = parser.getPath("-text");
-			Path outputPath = null;
-			Path indexPath = null;
+			Path countsPath = parser.getPath("-counts", Path.of("counts.json"));
+			Path indexPath = parser.getPath("-index", Path.of("index.json"));
 			
-			// Handle counts output
-			if (parser.hasFlag("-counts")) {
-				outputPath = parser.getPath("-counts", Path.of("counts.json"));
-				if (inputPath == null) {
-					JsonWriter.writeObject(new TreeMap<String, Integer>(), outputPath);
+			// Handle empty input case
+			if (inputPath == null) {
+				if (parser.hasFlag("-counts")) {
+					JsonWriter.writeObject(new TreeMap<>(), countsPath);
 				}
-			}
-			
-			// Handle index output - write empty index if no input provided
-			if (parser.hasFlag("-index")) {
-				indexPath = parser.getPath("-index", Path.of("index.json"));
-				if (inputPath == null) {
+				if (parser.hasFlag("-index")) {
 					JsonWriter.writeInvertedIndex(new TreeMap<>(), indexPath);
 				}
+				return;
 			}
 			
-			// Process input if provided
-			if (inputPath != null) {
-				processFile(inputPath, outputPath);
-				
-				// Write index to file if -index flag is provided
-				if (parser.hasFlag("-index")) {
-					JsonWriter.writeInvertedIndex(index, indexPath);
-				}
+			// Process input and write outputs
+			processFile(inputPath, parser.hasFlag("-counts") ? countsPath : null);
+			if (parser.hasFlag("-index")) {
+				JsonWriter.writeInvertedIndex(index, indexPath);
 			}
 			
-			System.out.println(parser);
-		} catch (IOException e) {
-			System.err.println("Error processing files: " + e.getMessage());
-			return;
+			Duration elapsed = Duration.between(start, Instant.now());
+			System.out.printf("Elapsed: %.3f seconds%n", elapsed.toMillis() / 1000.0);
 		}
-
-		long elapsedMs = Duration.between(start, Instant.now()).toMillis();
-		double elapsedSec = (double) elapsedMs / Duration.ofSeconds(1).toMillis();
-		System.out.printf("Elapsed: %f seconds%n", elapsedSec);
+		catch (IOException e) {
+			System.err.println("Unable to process files: " + e.getMessage());
+		}
 	}
 
 	/** Prevent instantiating this class of static methods. */
