@@ -85,11 +85,6 @@ public class FileStemmer {
 	 * @see Collection#add(Object)
 	 */
 	public static void addStems(String line, Stemmer stemmer, Collection<String> stems) {
-		// Check for null inputs
-		if (line == null || stemmer == null || stems == null) { // TODO Remove
-			return;
-		}
-
 		// Parse the line into words
 		String[] words = parse(line);
 
