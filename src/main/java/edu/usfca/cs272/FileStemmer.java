@@ -225,10 +225,9 @@ public class FileStemmer {
 		// Create TreeSet to store unique stems in sorted order
 		TreeSet<String> stems = new TreeSet<>();
 		
-		try {
-			// TODO try (BufferedReader reader = Files.newBufferedReader(input, UTF_8)) {
-			// Read file line by line using UTF_8 encoding
-			for (String line : Files.readAllLines(input, UTF_8)) {
+		try (BufferedReader reader = Files.newBufferedReader(input, UTF_8)) {
+			String line;
+			while ((line = reader.readLine()) != null) {
 				// Process each line and add stems to set
 				addStems(line, stemmer, stems);
 			}
