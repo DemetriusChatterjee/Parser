@@ -152,10 +152,6 @@ public class ArgumentParser {
 	 * @see Objects#requireNonNullElse(Object, Object)
 	 */
 	public String getString(String flag, String backup) {
-		if (flag == null) { // TODO Remove
-			return backup;
-		}
-
 		// Return the value of the flag or the backup value if the flag is not in the map
 		return Objects.requireNonNullElse(map.get(flag), backup);
 	}
@@ -169,10 +165,6 @@ public class ArgumentParser {
 	 *   there is no mapping
 	 */
 	public String getString(String flag) {
-		if (flag == null) { // TODO Remove
-			return null;
-		}
-
 		// Return the value of the flag or null if the flag is not in the map
 		return map.get(flag);
 	}
