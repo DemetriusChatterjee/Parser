@@ -232,9 +232,6 @@ public class FileStemmer {
 				addStems(line, stemmer, stems);
 			}
 		}
-		catch (IOException e) {
-			throw new IOException("Unable to read file: " + input, e);
-		}
 		
 		return stems;
 	}
@@ -268,9 +265,6 @@ public class FileStemmer {
 				TreeSet<String> stems = uniqueStems(line, stemmer);
 				results.add(stems);
 			}
-		}
-		catch (IOException e) { // TODO Remove catch
-			throw new IOException("Unable to read file: " + input, e);
 		}
 		
 		return results;
