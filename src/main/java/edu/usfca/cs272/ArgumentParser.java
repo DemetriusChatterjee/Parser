@@ -137,10 +137,7 @@ public class ArgumentParser {
 		// Add dash if flag doesn't start with one
 		flag = flag.startsWith("-") ? flag : "-" + flag;
 
-		// TODO Just need return map.get(flag) != null;
-		
-		// Return true if the flag exists and has a non-null value
-		return map.containsKey(flag) && map.get(flag) != null;
+		return map.get(flag) != null;
 	}
 
 	/**
