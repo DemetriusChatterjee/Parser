@@ -223,17 +223,10 @@ public class ArgumentParser {
 	 *
 	 * @see Integer#parseInt(String)
 	 */
-	public int getInteger(String flag, int backup) { // TODO Make similar changes here
-		// Get the string value for the flag
-		String value = getString(flag);
-		
-		// If no value found, return backup
-		if (value == null) {
-			return backup;
-		}
-		
+	public int getInteger(String flag, int backup) {
 		try {
-			return Integer.parseInt(value);
+			String value = map.get(flag);
+			return value != null ? Integer.parseInt(value) : backup;
 		}
 		catch (NumberFormatException e) {
 			return backup;
