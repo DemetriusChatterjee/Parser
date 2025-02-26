@@ -184,24 +184,11 @@ public class ArgumentParser {
 	 * @see Path#of(String, String...)
 	 */
 	public Path getPath(String flag, Path backup) {
-		// Get the string value for the flag
-		String value = getString(flag);
-		
-		// If no value found, return backup
-		if (value == null) {
-			return backup;
-		}
-		
-		// TODO Remove logic above
-		
 		try {
-			// Try to convert the string to a path
-			// reference: https://stackoverflow.com/questions/58631724/paths-get-vs-path-of
-			return Path.of(value);
-			// TODO return Path.of(map.get(flag));
+			String value = map.get(flag);
+			return value != null ? Path.of(value) : backup;
 		}
 		catch (Exception e) {
-			// Return backup if any exception occurs
 			return backup;
 		}
 	}
