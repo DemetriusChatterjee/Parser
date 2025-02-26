@@ -6,15 +6,11 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 /**
- * Data structure to store an inverted index and word counts from text files.
- * TODO: /**
- * Class responsible for running this project based on the provided command-line
- * arguments. See the README for details.
+ * Data structure to store an inverted index and word counts from text files. 
+ * See the README for details.
  *
  * @author Demetrius Chatterjee
- * @author CS 272 Software Development (University of San Francisco)
  * @version Spring 2025
- * ***
  */
 public class InvertedIndex {
 	/** The inverted index to store word locations */

@@ -6,6 +6,10 @@ import java.nio.file.Path;
 
 /**
  * Builder class responsible for processing text files and building an inverted index.
+ * See the README for details.
+ * 
+ * @author Demetrius Chatterjee
+ * @version Spring 2025
  */
 public class InvertedIndexBuilder {
 	/** The inverted index to build */
