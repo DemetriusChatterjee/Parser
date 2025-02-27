@@ -1,6 +1,7 @@
 package edu.usfca.cs272;
 
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -43,19 +44,38 @@ public class InvertedIndexBuilder {
 			processFile(inputPath);
 		}
 		else if (Files.isDirectory(inputPath)) {
-			// Reference: https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/nio/file/Files.html#walk(java.nio.file.Path,java.nio.file.FileVisitOption...)
-			Files.walk(inputPath)
-				.filter(path -> path.toString().toLowerCase().endsWith(".txt") || 
-							path.toString().toLowerCase().endsWith(".text"))
-				.forEach(path -> {
-					try {
-						processFile(path);
-					}
-					catch (IOException e) {
-						// Skip files with IO errors
-					}
-				});
+			processDirectory(inputPath);
 		}
+	}
+	
+	/**
+	 * Processes a directory recursively, finding all text files.
+	 *
+	 * @param directory the directory to process
+	 * @throws IOException if an IO error occurs
+	 */
+	private void processDirectory(Path directory) throws IOException {
+		try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
+			for (Path path : stream) {
+				if (Files.isRegularFile(path) && isTextFile(path)) {
+					processFile(path);
+				}
+				else if (Files.isDirectory(path)) {
+					processDirectory(path);
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Tests whether a path is a text file.
+	 *
+	 * @param path the path to test
+	 * @return true if the path is a text file
+	 */
+	private boolean isTextFile(Path path) {
+		String name = path.toString().toLowerCase();
+		return name.endsWith(".txt") || name.endsWith(".text");
 	}
 	
 	/**
