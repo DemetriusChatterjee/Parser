@@ -139,12 +139,20 @@ public class JsonWriter {
 			if (value instanceof Number) {
 				writer.write(value.toString());
 			}
-			else if (value instanceof Map<?, ?>) {
-				@SuppressWarnings("unchecked")
-				Map<String, ?> nested = (Map<String, ?>) value;
-				writeObject(nested, writer, indent + 1);
+			else if (value instanceof Map<?, ?> map && map.isEmpty()) {
+				writeObject(Map.of(), writer, indent + 1);
 			}
-			else if (value instanceof Collection) {
+			else if (value instanceof Map<?, ?> map) {
+				// Check if the map has String keys
+				if (!map.isEmpty() && map.keySet().iterator().next() instanceof String) {
+					@SuppressWarnings("unchecked") // Safe cast due to runtime check
+					Map<String, ?> nested = (Map<String, ?>) map;
+					writeObject(nested, writer, indent + 1);
+				} else {
+					throw new IllegalArgumentException("Map values must have String keys");
+				}
+			}
+			else if (value instanceof Collection<?>) {
 				writeArray((Collection<?>) value, writer, indent + 1);
 			}
 			
@@ -160,12 +168,20 @@ public class JsonWriter {
 				if (value instanceof Number) {
 					writer.write(value.toString());
 				}
-				else if (value instanceof Map<?, ?>) {
-					@SuppressWarnings("unchecked")
-					Map<String, ?> nested = (Map<String, ?>) value;
-					writeObject(nested, writer, indent + 1);
+				else if (value instanceof Map<?, ?> map && map.isEmpty()) {
+					writeObject(Map.of(), writer, indent + 1);
 				}
-				else if (value instanceof Collection) {
+				else if (value instanceof Map<?, ?> map) {
+					// Check if the map has String keys
+					if (!map.isEmpty() && map.keySet().iterator().next() instanceof String) {
+						@SuppressWarnings("unchecked") // Safe cast due to runtime check
+						Map<String, ?> nested = (Map<String, ?>) map;
+						writeObject(nested, writer, indent + 1);
+					} else {
+						throw new IllegalArgumentException("Map values must have String keys");
+					}
+				}
+				else if (value instanceof Collection<?>) {
 					writeArray((Collection<?>) value, writer, indent + 1);
 				}
 			}
@@ -186,15 +202,21 @@ public class JsonWriter {
 	 */
 	private static void writeJson(Object data, Path path) throws IOException {
 		try (BufferedWriter writer = Files.newBufferedWriter(path, UTF_8)) {
-			if (data instanceof Map) {
-				@SuppressWarnings("unchecked")
-				Map<String, ?> map = (Map<String, ?>) data;
-				writeObject(map, writer, 0);
+			if (data instanceof Map<?, ?> map && map.isEmpty()) {
+				writeObject(Map.of(), writer, 0);
 			}
-			else if (data instanceof Collection) {
-				@SuppressWarnings("unchecked")
-				Collection<?> collection = (Collection<?>) data;
-				writeArray(collection, writer, 0);
+			else if (data instanceof Map<?, ?> map) {
+				// Check if the map has String keys
+				if (!map.isEmpty() && map.keySet().iterator().next() instanceof String) {
+					@SuppressWarnings("unchecked") // Safe cast due to runtime check
+					Map<String, ?> typedMap = (Map<String, ?>) map;
+					writeObject(typedMap, writer, 0);
+				} else {
+					throw new IllegalArgumentException("Map must have String keys");
+				}
+			}
+			else if (data instanceof Collection<?>) {
+				writeArray((Collection<?>) data, writer, 0);
 			}
 		}
 	}
