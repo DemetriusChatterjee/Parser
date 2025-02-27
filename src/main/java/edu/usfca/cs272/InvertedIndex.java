@@ -135,4 +135,17 @@ public class InvertedIndex {
 		
 		return results;
 	}
+	/**
+	 * Performs exact searches for multiple query lines and returns all results.
+	 * 
+	 * @param queries the list of query lines to search for
+	 * @return a list of maps, where each map contains the search results for one query line
+	 */
+	public List<Map<String, TreeSet<Integer>>> exactSearchAll(List<String> queries) {
+		List<Map<String, TreeSet<Integer>>> allResults = new ArrayList<>();
+		for (String query : queries) {
+			allResults.add(exactSearch(query));
+		}
+		return allResults;
+	}
 }
