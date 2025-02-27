@@ -43,6 +43,9 @@ public class Driver {
 					InvertedIndexBuilder builder = new InvertedIndexBuilder(index);
 					builder.build(inputPath);
 				}
+				catch (IllegalArgumentException e) {
+					System.err.println("Invalid path: " + inputPath);
+				}
 				catch (IOException e) {
 					System.err.println("Unable to index the files at path: " + inputPath);
 				}
