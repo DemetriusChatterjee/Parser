@@ -1,8 +1,10 @@
 package edu.usfca.cs272;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -15,7 +17,7 @@ import java.util.TreeSet;
  */
 public class InvertedIndex {
 	/** The inverted index to store word locations */
-	private final Map<String, TreeMap<String, TreeSet<Integer>>> index; // TODO TreeMap for the first type
+	private final TreeMap<String, TreeMap<String, TreeSet<Integer>>> index;
 	
 	/** Map to store word counts per file */
 	private final TreeMap<String, Integer> counts;
@@ -36,11 +38,6 @@ public class InvertedIndex {
 	 * @param position the position of the stem in the file (1-based)
 	 */
 	public void add(String stem, String location, int position) {
-		index.putIfAbsent(stem, new TreeMap<>());
-		index.get(stem).putIfAbsent(location, new TreeSet<>());
-		index.get(stem).get(location).add(position);
-		
-		/* TODO 
 		var locations = index.get(stem);
 		
 		if (locations == null) {
@@ -50,8 +47,12 @@ public class InvertedIndex {
 		
 		var positions = locations.get(location);
 		
-		...
-		*/
+		if (positions == null) {
+			positions = new TreeSet<>();
+			locations.put(location, positions);
+		}
+		
+		positions.add(position);
 	}
 	
 	/**
@@ -63,27 +64,122 @@ public class InvertedIndex {
 	public void addAll(List<String> stems, String location) {
 		if (!stems.isEmpty()) {
 			counts.put(location, stems.size());
-			for (int i = 0; i < stems.size(); i++) { // TODO for-each + a counter variable
-				add(stems.get(i), location, i + 1);
+			int position = 1;
+			for (String stem : stems) {
+				add(stem, location, position++);
 			}
 		}
 	}
 	
-	/*
-	 * TODO Start think about other generally useful methods and view methods
-	 * that don't break encapsulation
-	 * 
-	 * toString
-	 * 
-	 * has or contains methods
-	 * num or size methods
-	 * get or view methods
-	 * 
-	 * Keep in mind the homework/lecture examples are fewer levels of nesting
-	 * so you need more methods for this class
-	 * 
-	 * FileIndex, PrefixMap, WordGroup
+	/**
+	 * Returns whether the index contains the given stem.
+	 *
+	 * @param stem the stem to look for
+	 * @return true if the stem is in the index
 	 */
+	public boolean containsStem(String stem) {
+		return index.containsKey(stem);
+	}
+	
+	/**
+	 * Returns whether the index contains the given stem and location.
+	 *
+	 * @param stem the stem to look for
+	 * @param location the location to look for
+	 * @return true if the location is found for the stem
+	 */
+	public boolean containsLocation(String stem, String location) {
+		return index.containsKey(stem) && index.get(stem).containsKey(location);
+	}
+	
+	/**
+	 * Returns whether the index contains the given position for a stem and location.
+	 *
+	 * @param stem the stem to look for
+	 * @param location the location to look for
+	 * @param position the position to look for
+	 * @return true if the position is found
+	 */
+	public boolean containsPosition(String stem, String location, int position) {
+		if (!containsLocation(stem, location)) {
+			return false;
+		}
+		return index.get(stem).get(location).contains(position);
+	}
+	
+	/**
+	 * Returns the number of unique stems in the index.
+	 *
+	 * @return the number of stems
+	 */
+	public int numStems() {
+		return index.size();
+	}
+	
+	/**
+	 * Returns the number of locations for a given stem.
+	 *
+	 * @param stem the stem to look up
+	 * @return the number of locations or 0 if stem not found
+	 */
+	public int numLocations(String stem) {
+		return index.containsKey(stem) ? index.get(stem).size() : 0;
+	}
+	
+	/**
+	 * Returns the number of positions for a stem in a location.
+	 *
+	 * @param stem the stem to look up
+	 * @param location the location to look up
+	 * @return the number of positions or 0 if not found
+	 */
+	public int numPositions(String stem, String location) {
+		if (!containsLocation(stem, location)) {
+			return 0;
+		}
+		return index.get(stem).get(location).size();
+	}
+	
+	/**
+	 * Returns an unmodifiable view of the stems in the index.
+	 *
+	 * @return set of stems
+	 */
+	public Set<String> getStems() {
+		return Collections.unmodifiableSet(index.keySet());
+	}
+	
+	/**
+	 * Returns an unmodifiable view of the locations for a stem.
+	 *
+	 * @param stem the stem to look up
+	 * @return set of locations or empty set if stem not found
+	 */
+	public Set<String> getLocations(String stem) {
+		if (!index.containsKey(stem)) {
+			return Collections.emptySet();
+		}
+		return Collections.unmodifiableSet(index.get(stem).keySet());
+	}
+	
+	/**
+	 * Returns an unmodifiable view of the positions for a stem and location.
+	 *
+	 * @param stem the stem to look up
+	 * @param location the location to look up
+	 * @return set of positions or empty set if not found
+	 */
+	public Set<Integer> getPositions(String stem, String location) {
+		if (!containsLocation(stem, location)) {
+			return Collections.emptySet();
+		}
+		return Collections.unmodifiableSet(index.get(stem).get(location));
+	}
+	
+	@Override
+	public String toString() {
+		return index.toString();
+	}
 	
 	/**
 	 * Gets the inverted index data structure.
