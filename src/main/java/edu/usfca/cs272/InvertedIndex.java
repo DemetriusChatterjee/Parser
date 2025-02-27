@@ -91,8 +91,8 @@ public class InvertedIndex {
 		// Create a map to store search results
 		TreeMap<String, TreeSet<Integer>> results = new TreeMap<>();
 		
-		// Parse and stem the query line
-		var stems = FileStemmer.listStems(line);
+		// Process the query line to get sorted unique stems
+		var stems = QueryProcessor.processLine(line);
 		if (stems.isEmpty()) {
 			return results;
 		}
