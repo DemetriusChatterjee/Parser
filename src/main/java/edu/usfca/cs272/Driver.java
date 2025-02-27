@@ -1,9 +1,6 @@
 package edu.usfca.cs272;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
@@ -66,19 +63,17 @@ public class Driver {
 				Path queryPath = parser.getPath("-query");
 				if (queryPath != null) {
 					try {
-						// Read all queries from the file
-						List<String> queries = new ArrayList<>();
-						try (BufferedReader reader = Files.newBufferedReader(queryPath, StandardCharsets.UTF_8)) {
-							String line;
-							while ((line = reader.readLine()) != null) {
-								if (!line.isBlank()) {
-									queries.add(line);
-								}
-							}
+						// Process all queries from the file
+						var queries = QueryProcessor.processQueryFile(queryPath);
+						
+						// Convert processed queries back to strings for searching
+						List<String> queryStrings = new ArrayList<>();
+						for (List<String> query : queries) {
+							queryStrings.add(String.join(" ", query));
 						}
 						
 						// Perform exact search for all queries
-						var searchResults = index.exactSearchAll(queries);
+						var searchResults = index.exactSearchAll(queryStrings);
 						
 						// Write results if -results flag is provided
 						if (parser.hasFlag("-results")) {
