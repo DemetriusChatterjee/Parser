@@ -6,12 +6,12 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Outputs several simple data structures in "pretty" JSON format where newlines
@@ -85,10 +85,6 @@ public class JsonWriter {
 	 *   inner elements are indented by one, and the last bracket is indented at
 	 *   the initial indentation level
 	 * @throws IOException if an IO error occurs
-	 *
-	 * @see Writer#write(String)
-	 * @see #writeIndent(Writer, int)
-	 * @see #writeIndent(String, Writer, int)
 	 */
 	public static void writeArray(Collection<?> elements, Writer writer, int indent) throws IOException {
 		writer.write('[');
@@ -116,44 +112,6 @@ public class JsonWriter {
 	}
 
 	/**
-	 * Writes the elements as a pretty JSON array to file.
-	 *
-	 * @param elements the elements to write
-	 * @param path the file path to use
-	 * @throws IOException if an IO error occurs
-	 *
-	 * @see Files#newBufferedReader(Path, java.nio.charset.Charset)
-	 * @see StandardCharsets#UTF_8
-	 * @see #writeArray(Collection, Writer, int)
-	 */
-	public static void writeArray(Collection<? extends Number> elements,
-			Path path) throws IOException {
-		try (BufferedWriter writer = Files.newBufferedWriter(path, UTF_8)) {
-			writeArray(elements, writer, 0);
-		}
-	}
-
-	/**
-	 * Returns the elements as a pretty JSON array.
-	 *
-	 * @param elements the elements to use
-	 * @return a {@link String} containing the elements in pretty JSON format
-	 *
-	 * @see StringWriter
-	 * @see #writeArray(Collection, Writer, int)
-	 */
-	public static String writeArray(Collection<? extends Number> elements) {
-		try {
-			StringWriter writer = new StringWriter();
-			writeArray(elements, writer, 0);
-			return writer.toString();
-		}
-		catch (IOException e) {
-			return null;
-		}
-	}
-
-	/**
 	 * Writes the elements as a pretty JSON object.
 	 *
 	 * @param elements the elements to write
@@ -162,10 +120,6 @@ public class JsonWriter {
 	 *   inner elements are indented by one, and the last bracket is indented at
 	 *   the initial indentation level
 	 * @throws IOException if an IO error occurs
-	 *
-	 * @see Writer#write(String)
-	 * @see #writeIndent(Writer, int)
-	 * @see #writeIndent(String, Writer, int)
 	 */
 	public static void writeObject(Map<String, ?> elements, Writer writer, int indent) throws IOException {
 		writer.write('{');
@@ -224,20 +178,64 @@ public class JsonWriter {
 	}
 
 	/**
+	 * Generic method to write any JSON-compatible data structure to a file.
+	 * 
+	 * @param data the data to write
+	 * @param path the file path to write to
+	 * @throws IOException if an IO error occurs
+	 */
+	private static void writeJson(Object data, Path path) throws IOException {
+		try (BufferedWriter writer = Files.newBufferedWriter(path, UTF_8)) {
+			if (data instanceof Map) {
+				@SuppressWarnings("unchecked")
+				Map<String, ?> map = (Map<String, ?>) data;
+				writeObject(map, writer, 0);
+			}
+			else if (data instanceof Collection) {
+				@SuppressWarnings("unchecked")
+				Collection<?> collection = (Collection<?>) data;
+				writeArray(collection, writer, 0);
+			}
+		}
+	}
+
+	/**
+	 * Writes the elements as a pretty JSON array to file.
+	 *
+	 * @param elements the elements to write
+	 * @param path the file path to use
+	 * @throws IOException if an IO error occurs
+	 */
+	public static void writeArray(Collection<? extends Number> elements, Path path) throws IOException {
+		writeJson(elements, path);
+	}
+
+	/**
+	 * Returns the elements as a pretty JSON array.
+	 *
+	 * @param elements the elements to use
+	 * @return a {@link String} containing the elements in pretty JSON format
+	 */
+	public static String writeArray(Collection<? extends Number> elements) {
+		try {
+			StringWriter writer = new StringWriter();
+			writeArray(elements, writer, 0);
+			return writer.toString();
+		}
+		catch (IOException e) {
+			return null;
+		}
+	}
+
+	/**
 	 * Writes the elements as a pretty JSON object to file.
 	 *
 	 * @param elements the elements to write
 	 * @param path the file path to use
 	 * @throws IOException if an IO error occurs
-	 *
-	 * @see Files#newBufferedReader(Path, java.nio.charset.Charset)
-	 * @see StandardCharsets#UTF_8
-	 * @see #writeObject(Map, Writer, int)
 	 */
 	public static void writeObject(Map<String, ?> elements, Path path) throws IOException {
-		try (BufferedWriter writer = Files.newBufferedWriter(path, UTF_8)) {
-			writeObject(elements, writer, 0);
-		}
+		writeJson(elements, path);
 	}
 
 	/**
@@ -245,9 +243,6 @@ public class JsonWriter {
 	 *
 	 * @param elements the elements to use
 	 * @return a {@link String} containing the elements in pretty JSON format
-	 *
-	 * @see StringWriter
-	 * @see #writeObject(Map, Writer, int)
 	 */
 	public static String writeObject(Map<String, ?> elements) {
 		try {
@@ -261,132 +256,52 @@ public class JsonWriter {
 	}
 
 	/**
-	 * Writes the elements as a pretty JSON object with nested arrays. The generic
-	 * notation used allows this method to be used for any type of map with any
-	 * type of nested collection of number objects.
+	 * Writes a single search result as a pretty JSON object.
 	 *
-	 * @param elements the elements to write
+	 * @param result the search result to write
 	 * @param writer the writer to use
-	 * @param indent the initial indent level; the first bracket is not indented,
-	 *   inner elements are indented by one, and the last bracket is indented at
-	 *   the initial indentation level
+	 * @param indent the initial indent level
 	 * @throws IOException if an IO error occurs
-	 *
-	 * @see Writer#write(String)
-	 * @see #writeIndent(Writer, int)
-	 * @see #writeIndent(String, Writer, int)
-	 * @see #writeArray(Collection)
 	 */
-	public static void writeObjectArrays(
-			Map<String, ? extends Collection<? extends Number>> elements,
+	private static void writeSearchResult(
+			InvertedIndex.SearchResult result,
 			Writer writer, int indent) throws IOException {
-		writer.write('{');
-		writer.write('\n');
+		// Convert search result to a map
+		Map<String, Object> map = new TreeMap<>();
+		map.put("count", result.getCount());
+		map.put("score", result.getScore());
+		map.put("where", result.getWhere());
 		
-		if (!elements.isEmpty()) {
-			var iterator = elements.entrySet().iterator();
-			
-			// Write first key-array pair (no preceding comma needed)
-			var entry = iterator.next();
-			writeIndent(writer, indent + 1);
-			writer.write('"');
-			writer.write(entry.getKey());
-			writer.write("\": ");
-			writeArray(entry.getValue(), writer, indent + 1);
-			
-			// Write remaining key-array pairs (preceded by commas)
-			while (iterator.hasNext()) {
-				writer.write(",\n");
-				entry = iterator.next();
-				writeIndent(writer, indent + 1);
-				writer.write('"');
-				writer.write(entry.getKey());
-				writer.write("\": ");
-				writeArray(entry.getValue(), writer, indent + 1);
-			}
-			
-			writer.write('\n');
-		}
-		
-		writeIndent(writer, indent);  // Always indent closing brace
-		writer.write('}');
+		// Use existing writeObject method
+		writeObject(map, writer, indent);
 	}
-
+	
 	/**
-	 * Writes the elements as a pretty JSON object with nested arrays to file.
+	 * Writes a list of search results as a pretty JSON array.
 	 *
-	 * @param elements the elements to write
-	 * @param path the file path to use
-	 * @throws IOException if an IO error occurs
-	 *
-	 * @see Files#newBufferedReader(Path, java.nio.charset.Charset)
-	 * @see StandardCharsets#UTF_8
-	 * @see #writeObjectArrays(Map, Writer, int)
-	 */
-	public static void writeObjectArrays(
-			Map<String, ? extends Collection<? extends Number>> elements, Path path)
-			throws IOException {
-		try (BufferedWriter writer = Files.newBufferedWriter(path, UTF_8)) {
-			writeObjectArrays(elements, writer, 0);
-		}
-	}
-
-	/**
-	 * Returns the elements as a pretty JSON object with nested arrays.
-	 *
-	 * @param elements the elements to use
-	 * @return a {@link String} containing the elements in pretty JSON format
-	 *
-	 * @see StringWriter
-	 * @see #writeObjectArrays(Map, Writer, int)
-	 */
-	public static String writeObjectArrays(
-			Map<String, ? extends Collection<? extends Number>> elements) {
-		try {
-			StringWriter writer = new StringWriter();
-			writeObjectArrays(elements, writer, 0);
-			return writer.toString();
-		}
-		catch (IOException e) {
-			return null;
-		}
-	}
-
-	/**
-	 * Writes the elements as a pretty JSON array with nested objects. The generic
-	 * notation used allows this method to be used for any type of collection with
-	 * any type of nested map of String keys to number objects.
-	 *
-	 * @param elements the elements to write
+	 * @param results the list of search results to write
 	 * @param writer the writer to use
-	 * @param indent the initial indent level; the first bracket is not indented,
-	 *   inner elements are indented by one, and the last bracket is indented at
-	 *   the initial indentation level
+	 * @param indent the initial indent level
 	 * @throws IOException if an IO error occurs
-	 *
-	 * @see Writer#write(String)
-	 * @see #writeIndent(Writer, int)
-	 * @see #writeIndent(String, Writer, int)
-	 * @see #writeObject(Map)
 	 */
-	public static void writeArrayObjects(
-			Collection<? extends Map<String, ? extends Number>> elements,
+	private static void writeSearchResultArray(
+			List<InvertedIndex.SearchResult> results,
 			Writer writer, int indent) throws IOException {
 		writer.write('[');
 		writer.write('\n');
 		
-		if (!elements.isEmpty()) {
-			var iterator = elements.iterator();
+		if (!results.isEmpty()) {
+			var iterator = results.iterator();
 			
-			// Write first object (no preceding comma needed)
+			// Write first result
 			writeIndent(writer, indent + 1);
-			writeObject(iterator.next(), writer, indent + 1);
+			writeSearchResult(iterator.next(), writer, indent + 1);
 			
-			// Write remaining objects (preceded by commas)
+			// Write remaining results
 			while (iterator.hasNext()) {
 				writer.write(",\n");
 				writeIndent(writer, indent + 1);
-				writeObject(iterator.next(), writer, indent + 1);
+				writeSearchResult(iterator.next(), writer, indent + 1);
 			}
 			
 			writer.write('\n');
@@ -395,47 +310,7 @@ public class JsonWriter {
 		writeIndent(writer, indent);
 		writer.write(']');
 	}
-
-	/**
-	 * Writes the elements as a pretty JSON array with nested objects to file.
-	 *
-	 * @param elements the elements to write
-	 * @param path the file path to use
-	 * @throws IOException if an IO error occurs
-	 *
-	 * @see Files#newBufferedReader(Path, java.nio.charset.Charset)
-	 * @see StandardCharsets#UTF_8
-	 * @see #writeArrayObjects(Collection)
-	 */
-	public static void writeArrayObjects(
-			Collection<? extends Map<String, ? extends Number>> elements, Path path)
-			throws IOException {
-		try (BufferedWriter writer = Files.newBufferedWriter(path, UTF_8)) {
-			writeArrayObjects(elements, writer, 0);
-		}
-	}
-
-	/**
-	 * Returns the elements as a pretty JSON array with nested objects.
-	 *
-	 * @param elements the elements to use
-	 * @return a {@link String} containing the elements in pretty JSON format
-	 *
-	 * @see StringWriter
-	 * @see #writeArrayObjects(Collection)
-	 */
-	public static String writeArrayObjects(
-			Collection<? extends Map<String, ? extends Number>> elements) {
-		try {
-			StringWriter writer = new StringWriter();
-			writeArrayObjects(elements, writer, 0);
-			return writer.toString();
-		}
-		catch (IOException e) {
-			return null;
-		}
-	}
-
+	
 	/**
 	 * Writes a collection of search results as a pretty JSON object.
 	 * Each key is a query string and each value is an array of search results.
@@ -479,78 +354,6 @@ public class JsonWriter {
 	}
 	
 	/**
-	 * Writes a list of search results as a pretty JSON array.
-	 *
-	 * @param results the list of search results to write
-	 * @param writer the writer to use
-	 * @param indent the initial indent level
-	 * @throws IOException if an IO error occurs
-	 */
-	private static void writeSearchResultArray(
-			List<InvertedIndex.SearchResult> results,
-			Writer writer, int indent) throws IOException {
-		writer.write('[');
-		writer.write('\n');
-		
-		if (!results.isEmpty()) {
-			var iterator = results.iterator();
-			
-			// Write first result
-			writeIndent(writer, indent + 1);
-			writeSearchResult(iterator.next(), writer, indent + 1);
-			
-			// Write remaining results
-			while (iterator.hasNext()) {
-				writer.write(",\n");
-				writeIndent(writer, indent + 1);
-				writeSearchResult(iterator.next(), writer, indent + 1);
-			}
-			
-			writer.write('\n');
-		}
-		
-		writeIndent(writer, indent);
-		writer.write(']');
-	}
-	
-	/**
-	 * Writes a single search result as a pretty JSON object.
-	 *
-	 * @param result the search result to write
-	 * @param writer the writer to use
-	 * @param indent the initial indent level
-	 * @throws IOException if an IO error occurs
-	 */
-	private static void writeSearchResult(
-			InvertedIndex.SearchResult result,
-			Writer writer, int indent) throws IOException {
-		writer.write('{');
-		writer.write('\n');
-		
-		// Write count
-		writeIndent(writer, indent + 1);
-		writer.write("\"count\": ");
-		writer.write(Integer.toString(result.getCount()));
-		writer.write(",\n");
-		
-		// Write score
-		writeIndent(writer, indent + 1);
-		writer.write("\"score\": ");
-		writer.write(String.format("%.8f", result.getScore()));
-		writer.write(",\n");
-		
-		// Write where
-		writeIndent(writer, indent + 1);
-		writeQuote("where", writer, 0);
-		writer.write(": ");
-		writeQuote(result.getWhere(), writer, 0);
-		writer.write('\n');
-		
-		writeIndent(writer, indent);
-		writer.write('}');
-	}
-	
-	/**
 	 * Writes a map of search results as a pretty JSON object to file.
 	 *
 	 * @param results the map of query strings to search results
@@ -560,8 +363,6 @@ public class JsonWriter {
 	public static void writeSearchResults(
 			Map<String, ? extends List<InvertedIndex.SearchResult>> results,
 			Path path) throws IOException {
-		try (BufferedWriter writer = Files.newBufferedWriter(path, UTF_8)) {
-			writeSearchResults(results, writer, 0);
-		}
+		writeJson(results, path);
 	}
 }
