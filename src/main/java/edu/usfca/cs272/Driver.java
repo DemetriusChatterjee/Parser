@@ -1,9 +1,14 @@
 package edu.usfca.cs272;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class responsible for running this project based on the provided command-line
@@ -23,6 +28,8 @@ public class Driver {
 	 *             "-text" for input file/directory path
 	 *             "-counts" for word counts output path
 	 *             "-index" for inverted index output path
+	 *             "-query" for query file path
+	 *             "-results" for search results output path
 	 */
 	public static void main(String[] args) {
 		Instant start = Instant.now();
@@ -54,6 +61,37 @@ public class Driver {
 				Path indexPath = parser.getPath("-index", Path.of("index.json"));
 				JsonWriter.writeObject(index.getIndex(), indexPath);
 			}
+
+			if (parser.hasFlag("-query")) {
+				Path queryPath = parser.getPath("-query");
+				if (queryPath != null) {
+					try {
+						// Read all queries from the file
+						List<String> queries = new ArrayList<>();
+						try (BufferedReader reader = Files.newBufferedReader(queryPath, StandardCharsets.UTF_8)) {
+							String line;
+							while ((line = reader.readLine()) != null) {
+								if (!line.isBlank()) {
+									queries.add(line);
+								}
+							}
+						}
+						
+						// Perform exact search for all queries
+						var searchResults = index.exactSearchAll(queries);
+						
+						// Write results if -results flag is provided
+						if (parser.hasFlag("-results")) {
+							Path resultsPath = parser.getPath("-results", Path.of("results.json"));
+							JsonWriter.writeArrayObjects(searchResults, resultsPath);
+						}
+					}
+					catch (IOException e) {
+						System.err.println("Unable to process query file: " + e.getMessage());
+					}
+				}
+			}
+			
 			
 			Duration elapsed = Duration.between(start, Instant.now());
 			System.out.printf("Elapsed: %.3f seconds%n", elapsed.toMillis() / 1000.0);
