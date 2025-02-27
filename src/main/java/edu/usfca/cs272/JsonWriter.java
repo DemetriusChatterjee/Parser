@@ -111,6 +111,49 @@ public class JsonWriter {
 	}
 
 	/**
+	 * Writes a value in the appropriate JSON format.
+	 *
+	 * @param value the value to write
+	 * @param writer the writer to use
+	 * @param indent the current indentation level
+	 * @throws IOException if an IO error occurs
+	 */
+	private static void writeValue(Object value, Writer writer, int indent) throws IOException {
+		if (value instanceof String str) {
+			writer.write('"');
+			writer.write(str);
+			writer.write('"');
+		}
+		else if (value instanceof Number) {
+			writer.write(value.toString());
+		}
+		else if (value instanceof Map<?, ?> map && map.isEmpty()) {
+			writeObject(Map.of(), writer, indent);
+		}
+		else if (value instanceof Map<?, ?> map) {
+			if (map.keySet().stream().allMatch(key -> key instanceof String)) {
+				@SuppressWarnings("unchecked") // Safe cast due to runtime check
+				Map<String, Object> nested = (Map<String, Object>) map;
+				writeObject(nested, writer, indent);
+			} else {
+				throw new IllegalArgumentException("Map values must have String keys");
+			}
+		}
+		else if (value instanceof Collection<?>) {
+			writeArray((Collection<?>) value, writer, indent);
+		}
+		else if (value == null) {
+			writer.write("null");
+		}
+		else {
+			// For any other type, write as quoted string using toString()
+			writer.write('"');
+			writer.write(value.toString());
+			writer.write('"');
+		}
+	}
+
+	/**
 	 * Writes the elements as a pretty JSON object.
 	 *
 	 * @param elements the elements to write
@@ -120,7 +163,6 @@ public class JsonWriter {
 	 *   the initial indentation level
 	 * @throws IOException if an IO error occurs
 	 */
-	// TODO Fix the type then the implementation
 	public static void writeObject(Map<String, ?> elements, Writer writer, int indent) throws IOException {
 		writer.write('{');
 		writer.write('\n');
@@ -133,28 +175,7 @@ public class JsonWriter {
 			writeIndent(writer, indent + 1);
 			writeQuote(entry.getKey(), writer, 0);
 			writer.write(": ");
-			
-			// Handle different value types
-			Object value = entry.getValue();
-			if (value instanceof Number) {
-				writer.write(value.toString());
-			}
-			else if (value instanceof Map<?, ?> map && map.isEmpty()) {
-				writeObject(Map.of(), writer, indent + 1);
-			}
-			else if (value instanceof Map<?, ?> map) {
-				// Check if the map has String keys
-				if (!map.isEmpty() && map.keySet().iterator().next() instanceof String) {
-					@SuppressWarnings("unchecked") // Safe cast due to runtime check
-					Map<String, ?> nested = (Map<String, ?>) map;
-					writeObject(nested, writer, indent + 1);
-				} else {
-					throw new IllegalArgumentException("Map values must have String keys");
-				}
-			}
-			else if (value instanceof Collection<?>) {
-				writeArray((Collection<?>) value, writer, indent + 1);
-			}
+			writeValue(entry.getValue(), writer, indent + 1);
 			
 			// Write remaining pairs
 			while (iterator.hasNext()) {
@@ -163,27 +184,7 @@ public class JsonWriter {
 				writeIndent(writer, indent + 1);
 				writeQuote(entry.getKey(), writer, 0);
 				writer.write(": ");
-				
-				value = entry.getValue();
-				if (value instanceof Number) {
-					writer.write(value.toString());
-				}
-				else if (value instanceof Map<?, ?> map && map.isEmpty()) {
-					writeObject(Map.of(), writer, indent + 1);
-				}
-				else if (value instanceof Map<?, ?> map) {
-					// Check if the map has String keys
-					if (!map.isEmpty() && map.keySet().iterator().next() instanceof String) {
-						@SuppressWarnings("unchecked") // Safe cast due to runtime check
-						Map<String, ?> nested = (Map<String, ?>) map;
-						writeObject(nested, writer, indent + 1);
-					} else {
-						throw new IllegalArgumentException("Map values must have String keys");
-					}
-				}
-				else if (value instanceof Collection<?>) {
-					writeArray((Collection<?>) value, writer, indent + 1);
-				}
+				writeValue(entry.getValue(), writer, indent + 1);
 			}
 			
 			writer.write('\n');
@@ -206,10 +207,9 @@ public class JsonWriter {
 				writeObject(Map.of(), writer, 0);
 			}
 			else if (data instanceof Map<?, ?> map) {
-				// Check if the map has String keys
-				if (!map.isEmpty() && map.keySet().iterator().next() instanceof String) {
+				if (map.keySet().stream().allMatch(key -> key instanceof String)) {
 					@SuppressWarnings("unchecked") // Safe cast due to runtime check
-					Map<String, ?> typedMap = (Map<String, ?>) map;
+					Map<String, Object> typedMap = (Map<String, Object>) map;
 					writeObject(typedMap, writer, 0);
 				} else {
 					throw new IllegalArgumentException("Map must have String keys");
@@ -228,7 +228,7 @@ public class JsonWriter {
 	 * @param path the file path to use
 	 * @throws IOException if an IO error occurs
 	 */
-	public static void writeArray(Collection<? extends Number> elements, Path path) throws IOException {
+	public static void writeArray(Collection<Object> elements, Path path) throws IOException {
 		writeJson(elements, path);
 	}
 
@@ -238,7 +238,7 @@ public class JsonWriter {
 	 * @param elements the elements to use
 	 * @return a {@link String} containing the elements in pretty JSON format
 	 */
-	public static String writeArray(Collection<? extends Number> elements) {
+	public static String writeArray(Collection<Object> elements) {
 		try {
 			StringWriter writer = new StringWriter();
 			writeArray(elements, writer, 0);
