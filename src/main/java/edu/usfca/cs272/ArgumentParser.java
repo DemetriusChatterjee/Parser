@@ -137,7 +137,7 @@ public class ArgumentParser {
 		// Add dash if flag doesn't start with one
 		flag = flag.startsWith("-") ? flag : "-" + flag;
 
-		return map.get(flag) != null;
+		return map.get(flag) != null; // TODO Only this line
 	}
 
 	/**
@@ -187,6 +187,7 @@ public class ArgumentParser {
 		try {
 			String value = map.get(flag);
 			return value != null ? Path.of(value) : backup;
+			// TODO return Path.of(map.get(flag));
 		}
 		catch (Exception e) {
 			return backup;
@@ -226,9 +227,9 @@ public class ArgumentParser {
 	public int getInteger(String flag, int backup) {
 		try {
 			String value = map.get(flag);
-			return value != null ? Integer.parseInt(value) : backup;
+			return value != null ? Integer.parseInt(value) : backup; // TODO Same thing here
 		}
-		catch (NumberFormatException e) {
+		catch (NumberFormatException e) { // TODO Catch Exception instead
 			return backup;
 		}
 	}

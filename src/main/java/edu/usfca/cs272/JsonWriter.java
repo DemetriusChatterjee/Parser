@@ -166,6 +166,7 @@ public class JsonWriter {
 	 * @see #writeIndent(Writer, int)
 	 * @see #writeIndent(String, Writer, int)
 	 */
+	// TODO Fix the type then the implementation
 	public static void writeObject(Map<String, ?> elements, Writer writer, int indent) throws IOException {
 		writer.write('{');
 		writer.write('\n');

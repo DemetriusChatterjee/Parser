@@ -41,6 +41,9 @@ public class Driver {
 					System.err.println("Unable to index the files at path: " + inputPath);
 				}
 			}
+			/* TODO else {
+					warn the user they are missing a value
+			} */
 		}
 		
 		// Write output files if flags are provided
@@ -59,6 +62,7 @@ public class Driver {
 			System.out.printf("Elapsed: %.3f seconds%n", elapsed.toMillis() / 1000.0);
 		}
 		catch (IOException e) {
+				// TODO Split up into 2 try/catch for each if block
 			System.err.println("Unable to write to output files: " + e.getMessage());
 		}
 	}
