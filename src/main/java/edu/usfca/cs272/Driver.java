@@ -6,6 +6,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Class responsible for running this project based on the provided command-line
@@ -59,6 +61,9 @@ public class Driver {
 				JsonWriter.writeObject(index.getIndex(), indexPath);
 			}
 
+			// Handle search results
+			Map<String, List<InvertedIndex.SearchResult>> searchResults = new TreeMap<>();
+			
 			if (parser.hasFlag("-query")) {
 				Path queryPath = parser.getPath("-query");
 				if (queryPath != null) {
@@ -73,13 +78,7 @@ public class Driver {
 						}
 						
 						// Perform exact search for all queries
-						var searchResults = index.exactSearchAll(queryStrings);
-						
-						// Write results if -results flag is provided
-						if (parser.hasFlag("-results")) {
-							Path resultsPath = parser.getPath("-results", Path.of("results.json"));
-							JsonWriter.writeSearchResults(searchResults, resultsPath);
-						}
+						searchResults = index.exactSearchAll(queryStrings);
 					}
 					catch (IOException e) {
 						System.err.println("Unable to process query file: " + e.getMessage());
@@ -87,6 +86,11 @@ public class Driver {
 				}
 			}
 			
+			// Write results if -results flag is provided (even if empty)
+			if (parser.hasFlag("-results")) {
+				Path resultsPath = parser.getPath("-results", Path.of("results.json"));
+				JsonWriter.writeSearchResults(searchResults, resultsPath);
+			}
 			
 			Duration elapsed = Duration.between(start, Instant.now());
 			System.out.printf("Elapsed: %.3f seconds%n", elapsed.toMillis() / 1000.0);
