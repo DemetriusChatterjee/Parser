@@ -81,15 +81,57 @@ public class InvertedIndex {
 		index.clear();
 		counts.clear();
 	}
+
+	/**
+	 * Represents a search result with the file path and the number of matches.
+	 */
+	public static class SearchResult {
+		/** The path where matches were found */
+		private final String location;
+		
+		/** The total number of matches found */
+		private final int matches;
+		
+		/**
+		 * Creates a new search result.
+		 *
+		 * @param location the file path where matches were found
+		 * @param matches the total number of matches found
+		 */
+		public SearchResult(String location, int matches) {
+			this.location = location;
+			this.matches = matches;
+		}
+		
+		/**
+		 * Gets the file path where matches were found.
+		 *
+		 * @return the file path
+		 */
+		public String getLocation() {
+			return location;
+		}
+		
+		/**
+		 * Gets the total number of matches found.
+		 *
+		 * @return the number of matches
+		 */
+		public int getMatches() {
+			return matches;
+		}
+	}
+	
 	/**
 	 * Performs an exact search on the inverted index for a line of query words.
+	 * For each location found, sums up the total number of matches across all query words.
 	 * 
 	 * @param line the line of query words to search for
-	 * @return a map containing the search results, where each key is a file path and each value is a list of positions
+	 * @return a map containing the search results, where each key is a file path and each value is the total matches
 	 */
-	public Map<String, TreeSet<Integer>> exactSearch(String line) {
-		// Create a map to store search results
-		TreeMap<String, TreeSet<Integer>> results = new TreeMap<>();
+	public Map<String, Integer> exactSearch(String line) {
+		// Create a map to store search results (location -> total matches)
+		TreeMap<String, Integer> results = new TreeMap<>();
 		
 		// Process the query line to get sorted unique stems
 		var stems = QueryProcessor.processLine(line);
@@ -97,54 +139,34 @@ public class InvertedIndex {
 			return results;
 		}
 		
-		// Get the first stem's locations
-		String firstStem = stems.get(0);
-		if (!index.containsKey(firstStem)) {
-			return results;
-		}
-		
-		// Initialize results with first stem's locations
-		for (var entry : index.get(firstStem).entrySet()) {
-			String path = entry.getKey();
-			TreeSet<Integer> positions = new TreeSet<>(entry.getValue());
-			results.put(path, positions);
-		}
-		
-		// For each remaining stem, keep only positions that form a consecutive sequence
-		for (int i = 1; i < stems.size() && !results.isEmpty(); i++) {
-			final int offset = i; // Make effectively final for lambda
-			String stem = stems.get(i);
+		// For each stem in the query
+		for (String stem : stems) {
+			// Skip if stem not in index
 			if (!index.containsKey(stem)) {
-				return new TreeMap<>();
+				continue;
 			}
 			
-			// Remove paths that don't contain this stem
-			results.keySet().removeIf(path -> !index.get(stem).containsKey(path));
-			
-			// For remaining paths, keep only valid consecutive positions
-			for (var entry : results.entrySet()) {
-				String path = entry.getKey();
-				TreeSet<Integer> positions = entry.getValue();
-				TreeSet<Integer> nextPositions = index.get(stem).get(path);
+			// For each location where this stem appears
+			for (var entry : index.get(stem).entrySet()) {
+				String location = entry.getKey();
+				int count = entry.getValue().size(); // Number of times this stem appears in this location
 				
-				// Keep only positions that are consecutive
-				positions.removeIf(pos -> !nextPositions.contains(pos + offset));
+				// Add or update the total matches for this location
+				results.merge(location, count, Integer::sum);
 			}
-			
-			// Remove paths with no valid positions
-			results.keySet().removeIf(path -> results.get(path).isEmpty());
 		}
 		
 		return results;
 	}
+	
 	/**
 	 * Performs exact searches for multiple query lines and returns all results.
 	 * 
 	 * @param queries the list of query lines to search for
 	 * @return a list of maps, where each map contains the search results for one query line
 	 */
-	public List<Map<String, TreeSet<Integer>>> exactSearchAll(List<String> queries) {
-		List<Map<String, TreeSet<Integer>>> allResults = new ArrayList<>();
+	public List<Map<String, Integer>> exactSearchAll(List<String> queries) {
+		List<Map<String, Integer>> allResults = new ArrayList<>();
 		for (String query : queries) {
 			allResults.add(exactSearch(query));
 		}
