@@ -470,4 +470,44 @@ public class JsonWriter {
 		writeIndent(writer, indent);
 		writer.write(']');
 	}
+	/**
+	 * Writes a single search result as a pretty JSON object.
+	 *
+	 * @param result the search result to write
+	 * @param writer the writer to use
+	 * @param indent the initial indent level
+	 * @throws IOException if an IO error occurs
+	 */
+	private static void writeSearchResult(
+			Map<String, ? extends Collection<Integer>> result,
+			Writer writer, int indent) throws IOException {
+		writer.write('{');
+		writer.write('\n');
+		
+		if (!result.isEmpty()) {
+			var iterator = result.entrySet().iterator();
+			
+			// Write first path-positions pair
+			var entry = iterator.next();
+			writeIndent(writer, indent + 1);
+			writeQuote(entry.getKey(), writer, 0);
+			writer.write(": ");
+			writeArray(entry.getValue(), writer, indent + 1);
+			
+			// Write remaining path-positions pairs
+			while (iterator.hasNext()) {
+				writer.write(",\n");
+				entry = iterator.next();
+				writeIndent(writer, indent + 1);
+				writeQuote(entry.getKey(), writer, 0);
+				writer.write(": ");
+				writeArray(entry.getValue(), writer, indent + 1);
+			}
+			
+			writer.write('\n');
+		}
+		
+		writeIndent(writer, indent);
+		writer.write('}');
+	}
 }
