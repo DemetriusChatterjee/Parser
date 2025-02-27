@@ -179,7 +179,7 @@ public class InvertedIndex {
 		// Process the query line to get sorted unique stems
 		var stems = QueryProcessor.processLine(line);
 		if (stems.isEmpty()) {
-			return Map.of();
+			return new TreeMap<>();
 		}
 		
 		// Create a map to store search results (location -> total matches)
@@ -214,8 +214,10 @@ public class InvertedIndex {
 		// Sort results by score, count, and location
 		results.sort(null); // Uses natural ordering defined by compareTo
 		
-		// Return map with query string as key and sorted results as value
-		return Map.of(getQueryString(stems), results);
+		// Create map with query string as key and sorted results as value
+		TreeMap<String, List<SearchResult>> searchResults = new TreeMap<>();
+		searchResults.put(getQueryString(stems), results);
+		return searchResults;
 	}
 	
 	/**
