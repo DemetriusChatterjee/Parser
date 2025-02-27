@@ -42,11 +42,11 @@ public class InvertedIndexBuilder {
 			throw new IllegalArgumentException("Invalid path: " + path);
 		}
 		
-		if (Files.isRegularFile(path)) {
-			buildFile(path);
-		}
-		else{
+		if (Files.isDirectory(path)) {
 			buildDirectory(path);
+		}
+		else {
+			buildFile(path);
 		}
 	}
 	
@@ -57,30 +57,29 @@ public class InvertedIndexBuilder {
 	 * @throws IOException if an IO error occurs
 	 */
 	public void buildDirectory(Path directory) throws IOException {
-		TreeSet<Path> paths = new TreeSet<>();
 		try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
+			var paths = new TreeSet<Path>();
 			stream.forEach(paths::add);
-		}
-		
-		for (Path path : paths) {
-			if (Files.isRegularFile(path) && isTextFile(path)) {
-				buildFile(path);
-			}
-			else if (Files.isDirectory(path)) {
-				buildDirectory(path);
+			
+			for (var path : paths) {
+				if (Files.isDirectory(path)) {
+					buildDirectory(path);
+				}
+				else if (isTextFile(path)) {
+					buildFile(path);
+				}
 			}
 		}
 	}
 	
 	/**
 	 * Tests whether a path is a text file by checking its extension.
-	 * Only .txt and .text files are considered text files (case insensitive).
 	 *
 	 * @param path the path to test
 	 * @return true if the path has a .txt or .text extension
 	 */
 	public static boolean isTextFile(Path path) {
-		String name = path.toString().toLowerCase();
+		var name = path.toString().toLowerCase();
 		return name.endsWith(".txt") || name.endsWith(".text");
 	}
 	
@@ -91,7 +90,6 @@ public class InvertedIndexBuilder {
 	 * @throws IOException if an IO error occurs
 	 */
 	public void buildFile(Path path) throws IOException {
-		var stems = FileStemmer.listStems(path);
-		index.addAll(stems, path.toString());
+		index.addAll(FileStemmer.listStems(path), path.toString());
 	}
 }
