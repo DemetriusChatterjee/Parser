@@ -29,6 +29,10 @@ public class InvertedIndexBuilder {
 		this.index = index;
 	}
 	
+	/*
+	 * TODO Either use "build" or "process" to name things, but not both
+	 */
+	
 	/**
 	 * Processes a file or directory, adding its stems to the inverted index.
 	 *
@@ -36,9 +40,18 @@ public class InvertedIndexBuilder {
 	 * @throws IOException if an IO error occurs
 	 */
 	public void build(Path inputPath) throws IOException {
-		if (inputPath == null || !Files.exists(inputPath)) {
+		if (inputPath == null || !Files.exists(inputPath)) { // TODO Remove this block
 			return;
 		}
+		
+		/* TODO 
+		if (Files.isDirectory(inputPath)) {
+			processDirectory(inputPath);
+		}
+		else {
+			processFile(inputPath);
+		}
+		*/ 
 		
 		if (Files.isRegularFile(inputPath)) {
 			processFile(inputPath);
@@ -54,7 +67,7 @@ public class InvertedIndexBuilder {
 	 * @param directory the directory to process
 	 * @throws IOException if an IO error occurs
 	 */
-	private void processDirectory(Path directory) throws IOException {
+	private void processDirectory(Path directory) throws IOException { // TODO public
 		try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
 			for (Path path : stream) {
 				if (Files.isRegularFile(path) && isTextFile(path)) {
@@ -73,7 +86,7 @@ public class InvertedIndexBuilder {
 	 * @param path the path to test
 	 * @return true if the path is a text file
 	 */
-	private boolean isTextFile(Path path) {
+	private boolean isTextFile(Path path) { // TODO public and static
 		String name = path.toString().toLowerCase();
 		return name.endsWith(".txt") || name.endsWith(".text");
 	}
@@ -84,13 +97,13 @@ public class InvertedIndexBuilder {
 	 * @param path the path to process
 	 * @throws IOException if an IO error occurs
 	 */
-	private void processFile(Path path) throws IOException {
-		if (path == null || !Files.isReadable(path)) {
+	private void processFile(Path path) throws IOException { // TODO public
+		if (path == null || !Files.isReadable(path)) { // TODO Remove
 			return;
 		}
 		
 		var stems = FileStemmer.listStems(path);
-		if (!stems.isEmpty()) {
+		if (!stems.isEmpty()) { // TODO Remove if statement
 			index.addAll(stems, path.toString());
 		}
 	}

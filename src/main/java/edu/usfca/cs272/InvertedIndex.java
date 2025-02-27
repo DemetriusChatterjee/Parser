@@ -15,7 +15,7 @@ import java.util.TreeSet;
  */
 public class InvertedIndex {
 	/** The inverted index to store word locations */
-	private final Map<String, TreeMap<String, TreeSet<Integer>>> index;
+	private final Map<String, TreeMap<String, TreeSet<Integer>>> index; // TODO TreeMap for the first type
 	
 	/** Map to store word counts per file */
 	private final TreeMap<String, Integer> counts;
@@ -39,6 +39,19 @@ public class InvertedIndex {
 		index.putIfAbsent(stem, new TreeMap<>());
 		index.get(stem).putIfAbsent(location, new TreeSet<>());
 		index.get(stem).get(location).add(position);
+		
+		/* TODO 
+		var locations = index.get(stem);
+		
+		if (locations == null) {
+			locations = new TreeMap<>();
+			index.put(stem, locations);
+		}
+		
+		var positions = locations.get(location);
+		
+		...
+		*/
 	}
 	
 	/**
@@ -50,11 +63,27 @@ public class InvertedIndex {
 	public void addAll(List<String> stems, String location) {
 		if (!stems.isEmpty()) {
 			counts.put(location, stems.size());
-			for (int i = 0; i < stems.size(); i++) {
+			for (int i = 0; i < stems.size(); i++) { // TODO for-each + a counter variable
 				add(stems.get(i), location, i + 1);
 			}
 		}
 	}
+	
+	/*
+	 * TODO Start think about other generally useful methods and view methods
+	 * that don't break encapsulation
+	 * 
+	 * toString
+	 * 
+	 * has or contains methods
+	 * num or size methods
+	 * get or view methods
+	 * 
+	 * Keep in mind the homework/lecture examples are fewer levels of nesting
+	 * so you need more methods for this class
+	 * 
+	 * FileIndex, PrefixMap, WordGroup
+	 */
 	
 	/**
 	 * Gets the inverted index data structure.

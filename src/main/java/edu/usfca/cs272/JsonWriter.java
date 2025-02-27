@@ -120,6 +120,7 @@ public class JsonWriter {
 	 *   the initial indentation level
 	 * @throws IOException if an IO error occurs
 	 */
+	// TODO Fix the type then the implementation
 	public static void writeObject(Map<String, ?> elements, Writer writer, int indent) throws IOException {
 		writer.write('{');
 		writer.write('\n');
