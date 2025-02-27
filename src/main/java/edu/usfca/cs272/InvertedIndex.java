@@ -1,5 +1,6 @@
 package edu.usfca.cs272;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -111,6 +112,7 @@ public class InvertedIndex {
 		
 		// For each remaining stem, keep only positions that form a consecutive sequence
 		for (int i = 1; i < stems.size() && !results.isEmpty(); i++) {
+			final int offset = i; // Make effectively final for lambda
 			String stem = stems.get(i);
 			if (!index.containsKey(stem)) {
 				return new TreeMap<>();
@@ -126,7 +128,7 @@ public class InvertedIndex {
 				TreeSet<Integer> nextPositions = index.get(stem).get(path);
 				
 				// Keep only positions that are consecutive
-				positions.removeIf(pos -> !nextPositions.contains(pos + i));
+				positions.removeIf(pos -> !nextPositions.contains(pos + offset));
 			}
 			
 			// Remove paths with no valid positions
