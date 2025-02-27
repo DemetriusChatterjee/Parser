@@ -434,10 +434,11 @@ public class JsonWriter {
 			return null;
 		}
 	}
+
 	/**
 	 * Writes a collection of search results as a pretty JSON array of objects.
 	 * Each object represents one query's results, where the keys are file paths
-	 * and the values are sets of positions.
+	 * and the values are the number of matches found.
 	 *
 	 * @param results the collection of search results to write
 	 * @param writer the writer to use
@@ -445,7 +446,7 @@ public class JsonWriter {
 	 * @throws IOException if an IO error occurs
 	 */
 	public static void writeSearchResults(
-			Collection<? extends Map<String, ? extends Collection<Integer>>> results,
+			Collection<? extends Map<String, Integer>> results,
 			Writer writer, int indent) throws IOException {
 		writer.write('[');
 		writer.write('\n');
@@ -470,6 +471,7 @@ public class JsonWriter {
 		writeIndent(writer, indent);
 		writer.write(']');
 	}
+	
 	/**
 	 * Writes a single search result as a pretty JSON object.
 	 *
@@ -479,7 +481,7 @@ public class JsonWriter {
 	 * @throws IOException if an IO error occurs
 	 */
 	private static void writeSearchResult(
-			Map<String, ? extends Collection<Integer>> result,
+			Map<String, Integer> result,
 			Writer writer, int indent) throws IOException {
 		writer.write('{');
 		writer.write('\n');
@@ -487,21 +489,21 @@ public class JsonWriter {
 		if (!result.isEmpty()) {
 			var iterator = result.entrySet().iterator();
 			
-			// Write first path-positions pair
+			// Write first path-count pair
 			var entry = iterator.next();
 			writeIndent(writer, indent + 1);
 			writeQuote(entry.getKey(), writer, 0);
 			writer.write(": ");
-			writeArray(entry.getValue(), writer, indent + 1);
+			writer.write(entry.getValue().toString());
 			
-			// Write remaining path-positions pairs
+			// Write remaining path-count pairs
 			while (iterator.hasNext()) {
 				writer.write(",\n");
 				entry = iterator.next();
 				writeIndent(writer, indent + 1);
 				writeQuote(entry.getKey(), writer, 0);
 				writer.write(": ");
-				writeArray(entry.getValue(), writer, indent + 1);
+				writer.write(entry.getValue().toString());
 			}
 			
 			writer.write('\n');
@@ -510,15 +512,16 @@ public class JsonWriter {
 		writeIndent(writer, indent);
 		writer.write('}');
 	}
+	
 	/**
-	* Writes a collection of search results as a pretty JSON array of objects to file.
-	*
-	* @param results the collection of search results to write
-	* @param path the file path to use
-	* @throws IOException if an IO error occurs
-	*/
+	 * Writes a collection of search results as a pretty JSON array of objects to file.
+	 *
+	 * @param results the collection of search results to write
+	 * @param path the file path to use
+	 * @throws IOException if an IO error occurs
+	 */
 	public static void writeSearchResults(
-			Collection<? extends Map<String, ? extends Collection<Integer>>> results,
+			Collection<? extends Map<String, Integer>> results,
 			Path path) throws IOException {
 		try (BufferedWriter writer = Files.newBufferedWriter(path, UTF_8)) {
 			writeSearchResults(results, writer, 0);
