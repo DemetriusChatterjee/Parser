@@ -83,24 +83,51 @@ public class InvertedIndex {
 	}
 
 	/**
-	 * Represents a search result with the file path and the number of matches.
+	 * Represents a search result with metadata for ranking.
 	 */
-	public static class SearchResult {
+	public static class SearchResult implements Comparable<SearchResult> {
 		/** The path where matches were found */
 		private final String location;
 		
 		/** The total number of matches found */
 		private final int matches;
 		
+		/** The total number of words in the file */
+		private final int totalWords;
+		
+		/** The score (matches/totalWords) for ranking */
+		private final double score;
+		
 		/**
 		 * Creates a new search result.
 		 *
 		 * @param location the file path where matches were found
 		 * @param matches the total number of matches found
+		 * @param totalWords the total number of words in the file
 		 */
-		public SearchResult(String location, int matches) {
+		public SearchResult(String location, int matches, int totalWords) {
 			this.location = location;
 			this.matches = matches;
+			this.totalWords = totalWords;
+			this.score = (double) matches / totalWords;
+		}
+		
+		@Override
+		public int compareTo(SearchResult other) {
+			// First compare by score (descending)
+			int comparison = Double.compare(other.score, this.score);
+			if (comparison != 0) {
+				return comparison;
+			}
+			
+			// Then by count (descending)
+			comparison = Integer.compare(other.matches, this.matches);
+			if (comparison != 0) {
+				return comparison;
+			}
+			
+			// Finally by location (ascending, case-insensitive)
+			return this.location.compareToIgnoreCase(other.location);
 		}
 		
 		/**
@@ -120,23 +147,41 @@ public class InvertedIndex {
 		public int getMatches() {
 			return matches;
 		}
+		
+		/**
+		 * Gets the total number of words in the file.
+		 *
+		 * @return the total words
+		 */
+		public int getTotalWords() {
+			return totalWords;
+		}
+		
+		/**
+		 * Gets the score used for ranking.
+		 *
+		 * @return the score
+		 */
+		public double getScore() {
+			return score;
+		}
 	}
 	
 	/**
 	 * Performs an exact search on the inverted index for a line of query words.
-	 * For each location found, sums up the total number of matches across all query words.
+	 * For each location found, creates a SearchResult with metadata for ranking.
 	 * 
 	 * @param line the line of query words to search for
-	 * @return a map containing the search results, where each key is a file path and each value is the total matches
+	 * @return a list of search results, sorted by score, count, and location
 	 */
-	public Map<String, Integer> exactSearch(String line) {
+	public List<SearchResult> exactSearch(String line) {
 		// Create a map to store search results (location -> total matches)
-		TreeMap<String, Integer> results = new TreeMap<>();
+		TreeMap<String, Integer> matches = new TreeMap<>();
 		
 		// Process the query line to get sorted unique stems
 		var stems = QueryProcessor.processLine(line);
 		if (stems.isEmpty()) {
-			return results;
+			return new ArrayList<>();
 		}
 		
 		// For each stem in the query
@@ -152,10 +197,21 @@ public class InvertedIndex {
 				int count = entry.getValue().size(); // Number of times this stem appears in this location
 				
 				// Add or update the total matches for this location
-				results.merge(location, count, Integer::sum);
+				matches.merge(location, count, Integer::sum);
 			}
 		}
 		
+		// Convert matches to SearchResult objects with metadata
+		List<SearchResult> results = new ArrayList<>();
+		for (var entry : matches.entrySet()) {
+			String location = entry.getKey();
+			int matchCount = entry.getValue();
+			int totalWords = counts.get(location);
+			results.add(new SearchResult(location, matchCount, totalWords));
+		}
+		
+		// Sort results by score, count, and location
+		results.sort(null); // Uses natural ordering defined by compareTo
 		return results;
 	}
 	
@@ -163,10 +219,10 @@ public class InvertedIndex {
 	 * Performs exact searches for multiple query lines and returns all results.
 	 * 
 	 * @param queries the list of query lines to search for
-	 * @return a list of maps, where each map contains the search results for one query line
+	 * @return a list of lists, where each inner list contains the sorted search results for one query line
 	 */
-	public List<Map<String, Integer>> exactSearchAll(List<String> queries) {
-		List<Map<String, Integer>> allResults = new ArrayList<>();
+	public List<List<SearchResult>> exactSearchAll(List<String> queries) {
+		List<List<SearchResult>> allResults = new ArrayList<>();
 		for (String query : queries) {
 			allResults.add(exactSearch(query));
 		}
