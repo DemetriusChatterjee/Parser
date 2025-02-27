@@ -29,27 +29,29 @@ public class Driver {
 		ArgumentParser parser = new ArgumentParser(args);
 		InvertedIndex index = new InvertedIndex();
 		
+		// Process input path if provided
 		if (parser.hasFlag("-text")) {
 			Path inputPath = parser.getPath("-text");
-			
-			try {
-				InvertedIndexBuilder builder = new InvertedIndexBuilder(index);
-				builder.build(inputPath);
-			}
-			catch (IOException e) {
-				System.err.println("Unable to index the files at path: " + inputPath);
+			if (inputPath != null) {
+				try {
+					InvertedIndexBuilder builder = new InvertedIndexBuilder(index);
+					builder.build(inputPath);
+				}
+				catch (IOException e) {
+					System.err.println("Unable to index the files at path: " + inputPath);
+				}
 			}
 		}
 		
-		// Handle output paths
-		Path countsPath = parser.getPath("-counts", Path.of("counts.json"));
-		Path indexPath = parser.getPath("-index", Path.of("index.json"));
-		
+		// Write output files if flags are provided
 		try {
 			if (parser.hasFlag("-counts")) {
+				Path countsPath = parser.getPath("-counts", Path.of("counts.json"));
 				JsonWriter.writeObject(index.getCounts(), countsPath);
 			}
+			
 			if (parser.hasFlag("-index")) {
+				Path indexPath = parser.getPath("-index", Path.of("index.json"));
 				JsonWriter.writeObject(index.getIndex(), indexPath);
 			}
 			

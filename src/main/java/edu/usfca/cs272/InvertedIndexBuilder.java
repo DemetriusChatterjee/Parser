@@ -19,8 +19,12 @@ public class InvertedIndexBuilder {
 	 * Initializes the builder with the inverted index to populate.
 	 *
 	 * @param index the inverted index to build
+	 * @throws IllegalArgumentException if the index is null
 	 */
 	public InvertedIndexBuilder(InvertedIndex index) {
+		if (index == null) {
+			throw new IllegalArgumentException("Index cannot be null.");
+		}
 		this.index = index;
 	}
 	
@@ -31,6 +35,10 @@ public class InvertedIndexBuilder {
 	 * @throws IOException if an IO error occurs
 	 */
 	public void build(Path inputPath) throws IOException {
+		if (inputPath == null || !Files.exists(inputPath)) {
+			return;
+		}
+		
 		if (Files.isRegularFile(inputPath)) {
 			processFile(inputPath);
 		}
@@ -57,6 +65,10 @@ public class InvertedIndexBuilder {
 	 * @throws IOException if an IO error occurs
 	 */
 	private void processFile(Path path) throws IOException {
+		if (path == null || !Files.isReadable(path)) {
+			return;
+		}
+		
 		var stems = FileStemmer.listStems(path);
 		if (!stems.isEmpty()) {
 			index.addAll(stems, path.toString());
