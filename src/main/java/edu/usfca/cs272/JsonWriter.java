@@ -434,4 +434,40 @@ public class JsonWriter {
 			return null;
 		}
 	}
+	/**
+	 * Writes a collection of search results as a pretty JSON array of objects.
+	 * Each object represents one query's results, where the keys are file paths
+	 * and the values are sets of positions.
+	 *
+	 * @param results the collection of search results to write
+	 * @param writer the writer to use
+	 * @param indent the initial indent level
+	 * @throws IOException if an IO error occurs
+	 */
+	public static void writeSearchResults(
+			Collection<? extends Map<String, ? extends Collection<Integer>>> results,
+			Writer writer, int indent) throws IOException {
+		writer.write('[');
+		writer.write('\n');
+		
+		if (!results.isEmpty()) {
+			var iterator = results.iterator();
+			
+			// Write first result object
+			writeIndent(writer, indent + 1);
+			writeSearchResult(iterator.next(), writer, indent + 1);
+			
+			// Write remaining result objects
+			while (iterator.hasNext()) {
+				writer.write(",\n");
+				writeIndent(writer, indent + 1);
+				writeSearchResult(iterator.next(), writer, indent + 1);
+			}
+			
+			writer.write('\n');
+		}
+		
+		writeIndent(writer, indent);
+		writer.write(']');
+	}
 }
