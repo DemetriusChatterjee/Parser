@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.TreeSet;
 
 /**
  * Builder class responsible for processing text files and building an inverted index.
@@ -30,68 +31,65 @@ public class InvertedIndexBuilder {
 	}
 	
 	/**
-	 * Processes a file or directory, adding its stems to the inverted index.
+	 * Builds the index from a file or directory path by processing its contents.
 	 *
-	 * @param inputPath the input path to process
+	 * @param path the input path to process
 	 * @throws IOException if an IO error occurs
+	 * @throws IllegalArgumentException if the path is null or does not exist
 	 */
-	public void build(Path inputPath) throws IOException {
-		if (inputPath == null || !Files.exists(inputPath)) {
-			return;
+	public void build(Path path) throws IOException {
+		if (path == null || !Files.exists(path)) {
+			throw new IllegalArgumentException("Invalid path: " + path);
 		}
 		
-		if (Files.isRegularFile(inputPath)) {
-			processFile(inputPath);
+		if (Files.isDirectory(path)) {
+			buildDirectory(path);
 		}
-		else if (Files.isDirectory(inputPath)) {
-			processDirectory(inputPath);
+		else {
+			buildFile(path);
 		}
 	}
 	
 	/**
-	 * Processes a directory recursively, finding all text files.
+	 * Builds the index from a directory by recursively processing text files.
 	 *
 	 * @param directory the directory to process
 	 * @throws IOException if an IO error occurs
 	 */
-	private void processDirectory(Path directory) throws IOException {
+	public void buildDirectory(Path directory) throws IOException {
 		try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
-			for (Path path : stream) {
-				if (Files.isRegularFile(path) && isTextFile(path)) {
-					processFile(path);
+			var paths = new TreeSet<Path>();
+			stream.forEach(paths::add);
+			
+			for (var path : paths) {
+				if (Files.isDirectory(path)) {
+					buildDirectory(path);
 				}
-				else if (Files.isDirectory(path)) {
-					processDirectory(path);
+				else if (isTextFile(path)) {
+					buildFile(path);
 				}
 			}
 		}
 	}
 	
 	/**
-	 * Tests whether a path is a text file.
+	 * Tests whether a path is a text file by checking its extension.
 	 *
 	 * @param path the path to test
-	 * @return true if the path is a text file
+	 * @return true if the path has a .txt or .text extension
 	 */
-	private boolean isTextFile(Path path) {
-		String name = path.toString().toLowerCase();
+	public static boolean isTextFile(Path path) {
+		var name = path.toString().toLowerCase();
 		return name.endsWith(".txt") || name.endsWith(".text");
 	}
 	
 	/**
-	 * Processes a single text file, adding its stems to the inverted index.
+	 * Builds the index from a single text file by processing its contents.
 	 *
-	 * @param path the path to process
+	 * @param path the text file to process
 	 * @throws IOException if an IO error occurs
 	 */
-	private void processFile(Path path) throws IOException {
-		if (path == null || !Files.isReadable(path)) {
-			return;
-		}
-		
-		var stems = FileStemmer.listStems(path);
-		if (!stems.isEmpty()) {
-			index.addAll(stems, path.toString());
-		}
+	public void buildFile(Path path) throws IOException {
+		index.addAll(FileStemmer.listStems(path), path.toString());
 	}
 }

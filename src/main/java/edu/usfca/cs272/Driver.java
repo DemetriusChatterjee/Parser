@@ -47,57 +47,72 @@ public class Driver {
 					System.err.println("Unable to index the files at path: " + inputPath);
 				}
 			}
+			else {
+				System.err.println("No path provided for -text flag.");
+			}
 		}
 		
 		// Write output files if flags are provided
-		try {
-			if (parser.hasFlag("-counts")) {
+		// Write counts output if flag provided
+		if (parser.hasFlag("-counts")) {
+			try {
 				Path countsPath = parser.getPath("-counts", Path.of("counts.json"));
 				JsonWriter.writeObject(index.getCounts(), countsPath);
 			}
-			
-			if (parser.hasFlag("-index")) {
-				Path indexPath = parser.getPath("-index", Path.of("index.json"));
+			catch (IOException e) {
+				System.err.println("Unable to write counts to file");
+			}
+		}
+		
+		// Write index output if flag provided 
+		if (parser.hasFlag("-index")) {
+			try {
+				Path indexPath = parser.getPath("-index", Path.of("index.json")); 
 				JsonWriter.writeObject(index.getIndex(), indexPath);
 			}
+			catch (IOException e) {
+				System.err.println("Unable to write index to file");
+			}
+		}
 
-			// Handle search results
-			Map<String, List<InvertedIndex.SearchResult>> searchResults = new TreeMap<>();
-			
-			if (parser.hasFlag("-query")) {
-				Path queryPath = parser.getPath("-query");
-				if (queryPath != null) {
-					try {
-						// Process all queries from the file
-						var queries = QueryProcessor.processQueryFile(queryPath);
-						
-						// Convert processed queries back to strings for searching
-						List<String> queryStrings = new ArrayList<>();
-						for (List<String> query : queries) {
-							queryStrings.add(String.join(" ", query));
-						}
-						
-						// Perform exact search for all queries
-						searchResults = index.exactSearchAll(queryStrings);
+		// Handle search results
+		Map<String, List<InvertedIndex.SearchResult>> searchResults = new TreeMap<>();
+		
+		if (parser.hasFlag("-query")) {
+			Path queryPath = parser.getPath("-query");
+			if (queryPath != null) {
+				try {
+					// Process all queries from the file
+					var queries = QueryProcessor.processQueryFile(queryPath);
+					
+					// Convert processed queries back to strings for searching
+					List<String> queryStrings = new ArrayList<>();
+					for (List<String> query : queries) {
+						queryStrings.add(String.join(" ", query));
 					}
-					catch (IOException e) {
-						System.err.println("Unable to process query file: " + e.getMessage());
-					}
+					
+					// Perform exact search for all queries
+					searchResults = index.exactSearchAll(queryStrings);
+				}
+				catch (IOException e) {
+					System.err.println("Unable to process query file");
 				}
 			}
-			
-			// Write results if -results flag is provided (even if empty)
-			if (parser.hasFlag("-results")) {
+		}
+		
+		// Write results if -results flag is provided (even if empty)
+		if (parser.hasFlag("-results")) {
+			try {
 				Path resultsPath = parser.getPath("-results", Path.of("results.json"));
 				JsonWriter.writeSearchResults(searchResults, resultsPath);
 			}
-			
-			Duration elapsed = Duration.between(start, Instant.now());
-			System.out.printf("Elapsed: %.3f seconds%n", elapsed.toMillis() / 1000.0);
+			catch (IOException e) {
+				System.err.println("Unable to write results to file");
+			}
 		}
-		catch (IOException e) {
-			System.err.println("Unable to write to output files: " + e.getMessage());
-		}
+		
+		Duration elapsed = Duration.between(start, Instant.now());
+		System.out.printf("Elapsed: %.3f seconds%n", elapsed.toMillis() / 1000.0);
 	}
 
 	/** Prevent instantiating this class of static methods. */

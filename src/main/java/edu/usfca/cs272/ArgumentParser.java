@@ -129,14 +129,6 @@ public class ArgumentParser {
 	 * @return {@code true} if the flag is mapped to a non-null value
 	 */
 	public boolean hasValue(String flag) {
-		// Check if flag is null
-		if (flag == null) {
-			return false;
-		}
-
-		// Add dash if flag doesn't start with one
-		flag = flag.startsWith("-") ? flag : "-" + flag;
-
 		return map.get(flag) != null;
 	}
 
@@ -185,8 +177,7 @@ public class ArgumentParser {
 	 */
 	public Path getPath(String flag, Path backup) {
 		try {
-			String value = map.get(flag);
-			return value != null ? Path.of(value) : backup;
+			return Path.of(map.get(flag));
 		}
 		catch (Exception e) {
 			return backup;
@@ -225,8 +216,7 @@ public class ArgumentParser {
 	 */
 	public int getInteger(String flag, int backup) {
 		try {
-			String value = map.get(flag);
-			return value != null ? Integer.parseInt(value) : backup;
+			return Integer.parseInt(map.get(flag));
 		}
 		catch (NumberFormatException e) {
 			return backup;
