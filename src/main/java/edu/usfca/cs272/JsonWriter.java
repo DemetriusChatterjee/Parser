@@ -288,14 +288,29 @@ public class JsonWriter {
 	private static void writeSearchResult(
 			InvertedIndex.SearchResult result,
 			Writer writer, int indent) throws IOException {
-		// Convert search result to a map
-		Map<String, Object> map = new TreeMap<>();
-		map.put("count", result.getCount());
-		map.put("score", result.getScore());
-		map.put("where", result.getWhere());
+		writer.write('{');
+		writer.write('\n');
 		
-		// Use existing writeObject method
-		writeObject(map, writer, indent);
+		// Write count
+		writeIndent(writer, indent + 1);
+		writer.write("\"count\": ");
+		writer.write(String.valueOf(result.getCount()));
+		writer.write(",\n");
+		
+		// Write score with exactly 8 decimal places
+		writeIndent(writer, indent + 1);
+		writer.write("\"score\": ");
+		writer.write(String.format("%.8f", result.getScore()));
+		writer.write(",\n");
+		
+		// Write where
+		writeIndent(writer, indent + 1);
+		writer.write("\"where\": \"");
+		writer.write(result.getWhere());
+		writer.write("\"\n");
+		
+		writeIndent(writer, indent);
+		writer.write('}');
 	}
 	
 	/**
@@ -385,6 +400,8 @@ public class JsonWriter {
 	public static void writeSearchResults(
 			Map<String, ? extends List<InvertedIndex.SearchResult>> results,
 			Path path) throws IOException {
-		writeJson(results, path);
+		try (BufferedWriter writer = Files.newBufferedWriter(path, UTF_8)) {
+			writeSearchResults(results, writer, 0);
+		}
 	}
 }
