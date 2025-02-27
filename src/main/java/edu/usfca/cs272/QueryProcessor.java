@@ -12,6 +12,9 @@ import java.util.TreeSet;
 /**
  * A utility class for processing search queries. This includes cleaning, parsing,
  * and stemming query words according to the project requirements.
+ * 
+ * @author Demetrius Chatterjee
+ * @version Spring 2025
  */
 public class QueryProcessor {
 	/** Prevent instantiation of utility class. */
