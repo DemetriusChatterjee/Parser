@@ -83,7 +83,7 @@ public class Driver {
 						// Write results if -results flag is provided
 						if (parser.hasFlag("-results")) {
 							Path resultsPath = parser.getPath("-results", Path.of("results.json"));
-							JsonWriter.writeArrayObjects(searchResults, resultsPath);
+							JsonWriter.writeSearchResults(searchResults, resultsPath);
 						}
 					}
 					catch (IOException e) {
