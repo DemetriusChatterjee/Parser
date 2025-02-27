@@ -510,4 +510,18 @@ public class JsonWriter {
 		writeIndent(writer, indent);
 		writer.write('}');
 	}
+	/**
+	* Writes a collection of search results as a pretty JSON array of objects to file.
+	*
+	* @param results the collection of search results to write
+	* @param path the file path to use
+	* @throws IOException if an IO error occurs
+	*/
+	public static void writeSearchResults(
+			Collection<? extends Map<String, ? extends Collection<Integer>>> results,
+			Path path) throws IOException {
+		try (BufferedWriter writer = Files.newBufferedWriter(path, UTF_8)) {
+			writeSearchResults(results, writer, 0);
+		}
+	}
 }
