@@ -14,6 +14,9 @@ import java.util.TreeSet;
  * and stemming query words according to the project requirements.
  */
 public class QueryProcessor {
+	/** Prevent instantiation of utility class. */
+	private QueryProcessor() {}
+	
 	/**
 	 * Processes a single line of query text into a sorted list of unique stems.
 	 * The processing includes:
