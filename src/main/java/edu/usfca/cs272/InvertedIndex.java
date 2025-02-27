@@ -92,9 +92,6 @@ public class InvertedIndex {
 		/** The total number of matches found */
 		private final int count;
 		
-		/** The total number of words in the file */
-		private final int totalWords;
-		
 		/** The score (count/totalWords) for ranking */
 		private final double score;
 		
@@ -108,7 +105,6 @@ public class InvertedIndex {
 		public SearchResult(String where, int count, int totalWords) {
 			this.where = where;
 			this.count = count;
-			this.totalWords = totalWords;
 			this.score = (double) count / totalWords;
 		}
 		
