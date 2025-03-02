@@ -27,12 +27,12 @@ import java.util.HashMap;
 public class JsonWriter {
 	
 	/**
-     * Initializes a JsonWriter object. Private constructor to prevent instantiation
-     * of utility class.
-     */
-    private JsonWriter() {
-        // Do not instantiate.
-    }
+	 * Initializes a JsonWriter object. Private constructor to prevent instantiation
+	 * of utility class.
+	 */
+	private JsonWriter() {
+		// Do not instantiate.
+	}
 	
 	/**
 	 * Indents the writer by the specified number of times. Does nothing if the
@@ -78,7 +78,7 @@ public class JsonWriter {
 	}
 
 	/**
-	 * Checks if a Map object has String keys and converts it to Map<String, Object>.
+	 * Checks if a Map object has String keys and converts it to {@code Map<String, Object>}.
 	 *
 	 * @param value the object to check and convert
 	 * @return the converted map if valid
