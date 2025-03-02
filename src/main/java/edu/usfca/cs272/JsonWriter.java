@@ -20,6 +20,7 @@ import java.util.HashMap;
  * Warning: This class is not thread-safe. If multiple threads access this class
  * concurrently, access must be synchronized externally.
  *
+ * @author Demetrius Chatterjee
  * @author CS 272 Software Development (University of San Francisco)
  * @version Spring 2025
  */
@@ -77,41 +78,6 @@ public class JsonWriter {
 	}
 
 	/**
-	 * Writes the elements as a pretty JSON array.
-	 *
-	 * @param elements the elements to write
-	 * @param writer the writer to use
-	 * @param indent the initial indent level; the first bracket is not indented,
-	 *   inner elements are indented by one, and the last bracket is indented at
-	 *   the initial indentation level
-	 * @throws IOException if an IO error occurs
-	 */
-	public static void writeArray(Collection<?> elements, Writer writer, int indent) throws IOException {
-		writer.write('[');
-		writer.write('\n');
-		
-		if (!elements.isEmpty()) {
-			var iterator = elements.iterator();
-			
-			// Write first element (no preceding comma needed)
-			writeIndent(writer, indent + 1);
-			writer.write(iterator.next().toString());
-			
-			// Write remaining elements (preceded by commas)
-			while (iterator.hasNext()) {
-				writer.write(",\n");
-				writeIndent(writer, indent + 1);
-				writer.write(iterator.next().toString());
-			}
-			
-			writer.write('\n');
-		}
-		
-		writeIndent(writer, indent);
-		writer.write(']');
-	}
-
-	/**
 	 * Checks if a Map object has String keys and converts it to Map<String, Object>.
 	 *
 	 * @param value the object to check and convert
@@ -127,13 +93,14 @@ public class JsonWriter {
 			return Map.of();
 		}
 		
-		// Verify all keys are Strings and create a new type-safe map
+		// Create a new map and verify all keys are Strings
 		Map<String, Object> result = new HashMap<>();
-		for (Map.Entry<?, ?> entry : map.entrySet()) {
-			if (!(entry.getKey() instanceof String)) {
+		for (var entry : map.entrySet()) {
+			Object key = entry.getKey();
+			if (!(key instanceof String)) {
 				throw new IllegalArgumentException("Map values must have String keys");
 			}
-			result.put((String) entry.getKey(), entry.getValue());
+			result.put((String) key, entry.getValue());
 		}
 		
 		return result;
@@ -188,7 +155,11 @@ public class JsonWriter {
 		writer.write('\n');
 		
 		if (!elements.isEmpty()) {
-			var iterator = elements.entrySet().iterator();
+			// Sort entries by key and convert to list
+			var entries = elements.entrySet().stream()
+				.sorted(Map.Entry.comparingByKey())
+				.toList();
+			var iterator = entries.iterator();
 			
 			// Write first key-value pair
 			var entry = iterator.next();
@@ -212,6 +183,41 @@ public class JsonWriter {
 		
 		writeIndent(writer, indent);
 		writer.write('}');
+	}
+
+	/**
+	 * Writes the elements as a pretty JSON array.
+	 *
+	 * @param elements the elements to write
+	 * @param writer the writer to use
+	 * @param indent the initial indent level; the first bracket is not indented,
+	 *   inner elements are indented by one, and the last bracket is indented at
+	 *   the initial indentation level
+	 * @throws IOException if an IO error occurs
+	 */
+	public static void writeArray(Collection<?> elements, Writer writer, int indent) throws IOException {
+		writer.write('[');
+		writer.write('\n');
+		
+		if (!elements.isEmpty()) {
+			var iterator = elements.iterator();
+			
+			// Write first element (no preceding comma needed)
+			writeIndent(writer, indent + 1);
+			writer.write(iterator.next().toString());
+			
+			// Write remaining elements (preceded by commas)
+			while (iterator.hasNext()) {
+				writer.write(",\n");
+				writeIndent(writer, indent + 1);
+				writer.write(iterator.next().toString());
+			}
+			
+			writer.write('\n');
+		}
+		
+		writeIndent(writer, indent);
+		writer.write(']');
 	}
 
 	/**
