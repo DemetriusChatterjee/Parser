@@ -16,6 +16,10 @@ import java.util.logging.Logger;
  * @version Spring 2025
  */
 public class Driver {
+	/** 
+	 * A logger for debugging purposes. The logger will output to the console
+	 * when IO operations fail or other warning-level events occur.
+	 */
 	private static final Logger LOGGER = Logger.getLogger(Driver.class.getName());
 
 	/**
