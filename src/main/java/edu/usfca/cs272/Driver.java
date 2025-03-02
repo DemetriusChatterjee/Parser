@@ -22,6 +22,25 @@ public class Driver {
 	private static final Logger LOGGER = Logger.getLogger(Driver.class.getName());
 
 	/**
+	 * Helper method to write JSON output to a file. Handles writing the data and any
+	 * potential IO exceptions.
+	 *
+	 * @param data the map of data to write as JSON
+	 * @param path the path to write the JSON file
+	 * @param errorMessage the error message to use if writing fails
+	 */
+
+	private static void writeJsonOutput(Map<String, ?> data, Path path, String errorMessage) {
+		try {
+			JsonWriter.writeObject(data, path);
+		}
+		catch (IOException e) {
+			LOGGER.warning(errorMessage + ": " + e.getMessage());
+		}
+	}
+
+
+	/**
 	 * Initializes the classes necessary based on the provided command-line
 	 * arguments. This includes (but is not limited to) how to build or search an
 	 * inverted index.
@@ -109,15 +128,6 @@ public class Driver {
 		
 		Duration elapsed = Duration.between(start, Instant.now());
 		System.out.printf("Elapsed: %.3f seconds%n", elapsed.toMillis() / 1000.0);
-	}
-
-	private static void writeJsonOutput(Map<String, ?> data, Path path, String errorMessage) {
-		try {
-			JsonWriter.writeObject(data, path);
-		}
-		catch (IOException e) {
-			System.err.println(errorMessage + ": " + e.getMessage());
-		}
 	}
 
 	/** Prevent instantiating this class of static methods. */
