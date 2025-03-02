@@ -89,20 +89,13 @@ public class JsonWriter {
 			throw new IllegalArgumentException("Value is not a Map");
 		}
 		
-		if (map.isEmpty()) {
-			return Map.of();
-		}
-		
-		// Create a new map and verify all keys are Strings
 		Map<String, Object> result = new HashMap<>();
 		for (var entry : map.entrySet()) {
-			Object key = entry.getKey();
-			if (!(key instanceof String)) {
+			if (!(entry.getKey() instanceof String)) {
 				throw new IllegalArgumentException("Map values must have String keys");
 			}
-			result.put((String) key, entry.getValue());
+			result.put((String) entry.getKey(), entry.getValue());
 		}
-		
 		return result;
 	}
 
