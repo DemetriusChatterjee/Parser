@@ -10,13 +10,14 @@ import java.util.List;
 import java.util.TreeSet;
 
 /**
- * A utility class for processing search queries. This includes cleaning, parsing,
- * and stemming query words according to the project requirements.
- * 
+ * A utility class for processing search queries. This class provides methods for cleaning,
+ * parsing, and stemming query words from both individual lines and files. It ensures all
+ * processed queries are returned as sorted lists of unique stems.
+ *
  * @author Demetrius Chatterjee
  * @version Spring 2025
  */
-public class QueryProcessor {
+public final class QueryProcessor {
 	/** Prevent instantiation of utility class. */
 	private QueryProcessor() {}
 	
@@ -31,22 +32,23 @@ public class QueryProcessor {
 	 * @param line the line of query text to process
 	 * @return a sorted list of unique stems
 	 */
-	public static List<String> processLine(String line) {
+	public static List<String> processLine(final String line) {
 		// Use TreeSet to handle both duplicate removal and sorting
-		TreeSet<String> stems = FileStemmer.uniqueStems(line);
+		final TreeSet<String> stems = FileStemmer.uniqueStems(line);
 		return new ArrayList<>(stems);
 	}
 	
 	/**
 	 * Reads a query file and processes each line into a list of queries,
-	 * where each query is a sorted list of unique stems.
+	 * where each query is a sorted list of unique stems. Empty or blank
+	 * lines in the input file are skipped.
 	 *
-	 * @param path the path to the query file
-	 * @return a list of processed queries
-	 * @throws IOException if an IO error occurs
+	 * @param path the path to the query file to process
+	 * @return a list of processed queries, where each query is a sorted list of unique stems
+	 * @throws IOException if unable to read or process the query file
 	 */
-	public static List<List<String>> processQueryFile(Path path) throws IOException {
-		List<List<String>> queries = new ArrayList<>();
+	public static List<List<String>> processQueryFile(final Path path) throws IOException {
+		final List<List<String>> queries = new ArrayList<>();
 		
 		try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
 			String line;
