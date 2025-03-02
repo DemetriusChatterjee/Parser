@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 
 /**
  * Outputs several simple data structures in "pretty" JSON format where newlines
@@ -111,6 +112,34 @@ public class JsonWriter {
 	}
 
 	/**
+	 * Checks if a Map object has String keys and converts it to Map<String, Object>.
+	 *
+	 * @param value the object to check and convert
+	 * @return the converted map if valid
+	 * @throws IllegalArgumentException if the map has non-String keys or if value is not a Map
+	 */
+	private static Map<String, Object> asStringMap(Object value) {
+		if (!(value instanceof Map<?, ?> map)) {
+			throw new IllegalArgumentException("Value is not a Map");
+		}
+		
+		if (map.isEmpty()) {
+			return Map.of();
+		}
+		
+		// Verify all keys are Strings and create a new type-safe map
+		Map<String, Object> result = new HashMap<>();
+		for (Map.Entry<?, ?> entry : map.entrySet()) {
+			if (!(entry.getKey() instanceof String)) {
+				throw new IllegalArgumentException("Map values must have String keys");
+			}
+			result.put((String) entry.getKey(), entry.getValue());
+		}
+		
+		return result;
+	}
+
+	/**
 	 * Writes a value in the appropriate JSON format.
 	 *
 	 * @param value the value to write
@@ -127,17 +156,8 @@ public class JsonWriter {
 		else if (value instanceof Number) {
 			writer.write(value.toString());
 		}
-		else if (value instanceof Map<?, ?> map && map.isEmpty()) {
-			writeObject(Map.of(), writer, indent);
-		}
-		else if (value instanceof Map<?, ?> map) {
-			if (map.keySet().stream().allMatch(key -> key instanceof String)) {
-				@SuppressWarnings("unchecked") // Safe cast due to runtime check
-				Map<String, Object> nested = (Map<String, Object>) map;
-				writeObject(nested, writer, indent);
-			} else {
-				throw new IllegalArgumentException("Map values must have String keys");
-			}
+		else if (value instanceof Map<?, ?>) {
+			writeObject(asStringMap(value), writer, indent);
 		}
 		else if (value instanceof Collection<?>) {
 			writeArray((Collection<?>) value, writer, indent);
@@ -203,17 +223,8 @@ public class JsonWriter {
 	 */
 	private static void writeJson(Object data, Path path) throws IOException {
 		try (BufferedWriter writer = Files.newBufferedWriter(path, UTF_8)) {
-			if (data instanceof Map<?, ?> map && map.isEmpty()) {
-				writeObject(Map.of(), writer, 0);
-			}
-			else if (data instanceof Map<?, ?> map) {
-				if (map.keySet().stream().allMatch(key -> key instanceof String)) {
-					@SuppressWarnings("unchecked") // Safe cast due to runtime check
-					Map<String, Object> typedMap = (Map<String, Object>) map;
-					writeObject(typedMap, writer, 0);
-				} else {
-					throw new IllegalArgumentException("Map must have String keys");
-				}
+			if (data instanceof Map<?, ?>) {
+				writeObject(asStringMap(data), writer, 0);
 			}
 			else if (data instanceof Collection<?>) {
 				writeArray((Collection<?>) data, writer, 0);
