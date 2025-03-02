@@ -4,10 +4,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.logging.Logger;
 
 /**
@@ -29,7 +26,6 @@ public class Driver {
 	 * @param path the path to write the JSON file
 	 * @param errorMessage the error message to use if writing fails
 	 */
-
 	private static void writeJsonOutput(Map<String, ?> data, Path path, String errorMessage) {
 		try {
 			JsonWriter.writeObject(data, path);
@@ -38,7 +34,6 @@ public class Driver {
 			LOGGER.warning(errorMessage + ": " + e.getMessage());
 		}
 	}
-
 
 	/**
 	 * Initializes the classes necessary based on the provided command-line
@@ -49,8 +44,6 @@ public class Driver {
 	 *             "-text" for input file/directory path
 	 *             "-counts" for word counts output path
 	 *             "-index" for inverted index output path
-	 *             "-query" for query file path
-	 *             "-results" for search results output path
 	 */
 	public static void main(final String[] args) {
 		final Instant start = Instant.now();
@@ -90,42 +83,6 @@ public class Driver {
 			writeJsonOutput(index.getIndex(), indexPath, "Unable to write index to file");
 		}
 
-		// Handle search results
-		Map<String, List<InvertedIndex.SearchResult>> searchResults = new TreeMap<>();
-		
-		if (parser.hasFlag("-query")) {
-			Path queryPath = parser.getPath("-query");
-			if (queryPath != null) {
-				try {
-					// Process all queries from the file
-					var queries = QueryProcessor.processQueryFile(queryPath);
-					
-					// Convert processed queries back to strings for searching
-					List<String> queryStrings = new ArrayList<>();
-					for (List<String> query : queries) {
-						queryStrings.add(String.join(" ", query));
-					}
-					
-					// Perform exact search for all queries
-					searchResults = index.exactSearchAll(queryStrings);
-				}
-				catch (IOException e) {
-					LOGGER.warning("Unable to process query file: " + e.getMessage());
-				}
-			}
-		}
-		
-		// Write results if -results flag is provided (even if empty)
-		if (parser.hasFlag("-results")) {
-			try {
-				Path resultsPath = parser.getPath("-results", Path.of("results.json"));
-				JsonWriter.writeSearchResults(searchResults, resultsPath);
-			}
-			catch (IOException e) {
-				System.err.println("Unable to write results to file");
-			}
-		}
-		
 		Duration elapsed = Duration.between(start, Instant.now());
 		System.out.printf("Elapsed: %.3f seconds%n", elapsed.toMillis() / 1000.0);
 	}
