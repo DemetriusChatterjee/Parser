@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.logging.Logger;
 
 /**
  * Class responsible for running this project based on the provided command-line
@@ -18,6 +19,8 @@ import java.util.TreeMap;
  * @version Spring 2025
  */
 public class Driver {
+	private static final Logger LOGGER = Logger.getLogger(Driver.class.getName());
+
 	/**
 	 * Initializes the classes necessary based on the provided command-line
 	 * arguments. This includes (but is not limited to) how to build or search an
@@ -30,10 +33,10 @@ public class Driver {
 	 *             "-query" for query file path
 	 *             "-results" for search results output path
 	 */
-	public static void main(String[] args) {
-		Instant start = Instant.now();
-		ArgumentParser parser = new ArgumentParser(args);
-		InvertedIndex index = new InvertedIndex();
+	public static void main(final String[] args) {
+		final Instant start = Instant.now();
+		final ArgumentParser parser = new ArgumentParser(args);
+		final InvertedIndex index = new InvertedIndex();
 		
 		// Process input path if provided
 		if (parser.hasFlag("-text")) {
@@ -58,24 +61,14 @@ public class Driver {
 		// Write output files if flags are provided
 		// Write counts output if flag provided
 		if (parser.hasFlag("-counts")) {
-			try {
-				Path countsPath = parser.getPath("-counts", Path.of("counts.json"));
-				JsonWriter.writeObject(index.getCounts(), countsPath);
-			}
-			catch (IOException e) {
-				System.err.println("Unable to write counts to file");
-			}
+			Path countsPath = parser.getPath("-counts", Path.of("counts.json"));
+			writeJsonOutput(index.getCounts(), countsPath, "Unable to write counts to file");
 		}
 		
 		// Write index output if flag provided 
 		if (parser.hasFlag("-index")) {
-			try {
-				Path indexPath = parser.getPath("-index", Path.of("index.json")); 
-				JsonWriter.writeObject(index.getIndex(), indexPath);
-			}
-			catch (IOException e) {
-				System.err.println("Unable to write index to file");
-			}
+			Path indexPath = parser.getPath("-index", Path.of("index.json")); 
+			writeJsonOutput(index.getIndex(), indexPath, "Unable to write index to file");
 		}
 
 		// Handle search results
@@ -98,7 +91,7 @@ public class Driver {
 					searchResults = index.exactSearchAll(queryStrings);
 				}
 				catch (IOException e) {
-					System.err.println("Unable to process query file");
+					LOGGER.warning("Unable to process query file: " + e.getMessage());
 				}
 			}
 		}
@@ -116,6 +109,15 @@ public class Driver {
 		
 		Duration elapsed = Duration.between(start, Instant.now());
 		System.out.printf("Elapsed: %.3f seconds%n", elapsed.toMillis() / 1000.0);
+	}
+
+	private static void writeJsonOutput(Map<String, ?> data, Path path, String errorMessage) {
+		try {
+			JsonWriter.writeObject(data, path);
+		}
+		catch (IOException e) {
+			System.err.println(errorMessage + ": " + e.getMessage());
+		}
 	}
 
 	/** Prevent instantiating this class of static methods. */
