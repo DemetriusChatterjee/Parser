@@ -81,6 +81,8 @@ public class InvertedIndex {
 		return index.containsKey(stem);
 	}
 	
+	// TODO containsCount(String location) --> test your counts map instead
+	
 	/**
 	 * Returns whether the index contains the given stem and location.
 	 *
@@ -89,6 +91,7 @@ public class InvertedIndex {
 	 * @return true if the location is found for the stem
 	 */
 	public boolean containsLocation(String stem, String location) {
+		// TODO stem being access twice... do the get first always
 		return index.containsKey(stem) && index.get(stem).containsKey(location);
 	}
 	
@@ -106,6 +109,8 @@ public class InvertedIndex {
 		}
 		return index.get(stem).get(location).contains(position);
 	}
+	
+	// TODO numCounts() 
 	
 	/**
 	 * Returns the number of unique stems in the index.
@@ -181,12 +186,20 @@ public class InvertedIndex {
 		return index.toString();
 	}
 	
+	/* TODO 
+	public void toJson(Path path) throws IOException {
+		call your JsonWriter method here instead
+	}
+	
+	This will change Driver and JsonWriter
+	*/
+	
 	/**
 	 * Gets the inverted index data structure.
 	 *
 	 * @return the inverted index
 	 */
-	public Map<String, TreeMap<String, TreeSet<Integer>>> getIndex() {
+	public Map<String, TreeMap<String, TreeSet<Integer>>> getIndex() { // TODO Remove
 		return index;
 	}
 	
@@ -195,7 +208,7 @@ public class InvertedIndex {
 	 *
 	 * @return the word counts
 	 */
-	public TreeMap<String, Integer> getCounts() {
+	public TreeMap<String, Integer> getCounts() { // TODO Breaking encapsulation, fix
 		return counts;
 	}
 	
@@ -207,6 +220,7 @@ public class InvertedIndex {
 		counts.clear();
 	}
 
+	// TODO Remove project 2 stuff, make sure you can explain why you make design choices like nesting here
 	/**
 	 * Represents a search result with metadata for ranking.
 	 */
