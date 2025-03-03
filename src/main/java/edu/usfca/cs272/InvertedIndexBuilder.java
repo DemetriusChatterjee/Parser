@@ -44,11 +44,7 @@ public final class InvertedIndexBuilder {
 	 * @throws IOException if an IO error occurs during file processing
 	 * @throws IllegalArgumentException if the path is null or does not exist
 	 */
-	public final void build(Path path) throws IOException {
-		if (path == null || !Files.exists(path)) { // TODO Could remove it (optional)
-			throw new IllegalArgumentException("Invalid path: " + path);
-		}
-		
+	public final void build(Path path) throws IOException {		
 		if (Files.isDirectory(path)) {
 			buildDirectory(path);
 		}
@@ -65,12 +61,9 @@ public final class InvertedIndexBuilder {
 	 * @param directory the directory to process
 	 * @throws IOException if an IO error occurs during directory traversal or file processing
 	 */
-	private void buildDirectory(Path directory) throws IOException { // TODO public
+	public void buildDirectory(Path directory) throws IOException { 
 		try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
-			var paths = new TreeSet<Path>(); // TODO Remove, loop through the stream directly
-			stream.forEach(paths::add);
-			
-			for (var path : paths) {
+			for (var path : stream) {
 				if (Files.isDirectory(path)) {
 					buildDirectory(path);
 				}
@@ -100,17 +93,20 @@ public final class InvertedIndexBuilder {
 	 * @param path the text file to process
 	 * @throws IOException if an IO error occurs during file reading or processing
 	 */
-	private void buildFile(Path path) throws IOException { // TODO public
-		index.addAll(FileStemmer.listStems(path), path.toString()); // TODO Inefficient...
-		
-		/*
-		 * TODO This one to fix requires duplicating code from FileStemmer...
-		 * 
-		 * BufferedReader, read line by line, parse the line, stem the word, then
-		 * add directly to the index (never to a list)
-		 */
-		
-		
-		
+	public void buildFile(Path path) throws IOException {
+		try (var reader = Files.newBufferedReader(path)) {
+			String line;
+			int position = 1;
+			while ((line = reader.readLine()) != null) {
+				for (String word : line.split("\\s+")) {
+					if (!word.isEmpty()) {
+						String stem = word.toLowerCase().replaceAll("[^a-z0-9]", "");
+						if (!stem.isEmpty()) {
+							index.add(stem, path.toString(), position++);
+						}
+					}
+				}
+			}
+		}
 	}
 }
