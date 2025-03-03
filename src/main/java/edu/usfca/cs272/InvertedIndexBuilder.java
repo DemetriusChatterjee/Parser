@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.TreeSet;
 
 /**
  * Builder class responsible for processing text files and building an inverted index.
