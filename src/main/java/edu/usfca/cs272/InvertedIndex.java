@@ -31,7 +31,7 @@ public class InvertedIndex {
 	}
 	
 	/**
-	 * Adds a word stem and its position to the index for a specific file location.
+	 * Adds a word stem and its position to the index for a specific file location. g
 	 *
 	 * @param stem the word stem to add
 	 * @param location the file path where the stem was found
