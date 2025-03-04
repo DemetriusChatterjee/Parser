@@ -9,7 +9,6 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -197,13 +196,13 @@ public class JsonWriter {
 			
 			// Write first element (no preceding comma needed)
 			writeIndent(writer, indent + 1);
-			writer.write(iterator.next().toString());
+			writeValue(iterator.next(), writer, indent + 1);
 			
 			// Write remaining elements (preceded by commas)
 			while (iterator.hasNext()) {
 				writer.write(",\n");
 				writeIndent(writer, indent + 1);
-				writer.write(iterator.next().toString());
+				writeValue(iterator.next(), writer, indent + 1);
 			}
 			
 			writer.write('\n');
@@ -284,134 +283,6 @@ public class JsonWriter {
 		}
 		catch (IOException e) {
 			return null;
-		}
-	}
-
-	/**
-	 * Writes a single search result as a pretty JSON object.
-	 *
-	 * @param result the search result to write
-	 * @param writer the writer to use
-	 * @param indent the initial indent level
-	 * @throws IOException if an IO error occurs
-	 */
-	private static void writeSearchResult(
-			InvertedIndex.SearchResult result,
-			Writer writer, int indent) throws IOException {
-		writer.write('{');
-		writer.write('\n');
-		
-		// Write count
-		writeIndent(writer, indent + 1);
-		writer.write("\"count\": ");
-		writer.write(String.valueOf(result.getCount()));
-		writer.write(",\n");
-		
-		// Write score with exactly 8 decimal places
-		writeIndent(writer, indent + 1);
-		writer.write("\"score\": ");
-		writer.write(String.format("%.8f", result.getScore()));
-		writer.write(",\n");
-		
-		// Write where
-		writeIndent(writer, indent + 1);
-		writer.write("\"where\": \"");
-		writer.write(result.getWhere());
-		writer.write("\"\n");
-		
-		writeIndent(writer, indent);
-		writer.write('}');
-	}
-	
-	/**
-	 * Writes a list of search results as a pretty JSON array.
-	 *
-	 * @param results the list of search results to write
-	 * @param writer the writer to use
-	 * @param indent the initial indent level
-	 * @throws IOException if an IO error occurs
-	 */
-	private static void writeSearchResultArray(
-			List<InvertedIndex.SearchResult> results,
-			Writer writer, int indent) throws IOException {
-		writer.write('[');
-		writer.write('\n');
-		
-		if (!results.isEmpty()) {
-			var iterator = results.iterator();
-			
-			// Write first result
-			writeIndent(writer, indent + 1);
-			writeSearchResult(iterator.next(), writer, indent + 1);
-			
-			// Write remaining results
-			while (iterator.hasNext()) {
-				writer.write(",\n");
-				writeIndent(writer, indent + 1);
-				writeSearchResult(iterator.next(), writer, indent + 1);
-			}
-			
-			writer.write('\n');
-		}
-		
-		writeIndent(writer, indent);
-		writer.write(']');
-	}
-	
-	/**
-	 * Writes a collection of search results as a pretty JSON object.
-	 * Each key is a query string and each value is an array of search results.
-	 *
-	 * @param results the map of query strings to search results
-	 * @param writer the writer to use
-	 * @param indent the initial indent level
-	 * @throws IOException if an IO error occurs
-	 */
-	public static void writeSearchResults(
-			Map<String, ? extends List<InvertedIndex.SearchResult>> results,
-			Writer writer, int indent) throws IOException {
-		writer.write('{');
-		writer.write('\n');
-		
-		if (!results.isEmpty()) {
-			var iterator = results.entrySet().iterator();
-			
-			// Write first query and its results
-			var entry = iterator.next();
-			writeIndent(writer, indent + 1);
-			writeQuote(entry.getKey(), writer, 0);
-			writer.write(": ");
-			writeSearchResultArray(entry.getValue(), writer, indent + 1);
-			
-			// Write remaining queries and their results
-			while (iterator.hasNext()) {
-				writer.write(",\n");
-				entry = iterator.next();
-				writeIndent(writer, indent + 1);
-				writeQuote(entry.getKey(), writer, 0);
-				writer.write(": ");
-				writeSearchResultArray(entry.getValue(), writer, indent + 1);
-			}
-			
-			writer.write('\n');
-		}
-		
-		writeIndent(writer, indent);
-		writer.write('}');
-	}
-	
-	/**
-	 * Writes a map of search results as a pretty JSON object to file.
-	 *
-	 * @param results the map of query strings to search results
-	 * @param path the file path to use
-	 * @throws IOException if an IO error occurs
-	 */
-	public static void writeSearchResults(
-			Map<String, ? extends List<InvertedIndex.SearchResult>> results,
-			Path path) throws IOException {
-		try (BufferedWriter writer = Files.newBufferedWriter(path, UTF_8)) {
-			writeSearchResults(results, writer, 0);
 		}
 	}
 }

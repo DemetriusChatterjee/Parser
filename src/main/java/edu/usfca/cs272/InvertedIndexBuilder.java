@@ -4,7 +4,8 @@ import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.TreeSet;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Builder class responsible for processing text files and building an inverted index.
@@ -44,11 +45,7 @@ public final class InvertedIndexBuilder {
 	 * @throws IOException if an IO error occurs during file processing
 	 * @throws IllegalArgumentException if the path is null or does not exist
 	 */
-	public final void build(Path path) throws IOException {
-		if (path == null || !Files.exists(path)) {
-			throw new IllegalArgumentException("Invalid path: " + path);
-		}
-		
+	public final void build(Path path) throws IOException {		
 		if (Files.isDirectory(path)) {
 			buildDirectory(path);
 		}
@@ -65,12 +62,9 @@ public final class InvertedIndexBuilder {
 	 * @param directory the directory to process
 	 * @throws IOException if an IO error occurs during directory traversal or file processing
 	 */
-	private void buildDirectory(Path directory) throws IOException {
+	public void buildDirectory(Path directory) throws IOException { 
 		try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
-			var paths = new TreeSet<Path>();
-			stream.forEach(paths::add);
-			
-			for (var path : paths) {
+			for (var path : stream) {
 				if (Files.isDirectory(path)) {
 					buildDirectory(path);
 				}
@@ -100,7 +94,16 @@ public final class InvertedIndexBuilder {
 	 * @param path the text file to process
 	 * @throws IOException if an IO error occurs during file reading or processing
 	 */
-	private void buildFile(Path path) throws IOException {
-		index.addAll(FileStemmer.listStems(path), path.toString());
+	public void buildFile(Path path) throws IOException {
+		try (var reader = Files.newBufferedReader(path)) {
+			String line;
+			List<String> stems = new ArrayList<>();
+			while ((line = reader.readLine()) != null) {
+				stems.addAll(FileStemmer.listStems(line));
+			}
+			if (!stems.isEmpty()) {
+				index.addAll(stems, path.toString());
+			}
+		}
 	}
 }
