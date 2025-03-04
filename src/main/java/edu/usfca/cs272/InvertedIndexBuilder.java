@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Builder class responsible for processing text files and building an inverted index.
@@ -95,16 +97,12 @@ public final class InvertedIndexBuilder {
 	public void buildFile(Path path) throws IOException {
 		try (var reader = Files.newBufferedReader(path)) {
 			String line;
-			int position = 1;
+			List<String> stems = new ArrayList<>();
 			while ((line = reader.readLine()) != null) {
-				for (String word : line.split("\\s+")) {
-					if (!word.isEmpty()) {
-						String stem = word.toLowerCase().replaceAll("[^a-z0-9]", "");
-						if (!stem.isEmpty()) {
-							index.add(stem, path.toString(), position++);
-						}
-					}
-				}
+				stems.addAll(FileStemmer.listStems(line));
+			}
+			if (!stems.isEmpty()) {
+				index.addAll(stems, path.toString());
 			}
 		}
 	}
