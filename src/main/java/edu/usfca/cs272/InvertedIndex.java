@@ -1,12 +1,13 @@
 package edu.usfca.cs272;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.io.IOException;
+import java.nio.file.Path;
 
 /**
  * Data structure to store an inverted index and word counts from text files. 
@@ -81,7 +82,15 @@ public class InvertedIndex {
 		return index.containsKey(stem);
 	}
 	
-	// TODO containsCount(String location) --> test your counts map instead
+	/**
+	 * Returns whether the index contains a word count for the given location.
+	 *
+	 * @param location the location to look for
+	 * @return true if the location has a word count
+	 */
+	public boolean containsCount(String location) {
+		return counts.containsKey(location);
+	}
 	
 	/**
 	 * Returns whether the index contains the given stem and location.
@@ -91,8 +100,8 @@ public class InvertedIndex {
 	 * @return true if the location is found for the stem
 	 */
 	public boolean containsLocation(String stem, String location) {
-		// TODO stem being access twice... do the get first always
-		return index.containsKey(stem) && index.get(stem).containsKey(location);
+		var locations = index.get(stem);
+		return locations != null && locations.containsKey(location);
 	}
 	
 	/**
@@ -104,13 +113,22 @@ public class InvertedIndex {
 	 * @return true if the position is found
 	 */
 	public boolean containsPosition(String stem, String location, int position) {
-		if (!containsLocation(stem, location)) {
+		var locations = index.get(stem);
+		if (locations == null) {
 			return false;
 		}
-		return index.get(stem).get(location).contains(position);
+		var positions = locations.get(location);
+		return positions != null && positions.contains(position);
 	}
 	
-	// TODO numCounts() 
+	/**
+	 * Returns the number of locations that have word counts.
+	 *
+	 * @return the number of locations with counts
+	 */
+	public int numCounts() {
+		return counts.size();
+	}
 	
 	/**
 	 * Returns the number of unique stems in the index.
@@ -128,7 +146,8 @@ public class InvertedIndex {
 	 * @return the number of locations or 0 if stem not found
 	 */
 	public int numLocations(String stem) {
-		return index.containsKey(stem) ? index.get(stem).size() : 0;
+		var locations = index.get(stem);
+		return locations == null ? 0 : locations.size();
 	}
 	
 	/**
@@ -139,10 +158,12 @@ public class InvertedIndex {
 	 * @return the number of positions or 0 if not found
 	 */
 	public int numPositions(String stem, String location) {
-		if (!containsLocation(stem, location)) {
+		var locations = index.get(stem);
+		if (locations == null) {
 			return 0;
 		}
-		return index.get(stem).get(location).size();
+		var positions = locations.get(location);
+		return positions == null ? 0 : positions.size();
 	}
 	
 	/**
@@ -175,10 +196,12 @@ public class InvertedIndex {
 	 * @return set of positions or empty set if not found
 	 */
 	public Set<Integer> getPositions(String stem, String location) {
-		if (!containsLocation(stem, location)) {
+		var locations = index.get(stem);
+		if (locations == null) {
 			return Collections.emptySet();
 		}
-		return Collections.unmodifiableSet(index.get(stem).get(location));
+		var positions = locations.get(location);
+		return positions == null ? Collections.emptySet() : Collections.unmodifiableSet(positions);
 	}
 	
 	@Override
@@ -186,30 +209,23 @@ public class InvertedIndex {
 		return index.toString();
 	}
 	
-	/* TODO 
+	/**
+	 * Writes the inverted index to a JSON file.
+	 *
+	 * @param path the path to write the JSON file to
+	 * @throws IOException if an IO error occurs
+	 */
 	public void toJson(Path path) throws IOException {
-		call your JsonWriter method here instead
-	}
-	
-	This will change Driver and JsonWriter
-	*/
-	
-	/**
-	 * Gets the inverted index data structure.
-	 *
-	 * @return the inverted index
-	 */
-	public Map<String, TreeMap<String, TreeSet<Integer>>> getIndex() { // TODO Remove
-		return index;
+		JsonWriter.writeObject(index, path);
 	}
 	
 	/**
-	 * Gets the word counts data structure.
+	 * Gets an unmodifiable view of the word counts data structure.
 	 *
-	 * @return the word counts
+	 * @return an unmodifiable view of the word counts
 	 */
-	public TreeMap<String, Integer> getCounts() { // TODO Breaking encapsulation, fix
-		return counts;
+	public Map<String, Integer> getCounts() {
+		return Collections.unmodifiableMap(counts);
 	}
 	
 	/**
@@ -218,154 +234,5 @@ public class InvertedIndex {
 	public void clear() {
 		index.clear();
 		counts.clear();
-	}
-
-	// TODO Remove project 2 stuff, make sure you can explain why you make design choices like nesting here
-	/**
-	 * Represents a search result with metadata for ranking.
-	 */
-	public static class SearchResult implements Comparable<SearchResult> {
-		/** The path where matches were found */
-		private final String where;
-		
-		/** The total number of matches found */
-		private final int count;
-		
-		/** The score (count/totalWords) for ranking */
-		private final double score;
-		
-		/**
-		 * Creates a new search result.
-		 *
-		 * @param where the file path where matches were found
-		 * @param count the total number of matches found
-		 * @param totalWords the total number of words in the file
-		 */
-		public SearchResult(String where, int count, int totalWords) {
-			this.where = where;
-			this.count = count;
-			this.score = (double) count / totalWords;
-		}
-		
-		@Override
-		public int compareTo(SearchResult other) {
-			// First compare by score (descending)
-			int comparison = Double.compare(other.score, this.score);
-			if (comparison != 0) {
-				return comparison;
-			}
-			
-			// Then by count (descending)
-			comparison = Integer.compare(other.count, this.count);
-			if (comparison != 0) {
-				return comparison;
-			}
-			
-			// Finally by location (ascending, case-insensitive)
-			return this.where.compareToIgnoreCase(other.where);
-		}
-		
-		/**
-		 * Gets the file path where matches were found.
-		 *
-		 * @return the file path
-		 */
-		public String getWhere() {
-			return where;
-		}
-		
-		/**
-		 * Gets the total number of matches found.
-		 *
-		 * @return the number of matches
-		 */
-		public int getCount() {
-			return count;
-		}
-		
-		/**
-		 * Gets the score used for ranking.
-		 *
-		 * @return the score
-		 */
-		public double getScore() {
-			return score;
-		}
-	}
-	
-	/**
-	 * Gets the cleaned and sorted query string from a list of stems.
-	 * 
-	 * @param stems the list of query stems
-	 * @return the query string with stems joined by spaces
-	 */
-	private static String getQueryString(List<String> stems) {
-		return String.join(" ", stems);
-	}
-	
-	/**
-	 * Performs an exact search on the inverted index for a line of query words.
-	 * For each location found, creates a SearchResult with metadata for ranking.
-	 * 
-	 * @param line the line of query words to search for
-	 * @return a map with the query string as key and a list of sorted search results as value
-	 */
-	public Map<String, List<SearchResult>> exactSearch(String line) {
-		// Process the query line to get sorted unique stems
-		var stems = QueryProcessor.processLine(line);
-		if (stems.isEmpty()) {
-			return new TreeMap<>();
-		}
-		
-		// Create a map to store search results (location -> total matches)
-		TreeMap<String, Integer> matches = new TreeMap<>();
-		
-		// For each stem in the query
-		for (String stem : stems) {
-			// Skip if stem not in index
-			if (!index.containsKey(stem)) {
-				continue;
-			}
-			
-			// For each location where this stem appears
-			for (var entry : index.get(stem).entrySet()) {
-				String location = entry.getKey();
-				int count = entry.getValue().size(); // Number of times this stem appears in this location
-				
-				// Add or update the total matches for this location
-				matches.merge(location, count, Integer::sum);
-			}
-		}
-		
-		// Convert matches to SearchResult objects with metadata
-		List<SearchResult> results = new ArrayList<>();
-		for (var entry : matches.entrySet()) {
-			String location = entry.getKey();
-			int matchCount = entry.getValue();
-			int totalWords = counts.get(location);
-			results.add(new SearchResult(location, matchCount, totalWords));
-		}
-		
-		// Sort results by score, count, and location
-		results.sort(null); // Uses natural ordering defined by compareTo
-		
-		// Create map with query string as key and sorted results as value
-		TreeMap<String, List<SearchResult>> searchResults = new TreeMap<>();
-		searchResults.put(getQueryString(stems), results);
-		return searchResults;
-	}
-	
-	/**
-	 * Performs exact searches for multiple query lines and returns all results.
-	 * 
-	 * @param queries the list of query lines to search for
-	 * @return a map where each key is a query string and each value is a list of sorted search results
-	 */
-	public Map<String, List<SearchResult>> exactSearchAll(List<String> queries) {
-		TreeMap<String, List<SearchResult>> allResults = new TreeMap<>();
-		for (String query : queries) {
-			allResults.putAll(exactSearch(query));
-		}
-		return allResults;
 	}
 }
