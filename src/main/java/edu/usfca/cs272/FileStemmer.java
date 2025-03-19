@@ -251,19 +251,43 @@ public class FileStemmer {
 	 * @see StandardCharsets#UTF_8
 	 * @see #uniqueStems(String, Stemmer)
 	 */
-	public static ArrayList<TreeSet<String>> listUniqueStems(Path input) throws IOException {
+	// public static ArrayList<TreeSet<String>> listUniqueStems(Path input) throws IOException {
+	// 	// Create a new English snowball stemmer
+	// 	Stemmer stemmer = new SnowballStemmer(ENGLISH);
+		
+	// 	// Create ArrayList to store TreeSets for each line
+	// 	ArrayList<TreeSet<String>> results = new ArrayList<>();
+		
+	// 	try (var reader = Files.newBufferedReader(input, UTF_8)) {
+	// 		String line;
+	// 		while ((line = reader.readLine()) != null) {
+	// 			// Create a new TreeSet for this line and add it to results
+	// 			TreeSet<String> stems = uniqueStems(line, stemmer);
+	// 			results.add(stems);
+	// 		}
+	// 	}
+		
+	// 	return results;
+	// }
+
+	public static TreeSet<String> listUniqueStems(Path input) throws IOException {
 		// Create a new English snowball stemmer
 		Stemmer stemmer = new SnowballStemmer(ENGLISH);
 		
-		// Create ArrayList to store TreeSets for each line
-		ArrayList<TreeSet<String>> results = new ArrayList<>();
+		// Create a single TreeSet to store all unique stems
+		TreeSet<String> results = new TreeSet<>();
 		
 		try (var reader = Files.newBufferedReader(input, UTF_8)) {
 			String line;
 			while ((line = reader.readLine()) != null) {
-				// Create a new TreeSet for this line and add it to results
-				TreeSet<String> stems = uniqueStems(line, stemmer);
-				results.add(stems);
+				// Process each line and add stems directly to the TreeSet
+				for (String word : line.split("\\W+")) {
+					String cleaned = word.trim().toLowerCase();
+					if (!cleaned.isEmpty()) {
+						String stemmed = (String) stemmer.stem(cleaned);
+						results.add(stemmed); // Automatically deduplicated
+					}
+				}
 			}
 		}
 		
