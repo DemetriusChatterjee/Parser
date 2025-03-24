@@ -269,6 +269,7 @@ public class FileStemmer {
 		
 	// 	return results;
 	// }
+	// TODO Keep the one above, delete the one below
 
 	public static TreeSet<String> listUniqueStems(Path input) throws IOException {
 		// Create a new English snowball stemmer

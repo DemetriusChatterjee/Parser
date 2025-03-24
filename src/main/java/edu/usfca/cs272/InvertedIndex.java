@@ -182,6 +182,7 @@ public class InvertedIndex {
 	 * @return set of locations or empty set if stem not found
 	 */
 	public Set<String> getLocations(String stem) {
+		// TODO var locations = index.get(stem); etc.
 		if (!index.containsKey(stem)) {
 			return Collections.emptySet();
 		}
@@ -224,9 +225,15 @@ public class InvertedIndex {
 	 *
 	 * @return an unmodifiable view of the word counts
 	 */
-	public Map<String, Integer> getCounts() {
+	public Map<String, Integer> getCounts() { // TODO Move closer to the other get methods
 		return Collections.unmodifiableMap(counts);
 	}
+	
+	/* TODO 
+	public Integer getCount(String location) {
+		return counts.getOrDefault(location, 0);
+	}
+	*/
 	
 	/**
 	 * Clears both the inverted index and word counts.

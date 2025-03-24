@@ -45,7 +45,7 @@ public final class InvertedIndexBuilder {
 	 * @throws IOException if an IO error occurs during file processing
 	 * @throws IllegalArgumentException if the path is null or does not exist
 	 */
-	public final void build(Path path) throws IOException {		
+	public final void build(Path path) throws IOException {
 		if (Files.isDirectory(path)) {
 			buildDirectory(path);
 		}
@@ -94,16 +94,27 @@ public final class InvertedIndexBuilder {
 	 * @param path the text file to process
 	 * @throws IOException if an IO error occurs during file reading or processing
 	 */
+	// TODO public static void buildFile(Path path, InvertedIndex index) throws IOException {
 	public void buildFile(Path path) throws IOException {
 		try (var reader = Files.newBufferedReader(path)) {
 			String line;
-			List<String> stems = new ArrayList<>();
+			// TODO Create a stemmer here
+			List<String> stems = new ArrayList<>(); // TODO Remove
 			while ((line = reader.readLine()) != null) {
+				// TODO Parse the line, stem the word, and add directly to the index
 				stems.addAll(FileStemmer.listStems(line));
 			}
-			if (!stems.isEmpty()) {
+			if (!stems.isEmpty()) { // TODO Remove
 				index.addAll(stems, path.toString());
 			}
 		}
 	}
+	
+	// TODO Check with Sophie that you got this fix correct
+	
+	/* TODO 
+	public void buildFile(Path path) throws IOException {
+		buildFile(path, this.index);
+	}
+	*/
 }

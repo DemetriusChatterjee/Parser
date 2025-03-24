@@ -30,7 +30,7 @@ public class Driver {
 	 * @param path the path to write the JSON file
 	 * @param errorMessage the error message to use if writing fails
 	 */
-	private static void writeJsonOutput(Map<String, ?> data, Path path, String errorMessage) {
+	private static void writeJsonOutput(Map<String, ?> data, Path path, String errorMessage) { // TODO Embed this logic directly into Driver.main instead
 		try {
 			JsonWriter.writeObject(data, path);
 		}

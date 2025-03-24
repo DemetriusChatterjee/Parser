@@ -131,6 +131,13 @@ public class JsonWriter {
 			writer.write('"');
 		}
 	}
+	
+	/*
+	 * TODO Avoid an instance of approach here... don't need to go too far in 
+	 * supporing all kinds of json writing
+	 * 
+	 * Go back to the homework approach.
+	 */
 
 	/**
 	 * Writes the elements as a pretty JSON object.
@@ -149,7 +156,7 @@ public class JsonWriter {
 		if (!elements.isEmpty()) {
 			// Sort entries by key and convert to list
 			var entries = elements.entrySet().stream()
-				.sorted(Map.Entry.comparingByKey())
+				.sorted(Map.Entry.comparingByKey()) // TODO Avoid this approach, just output what is stored
 				.toList();
 			var iterator = entries.iterator();
 			
