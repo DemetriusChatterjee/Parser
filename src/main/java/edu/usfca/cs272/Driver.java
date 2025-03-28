@@ -23,23 +23,6 @@ public class Driver {
 	private static final Logger LOGGER = Logger.getLogger(Driver.class.getName());
 
 	/**
-	 * Helper method to write JSON output to a file. Handles writing the data and any
-	 * potential IO exceptions.
-	 *
-	 * @param data the map of data to write as JSON
-	 * @param path the path to write the JSON file
-	 * @param errorMessage the error message to use if writing fails
-	 */
-	private static void writeJsonOutput(Map<String, ?> data, Path path, String errorMessage) { // TODO Embed this logic directly into Driver.main instead
-		try {
-			JsonWriter.writeObject(data, path);
-		}
-		catch (IOException e) {
-			LOGGER.warning(errorMessage + ": " + e.getMessage());
-		}
-	}
-
-	/**
 	 * Initializes the classes necessary based on the provided command-line
 	 * arguments. This includes (but is not limited to) how to build or search an
 	 * inverted index.
@@ -78,7 +61,12 @@ public class Driver {
 		// Write counts output if flag provided
 		if (parser.hasFlag("-counts")) {
 			Path countsPath = parser.getPath("-counts", Path.of("counts.json"));
-			writeJsonOutput(index.getCounts(), countsPath, "Unable to write word counts to file");
+			try {
+				JsonWriter.writeObject(index.getCounts(), countsPath);
+			}
+			catch (IOException e) {
+				LOGGER.warning("Unable to write word counts to file: " + e.getMessage());
+			}
 		}
 		
 		// Write index output if flag provided 
