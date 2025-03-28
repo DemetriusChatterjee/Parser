@@ -5,6 +5,9 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+
+import opennlp.tools.stemmer.snowball.SnowballStemmer;
+
 import java.util.ArrayList;
 
 /**
@@ -92,29 +95,33 @@ public final class InvertedIndexBuilder {
 	 * associated file path.
 	 *
 	 * @param path the text file to process
+	 * @param index the inverted index to build
 	 * @throws IOException if an IO error occurs during file reading or processing
 	 */
-	// TODO public static void buildFile(Path path, InvertedIndex index) throws IOException {
-	public void buildFile(Path path) throws IOException {
+	public static void buildFile(Path path, InvertedIndex index) throws IOException {
 		try (var reader = Files.newBufferedReader(path)) {
 			String line;
-			// TODO Create a stemmer here
-			List<String> stems = new ArrayList<>(); // TODO Remove
+			var stemmer = new SnowballStemmer(SnowballStemmer.ALGORITHM.ENGLISH);
+			int position = 1;
 			while ((line = reader.readLine()) != null) {
-				// TODO Parse the line, stem the word, and add directly to the index
-				stems.addAll(FileStemmer.listStems(line));
-			}
-			if (!stems.isEmpty()) { // TODO Remove
-				index.addAll(stems, path.toString());
+				for (String word : FileStemmer.parse(line)) {
+					String stem = stemmer.stem(word).toString();
+					index.add(stem, path.toString(), position);
+					position++;
+				}
 			}
 		}
 	}
 	
-	// TODO Check with Sophie that you got this fix correct
-	
-	/* TODO 
+	/**
+	 * Builds the index from a single text file by processing its contents.
+	 * Extracts stems from the file and adds them to the index with their
+	 * associated file path.
+	 *
+	 * @param path the text file to process
+	 * @throws IOException if an IO error occurs during file reading or processing
+	 */
 	public void buildFile(Path path) throws IOException {
 		buildFile(path, this.index);
 	}
-	*/
 }
