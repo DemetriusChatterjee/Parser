@@ -154,11 +154,7 @@ public class JsonWriter {
 		writer.write('\n');
 		
 		if (!elements.isEmpty()) {
-			// Sort entries by key and convert to list
-			var entries = elements.entrySet().stream()
-				.sorted(Map.Entry.comparingByKey()) // TODO Avoid this approach, just output what is stored
-				.toList();
-			var iterator = entries.iterator();
+			var iterator = elements.entrySet().iterator();
 			
 			// Write first key-value pair
 			var entry = iterator.next();
