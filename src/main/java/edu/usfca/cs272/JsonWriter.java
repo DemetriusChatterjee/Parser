@@ -10,7 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Map;
-import java.util.HashMap;
+import java.util.TreeMap;
 
 /**
  * Outputs several simple data structures in "pretty" JSON format where newlines
@@ -88,7 +88,7 @@ public class JsonWriter {
 			throw new IllegalArgumentException("Value is not a Map");
 		}
 		
-		Map<String, Object> result = new HashMap<>();
+		Map<String, Object> result = new TreeMap<>();
 		for (var entry : map.entrySet()) {
 			if (!(entry.getKey() instanceof String)) {
 				throw new IllegalArgumentException("Map values must have String keys");
