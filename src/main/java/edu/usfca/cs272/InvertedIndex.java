@@ -54,6 +54,9 @@ public class InvertedIndex {
 		}
 		
 		positions.add(position);
+		
+		// Update counts map
+		counts.put(location, counts.getOrDefault(location, 0) + 1);
 	}
 	
 	/**
