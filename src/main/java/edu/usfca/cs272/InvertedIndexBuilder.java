@@ -4,11 +4,8 @@ import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
-
 import opennlp.tools.stemmer.snowball.SnowballStemmer;
 
-import java.util.ArrayList;
 
 /**
  * Builder class responsible for processing text files and building an inverted index.
