@@ -54,6 +54,9 @@ public class InvertedIndex {
 		}
 		
 		positions.add(position);
+		
+		// Update counts map
+		counts.put(location, counts.getOrDefault(location, 0) + 1);
 	}
 	
 	/**
@@ -121,16 +124,6 @@ public class InvertedIndex {
 		return positions != null && positions.contains(position);
 	}
 	
-	/**
-	 * Sets the word count for a specific location.
-	 *
-	 * @param location the location to set the count for
-	 * @param count the count to set
-	 */
-	public void setCount(String location, int count) {
-		counts.put(location, count);
-	}
-
 	/**
 	 * Returns the number of locations that have word counts.
 	 *

@@ -99,15 +99,14 @@ public final class InvertedIndexBuilder {
 		try (var reader = Files.newBufferedReader(path)) {
 			String line;
 			var stemmer = new SnowballStemmer(SnowballStemmer.ALGORITHM.ENGLISH);
-			int count = 0;
+			int position = 1;
 			while ((line = reader.readLine()) != null) {
 				for (String word : FileStemmer.parse(line)) {
 					String stem = stemmer.stem(word).toString();
-					index.add(stem, path.toString(), 1); // Use 1 as position since we don't care about exact positions
-					count++;
+					index.add(stem, path.toString(), position);
+					position++;
 				}
 			}
-			index.setCount(path.toString(), count);
 		}
 	}
 	
