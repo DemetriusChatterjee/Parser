@@ -10,7 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Map;
-import java.util.HashMap;
+import java.util.TreeMap;
 
 /**
  * Outputs several simple data structures in "pretty" JSON format where newlines
@@ -88,7 +88,7 @@ public class JsonWriter {
 			throw new IllegalArgumentException("Value is not a Map");
 		}
 		
-		Map<String, Object> result = new HashMap<>();
+		Map<String, Object> result = new TreeMap<>();
 		for (var entry : map.entrySet()) {
 			if (!(entry.getKey() instanceof String)) {
 				throw new IllegalArgumentException("Map values must have String keys");
@@ -131,6 +131,13 @@ public class JsonWriter {
 			writer.write('"');
 		}
 	}
+	
+	/*
+	 * TODO Avoid an instance of approach here... don't need to go too far in 
+	 * supporing all kinds of json writing
+	 * 
+	 * Go back to the homework approach.
+	 */
 
 	/**
 	 * Writes the elements as a pretty JSON object.
@@ -147,11 +154,7 @@ public class JsonWriter {
 		writer.write('\n');
 		
 		if (!elements.isEmpty()) {
-			// Sort entries by key and convert to list
-			var entries = elements.entrySet().stream()
-				.sorted(Map.Entry.comparingByKey())
-				.toList();
-			var iterator = entries.iterator();
+			var iterator = elements.entrySet().iterator();
 			
 			// Write first key-value pair
 			var entry = iterator.next();

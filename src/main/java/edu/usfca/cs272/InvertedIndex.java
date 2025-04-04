@@ -54,6 +54,9 @@ public class InvertedIndex {
 		}
 		
 		positions.add(position);
+		
+		// Update counts map
+		counts.put(location, counts.getOrDefault(location, 0) + 1);
 	}
 	
 	/**
@@ -182,10 +185,11 @@ public class InvertedIndex {
 	 * @return set of locations or empty set if stem not found
 	 */
 	public Set<String> getLocations(String stem) {
-		if (!index.containsKey(stem)) {
+		var locations = index.get(stem);
+		if (locations == null) {
 			return Collections.emptySet();
 		}
-		return Collections.unmodifiableSet(index.get(stem).keySet());
+		return Collections.unmodifiableSet(locations.keySet());
 	}
 	
 	/**
@@ -204,6 +208,15 @@ public class InvertedIndex {
 		return positions == null ? Collections.emptySet() : Collections.unmodifiableSet(positions);
 	}
 	
+		/**
+	 * Gets an unmodifiable view of the word counts data structure.
+	 *
+	 * @return an unmodifiable view of the word counts
+	 */
+	public Map<String, Integer> getCounts() {
+		return Collections.unmodifiableMap(counts);
+	}
+
 	@Override
 	public String toString() {
 		return index.toString();
@@ -220,12 +233,13 @@ public class InvertedIndex {
 	}
 	
 	/**
-	 * Gets an unmodifiable view of the word counts data structure.
+	 * Gets the word count for a specific location.
 	 *
-	 * @return an unmodifiable view of the word counts
+	 * @param location the location to look up
+	 * @return the word count for the location, or 0 if not found
 	 */
-	public Map<String, Integer> getCounts() {
-		return Collections.unmodifiableMap(counts);
+	public Integer getCount(String location) {
+		return counts.getOrDefault(location, 0);
 	}
 	
 	/**
