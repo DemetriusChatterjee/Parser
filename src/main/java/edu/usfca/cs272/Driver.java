@@ -4,6 +4,10 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.logging.Logger;
 
 /**
@@ -30,6 +34,8 @@ public class Driver {
 	 *             "-text" for input file/directory path
 	 *             "-counts" for word counts output path
 	 *             "-index" for inverted index output path
+	 *             "-query" for query file path
+	 *             "-results" for search results output path
 	 */
 	public static void main(final String[] args) {
 		final Instant start = Instant.now();
@@ -64,7 +70,7 @@ public class Driver {
 				JsonWriter.writeObject(index.getCounts(), countsPath);
 			}
 			catch (IOException e) {
-				LOGGER.warning("Unable to write word counts to file: " + e.getMessage());
+				LOGGER.warning("Unable to write counts to file: " + e.getMessage());
 			}
 		}
 		
@@ -72,10 +78,46 @@ public class Driver {
 		if (parser.hasFlag("-index")) {
 			Path indexPath = parser.getPath("-index", Path.of("index.json")); 
 			try {
-				index.toJson(indexPath);
+				JsonWriter.writeObject(index.getIndex(), indexPath);
 			}
 			catch (IOException e) {
-				LOGGER.warning("Unable to write inverted index to file: " + e.getMessage());
+				LOGGER.warning("Unable to write index to file: " + e.getMessage());
+			}
+		}
+
+		// Handle search results
+		Map<String, List<InvertedIndex.SearchResult>> searchResults = new TreeMap<>();
+		
+		if (parser.hasFlag("-query")) {
+			Path queryPath = parser.getPath("-query");
+			if (queryPath != null) {
+				try {
+					// Process all queries from the file
+					var queries = QueryProcessor.processQueryFile(queryPath);
+					
+					// Convert processed queries back to strings for searching
+					List<String> queryStrings = new ArrayList<>();
+					for (List<String> query : queries) {
+						queryStrings.add(String.join(" ", query));
+					}
+					
+					// Perform exact search for all queries
+					searchResults = index.exactSearchAll(queryStrings);
+				}
+				catch (IOException e) {
+					LOGGER.warning("Unable to process query file: " + e.getMessage());
+				}
+			}
+		}
+		
+		// Write results if -results flag is provided (even if empty)
+		if (parser.hasFlag("-results")) {
+			try {
+				Path resultsPath = parser.getPath("-results", Path.of("results.json"));
+				JsonWriter.writeObject(searchResults, resultsPath);
+			}
+			catch (IOException e) {
+				LOGGER.warning("Unable to write results to file: " + e.getMessage());
 			}
 		}
 
