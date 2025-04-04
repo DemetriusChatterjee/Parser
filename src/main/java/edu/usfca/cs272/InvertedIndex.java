@@ -8,6 +8,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 
 /**
  * Data structure to store an inverted index and word counts from text files. 
@@ -208,13 +209,22 @@ public class InvertedIndex {
 		return positions == null ? Collections.emptySet() : Collections.unmodifiableSet(positions);
 	}
 	
-		/**
+	/**
 	 * Gets an unmodifiable view of the word counts data structure.
 	 *
 	 * @return an unmodifiable view of the word counts
 	 */
 	public Map<String, Integer> getCounts() {
 		return Collections.unmodifiableMap(counts);
+	}
+
+	/**
+	 * Gets an unmodifiable view of the inverted index data structure.
+	 *
+	 * @return an unmodifiable view of the inverted index
+	 */
+	public Map<String, TreeMap<String, TreeSet<Integer>>> getIndex() {
+		return Collections.unmodifiableMap(index);
 	}
 
 	@Override
@@ -248,5 +258,92 @@ public class InvertedIndex {
 	public void clear() {
 		index.clear();
 		counts.clear();
+	}
+
+	/**
+	 * Represents a search result for a query, containing the file path and score.
+	 */
+	public static class SearchResult implements Comparable<SearchResult> {
+		/** The file path where the query was found */
+		private final String location;
+		
+		/** The score for this search result */
+		private final int score;
+		
+		/**
+		 * Initializes a search result with the given location and score.
+		 *
+		 * @param location the file path where the query was found
+		 * @param score the score for this search result
+		 */
+		public SearchResult(String location, int score) {
+			this.location = location;
+			this.score = score;
+		}
+		
+		/**
+		 * Gets the location of this search result.
+		 *
+		 * @return the file path
+		 */
+		public String getLocation() {
+			return location;
+		}
+		
+		/**
+		 * Gets the score of this search result.
+		 *
+		 * @return the score
+		 */
+		public int getScore() {
+			return score;
+		}
+		
+		@Override
+		public int compareTo(SearchResult other) {
+			int scoreCompare = Integer.compare(other.score, this.score);
+			return scoreCompare != 0 ? scoreCompare : this.location.compareTo(other.location);
+		}
+	}
+
+	/**
+	 * Performs an exact search for all queries in the list.
+	 *
+	 * @param queries the list of queries to search for
+	 * @return map of query to list of search results
+	 */
+	public Map<String, List<SearchResult>> exactSearchAll(List<String> queries) {
+		Map<String, List<SearchResult>> results = new TreeMap<>();
+		
+		for (String query : queries) {
+			List<SearchResult> queryResults = exactSearch(query);
+			if (!queryResults.isEmpty()) {
+				results.put(query, queryResults);
+			}
+		}
+		
+		return results;
+	}
+	
+	/**
+	 * Performs an exact search for a single query.
+	 *
+	 * @param query the query to search for
+	 * @return list of search results
+	 */
+	private List<SearchResult> exactSearch(String query) {
+		List<SearchResult> results = new ArrayList<>();
+		var locations = index.get(query);
+		
+		if (locations != null) {
+			for (var entry : locations.entrySet()) {
+				String location = entry.getKey();
+				int score = entry.getValue().size();
+				results.add(new SearchResult(location, score));
+			}
+		}
+		
+		Collections.sort(results);
+		return results;
 	}
 }
