@@ -37,45 +37,6 @@ public final class InvertedIndexBuilder {
 	}
 	
 	/**
-	 * Builds the index from a file or directory path by processing its contents.
-	 * If the path points to a directory, processes all text files in that directory
-	 * and its subdirectories recursively.
-	 *
-	 * @param path the input path to process
-	 * @throws IOException if an IO error occurs during file processing
-	 * @throws IllegalArgumentException if the path is null or does not exist
-	 */
-	public final void build(Path path) throws IOException {
-		if (Files.isDirectory(path)) {
-			buildDirectory(path);
-		}
-		else {
-			buildFile(path);
-		}
-	}
-	
-	/**
-	 * Builds the index from a directory by recursively processing text files.
-	 * Processes all files with .txt or .text extensions in the directory and
-	 * its subdirectories, maintaining a consistent processing order using a TreeSet.
-	 *
-	 * @param directory the directory to process
-	 * @throws IOException if an IO error occurs during directory traversal or file processing
-	 */
-	public void buildDirectory(Path directory) throws IOException { 
-		try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
-			for (var path : stream) {
-				if (Files.isDirectory(path)) {
-					buildDirectory(path);
-				}
-				else if (isTextFile(path)) {
-					buildFile(path);
-				}
-			}
-		}
-	}
-	
-	/**
 	 * Tests whether a path is a text file by checking its extension.
 	 *
 	 * @param path the path to test
@@ -120,5 +81,44 @@ public final class InvertedIndexBuilder {
 	 */
 	public void buildFile(Path path) throws IOException {
 		buildFile(path, this.index);
+	}
+
+	/**
+	 * Builds the index from a directory by recursively processing text files.
+	 * Processes all files with .txt or .text extensions in the directory and
+	 * its subdirectories, maintaining a consistent processing order using a TreeSet.
+	 *
+	 * @param directory the directory to process
+	 * @throws IOException if an IO error occurs during directory traversal or file processing
+	 */
+	public void buildDirectory(Path directory) throws IOException { 
+		try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
+			for (var path : stream) {
+				if (Files.isDirectory(path)) {
+					buildDirectory(path);
+				}
+				else if (isTextFile(path)) {
+					buildFile(path);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Builds the index from a file or directory path by processing its contents.
+	 * If the path points to a directory, processes all text files in that directory
+	 * and its subdirectories recursively.
+	 *
+	 * @param path the input path to process
+	 * @throws IOException if an IO error occurs during file processing
+	 * @throws IllegalArgumentException if the path is null or does not exist
+	 */
+	public final void build(Path path) throws IOException {
+		if (Files.isDirectory(path)) {
+			buildDirectory(path);
+		}
+		else {
+			buildFile(path);
+		}
 	}
 }
