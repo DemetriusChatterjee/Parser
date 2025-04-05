@@ -398,4 +398,73 @@ public class InvertedIndex {
 		}
 		return allResults;
 	}
+
+	/**
+	 * Performs a partial search on the inverted index for a line of query words.
+	 * For each location found, creates a SearchResult with metadata for ranking.
+	 * Partial search matches any word that starts with the query word.
+	 * 
+	 * @param line the line of query words to search for
+	 * @return a map with the query string as key and a list of sorted search results as value
+	 */
+	public Map<String, List<SearchResult>> partialSearch(String line) {
+		// Process the query line to get sorted unique stems
+		var stems = QueryProcessor.processLine(line);
+		if (stems.isEmpty()) {
+			return new TreeMap<>();
+		}
+		
+		// Create a map to store search results (location -> total matches)
+		TreeMap<String, Integer> matches = new TreeMap<>();
+		
+		// For each stem in the query
+		for (String stem : stems) {
+			// For each word in the index that starts with the stem
+			for (var entry : index.entrySet()) {
+				String word = entry.getKey();
+				if (word.startsWith(stem)) {
+					// For each location where this word appears
+					for (var locationEntry : entry.getValue().entrySet()) {
+						String location = locationEntry.getKey();
+						int count = locationEntry.getValue().size(); // Number of times this word appears in this location
+						
+						// Add or update the total matches for this location
+						int current = matches.getOrDefault(location, 0);
+						matches.put(location, current + count);
+					}
+				}
+			}
+		}
+		
+		// Convert matches to SearchResult objects with metadata
+		List<SearchResult> results = new ArrayList<>();
+		for (var entry : matches.entrySet()) {
+			String location = entry.getKey();
+			int matchCount = entry.getValue();
+			int totalWords = counts.get(location);
+			results.add(new SearchResult(location, matchCount, totalWords));
+		}
+		
+		// Sort results by score, count, and location
+		results.sort(null); // Uses natural ordering defined by compareTo
+		
+		// Create map with query string as key and sorted results as value
+		TreeMap<String, List<SearchResult>> searchResults = new TreeMap<>();
+		searchResults.put(getQueryString(stems), results);
+		return searchResults;
+	}
+	
+	/**
+	 * Performs partial searches for multiple query lines and returns all results.
+	 * 
+	 * @param queries the list of query lines to search for
+	 * @return a map where each key is a query string and each value is a list of sorted search results
+	 */
+	public Map<String, List<SearchResult>> partialSearchAll(List<String> queries) {
+		TreeMap<String, List<SearchResult>> allResults = new TreeMap<>();
+		for (String query : queries) {
+			allResults.putAll(partialSearch(query));
+		}
+		return allResults;
+	}
 }
