@@ -86,22 +86,29 @@ public class JsonWriter {
 	 * @throws IllegalArgumentException if the map has non-String keys or if value is not a Map
 	 */
 	private static Map<String, Object> asStringMap(Object value) {
-		if (!(value instanceof Map<?, ?> map)) {
-			throw new IllegalArgumentException("Value is not a Map");
+		if (value == null) {
+			throw new IllegalArgumentException("Value cannot be null");
 		}
 		
 		Map<String, Object> result = new TreeMap<>();
-		for (var entry : map.entrySet()) {
-			if (!(entry.getKey() instanceof String)) {
-				throw new IllegalArgumentException("Map values must have String keys");
+		try {
+			Map<?, ?> map = (Map<?, ?>) value; // Cast value to Map since we're in try block that will catch ClassCastException
+			
+			for (var entry : map.entrySet()) {
+				try{
+					result.put((String) entry.getKey(), entry.getValue()); // Cast key to String - will throw ClassCastException if not a String key
+				} catch (ClassCastException e) {
+					throw new IllegalArgumentException("Map values must have String keys");
+				}
 			}
-			result.put((String) entry.getKey(), entry.getValue());
+			return result;
+		} catch (ClassCastException e) {
+			throw new IllegalArgumentException("Value is not a Map");
 		}
-		return result;
 	}
 
 	/**
-	 * Writes a value in the appropriate JSON format.
+	 * Writes any other type of value in JSON format as a quoted string.
 	 *
 	 * @param value the value to write
 	 * @param writer the writer to use
@@ -109,37 +116,14 @@ public class JsonWriter {
 	 * @throws IOException if an IO error occurs
 	 */
 	private static void writeValue(Object value, Writer writer, int indent) throws IOException {
-		if (value instanceof String str) {
-			writer.write('"');
-			writer.write(str);
-			writer.write('"');
-		}
-		else if (value instanceof Number) {
-			writer.write(value.toString());
-		}
-		else if (value instanceof Map<?, ?>) {
-			writeObject(asStringMap(value), writer, indent);
-		}
-		else if (value instanceof Collection<?>) {
-			writeArray((Collection<?>) value, writer, indent);
-		}
-		else if (value == null) {
+		if (value == null) {
 			writer.write("null");
-		}
-		else {
-			// For any other type, write as quoted string using toString()
+		}else{
 			writer.write('"');
 			writer.write(value.toString());
 			writer.write('"');
 		}
 	}
-	
-	/*
-	 * TODO Avoid an instance of approach here... don't need to go too far in // TODO: for the whole file
-	 * supporing all kinds of json writing
-	 * 
-	 * Go back to the homework approach.
-	 */
 
 	/**
 	 * Writes the elements as a pretty JSON object.
@@ -218,20 +202,28 @@ public class JsonWriter {
 	}
 
 	/**
-	 * Generic method to write any JSON-compatible data structure to a file.
+	 * Writes a Map data structure to a file in JSON format.
 	 * 
-	 * @param data the data to write
+	 * @param data the Map data to write
 	 * @param path the file path to write to
 	 * @throws IOException if an IO error occurs
 	 */
-	private static void writeJson(Object data, Path path) throws IOException {
+	private static void writeJson(Map<?, ?> data, Path path) throws IOException {
 		try (BufferedWriter writer = Files.newBufferedWriter(path, UTF_8)) {
-			if (data instanceof Map<?, ?>) {
-				writeObject(asStringMap(data), writer, 0);
-			}
-			else if (data instanceof Collection<?>) {
-				writeArray((Collection<?>) data, writer, 0);
-			}
+			writeObject(asStringMap(data), writer, 0);
+		}
+	}
+
+	/**
+	 * Writes a Collection data structure to a file in JSON format.
+	 * 
+	 * @param data the Collection data to write
+	 * @param path the file path to write to
+	 * @throws IOException if an IO error occurs
+	 */
+	private static void writeJson(Collection<?> data, Path path) throws IOException {
+		try (BufferedWriter writer = Files.newBufferedWriter(path, UTF_8)) {
+			writeArray(data, writer, 0);
 		}
 	}
 
