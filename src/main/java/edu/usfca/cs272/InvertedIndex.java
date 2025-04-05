@@ -363,7 +363,8 @@ public class InvertedIndex {
 				int count = entry.getValue().size(); // Number of times this stem appears in this location
 				
 				// Add or update the total matches for this location
-				matches.merge(location, count, Integer::sum);
+				int current = matches.getOrDefault(location, 0);
+				matches.put(location, current + count);
 			}
 		}
 		
