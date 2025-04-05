@@ -9,8 +9,10 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.Iterator;
 
 /**
  * Outputs several simple data structures in "pretty" JSON format where newlines
@@ -133,7 +135,7 @@ public class JsonWriter {
 	}
 	
 	/*
-	 * TODO Avoid an instance of approach here... don't need to go too far in 
+	 * TODO Avoid an instance of approach here... don't need to go too far in // TODO: for the whole file
 	 * supporing all kinds of json writing
 	 * 
 	 * Go back to the homework approach.
@@ -286,6 +288,120 @@ public class JsonWriter {
 		}
 		catch (IOException e) {
 			return null;
+		}
+	}
+	
+	private static void writeSearchResult(
+			InvertedIndex.SearchResult result,
+			Writer writer, int indent) throws IOException {
+		writer.write('{');
+		writer.write('\n');
+		
+		// Write location
+		writeIndent(writer, indent + 1);
+		writer.write("\"location\": \"");
+		writer.write(result.getLocation());
+		writer.write("\",\n");
+		
+		// Write score
+		writeIndent(writer, indent + 1);
+		writer.write("\"score\": ");
+		writer.write(String.valueOf(result.getScore()));
+		writer.write("\n");
+		
+		writeIndent(writer, indent);
+		writer.write('}');
+	}
+	
+	/**
+	 * Writes a list of search results as a pretty JSON array.
+	 *
+	 * @param results the list of search results to write
+	 * @param writer the writer to use
+	 * @param indent the initial indent level
+	 * @throws IOException if an IO error occurs
+	 */
+	private static void writeSearchResultArray(
+			List<InvertedIndex.SearchResult> results,
+			Writer writer, int indent) throws IOException {
+		writer.write('[');
+		writer.write('\n');
+		
+		if (!results.isEmpty()) {
+			Iterator<InvertedIndex.SearchResult> iterator = results.iterator();
+			
+			// Write first result
+			writeIndent(writer, indent + 1);
+			writeSearchResult(iterator.next(), writer, indent + 1);
+			
+			// Write remaining results
+			while (iterator.hasNext()) {
+				writer.write(",\n");
+				writeIndent(writer, indent + 1);
+				writeSearchResult(iterator.next(), writer, indent + 1);
+			}
+			
+			writer.write('\n');
+		}
+		
+		writeIndent(writer, indent);
+		writer.write(']');
+	}
+	
+	/**
+	 * Writes a collection of search results as a pretty JSON object.
+	 * Each key is a query string and each value is an array of search results.
+	 *
+	 * @param results the map of query strings to search results
+	 * @param writer the writer to use
+	 * @param indent the initial indent level
+	 * @throws IOException if an IO error occurs
+	 */
+	public static void writeSearchResults(
+			Map<String, List<InvertedIndex.SearchResult>> results,
+			Writer writer, int indent) throws IOException {
+		writer.write('{');
+		writer.write('\n');
+		
+		if (!results.isEmpty()) {
+			Iterator<Map.Entry<String, List<InvertedIndex.SearchResult>>> iterator = results.entrySet().iterator();
+			
+			// Write first query and its results
+			Map.Entry<String, List<InvertedIndex.SearchResult>> entry = iterator.next();
+			writeIndent(writer, indent + 1);
+			writeQuote(entry.getKey(), writer, 0);
+			writer.write(": ");
+			writeSearchResultArray(entry.getValue(), writer, indent + 1);
+			
+			// Write remaining queries and their results
+			while (iterator.hasNext()) {
+				writer.write(",\n");
+				entry = iterator.next();
+				writeIndent(writer, indent + 1);
+				writeQuote(entry.getKey(), writer, 0);
+				writer.write(": ");
+				writeSearchResultArray(entry.getValue(), writer, indent + 1);
+			}
+			
+			writer.write('\n');
+		}
+		
+		writeIndent(writer, indent);
+		writer.write('}');
+	}
+	
+	/**
+	 * Writes a map of search results as a pretty JSON object to file.
+	 *
+	 * @param results the map of query strings to search results
+	 * @param path the file path to use
+	 * @throws IOException if an IO error occurs
+	 */
+	public static void writeSearchResults(
+			Map<String, List<InvertedIndex.SearchResult>> results,
+			Path path) throws IOException {
+		try (BufferedWriter writer = Files.newBufferedWriter(path, UTF_8)) {
+			writeSearchResults(results, writer, 0);
 		}
 	}
 }
