@@ -114,7 +114,7 @@ public class Driver {
 		if (parser.hasFlag("-results")) {
 			try {
 				Path resultsPath = parser.getPath("-results", Path.of("results.json"));
-				JsonWriter.writeObject(searchResults, resultsPath);
+				JsonWriter.writeSearchResults(searchResults, resultsPath);
 			}
 			catch (IOException e) {
 				LOGGER.warning("Unable to write results to file: " + e.getMessage());
