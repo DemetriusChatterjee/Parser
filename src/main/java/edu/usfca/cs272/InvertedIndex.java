@@ -126,15 +126,6 @@ public class InvertedIndex {
 	}
 	
 	/**
-	 * Returns the number of locations that have word counts.
-	 *
-	 * @return the number of locations with counts
-	 */
-	public int numCounts() {
-		return counts.size();
-	}
-	
-	/**
 	 * Returns the number of unique stems in the index.
 	 *
 	 * @return the number of stems
@@ -214,8 +205,8 @@ public class InvertedIndex {
 	 *
 	 * @return an unmodifiable view of the word counts
 	 */
-	public Map<String, Integer> getCounts() {
-		return Collections.unmodifiableMap(counts);
+	public TreeMap<String, Integer> getCounts() {
+		return new TreeMap<>(counts);
 	}
 
 	/**
