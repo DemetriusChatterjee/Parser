@@ -36,6 +36,7 @@ public class Driver {
 	 *             "-index" for inverted index output path
 	 *             "-query" for query file path
 	 *             "-results" for search results output path
+	 *             "-partial" to use partial search instead of exact search
 	 */
 	public static void main(final String[] args) {
 		final Instant start = Instant.now();
@@ -101,8 +102,13 @@ public class Driver {
 						queryStrings.add(String.join(" ", query));
 					}
 					
-					// Perform exact search for all queries
-					searchResults = index.exactSearchAll(queryStrings);
+					// Perform search based on -partial flag
+					boolean usePartialSearch = parser.hasFlag("-partial");
+					if (usePartialSearch) {
+						searchResults = index.partialSearchAll(queryStrings);
+					} else {
+						searchResults = index.exactSearchAll(queryStrings);
+					}
 				}
 				catch (IOException e) {
 					LOGGER.warning("Unable to process query file: " + e.getMessage());
