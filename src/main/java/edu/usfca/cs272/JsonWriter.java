@@ -297,17 +297,23 @@ public class JsonWriter {
 		writer.write('{');
 		writer.write('\n');
 		
-		// Write location
+		// Write count
 		writeIndent(writer, indent + 1);
-		writer.write("\"location\": \"");
-		writer.write(result.getLocation());
-		writer.write("\",\n");
-		
+		writer.write("\"count\": ");
+		writer.write(String.valueOf(result.getCount()));
+		writer.write(",\n");
+
 		// Write score
 		writeIndent(writer, indent + 1);
 		writer.write("\"score\": ");
-		writer.write(String.valueOf(result.getScore()));
-		writer.write("\n");
+		writer.write(String.format("%.8f", result.getScore()));
+		writer.write(",\n");
+		
+		// Write location
+		writeIndent(writer, indent + 1);
+		writer.write("\"where\": \"");
+		writer.write(result.getWhere());
+		writer.write("\"\n");
 		
 		writeIndent(writer, indent);
 		writer.write('}');

@@ -251,90 +251,151 @@ public class InvertedIndex {
 		counts.clear();
 	}
 
-	/**
-	 * Represents a search result for a query, containing the file path and score.
+/**
+	 * Represents a search result with metadata for ranking.
 	 */
 	public static class SearchResult implements Comparable<SearchResult> {
-		/** The file path where the query was found */
-		private final String location;
+		/** The path where matches were found */
+		private final String where;
 		
-		/** The score for this search result */
-		private final int score;
+		/** The total number of matches found */
+		private final int count;
 		
-		/**
-		 * Initializes a search result with the given location and score.
-		 *
-		 * @param location the file path where the query was found
-		 * @param score the score for this search result
-		 */
-		public SearchResult(String location, int score) {
-			this.location = location;
-			this.score = score;
-		}
+		/** The score (count/totalWords) for ranking */
+		private final double score;
 		
 		/**
-		 * Gets the location of this search result.
+		 * Creates a new search result.
 		 *
-		 * @return the file path
+		 * @param where the file path where matches were found
+		 * @param count the total number of matches found
+		 * @param totalWords the total number of words in the file
 		 */
-		public String getLocation() {
-			return location;
-		}
-		
-		/**
-		 * Gets the score of this search result.
-		 *
-		 * @return the score
-		 */
-		public int getScore() {
-			return score;
+		public SearchResult(String where, int count, int totalWords) {
+			this.where = where;
+			this.count = count;
+			this.score = (double) count / totalWords;
 		}
 		
 		@Override
 		public int compareTo(SearchResult other) {
-			int scoreCompare = Integer.compare(other.score, this.score);
-			return scoreCompare != 0 ? scoreCompare : this.location.compareTo(other.location);
-		}
-	}
-
-	/**
-	 * Performs an exact search for all queries in the list.
-	 *
-	 * @param queries the list of queries to search for
-	 * @return map of query to list of search results
-	 */
-	public Map<String, List<SearchResult>> exactSearchAll(List<String> queries) {
-		Map<String, List<SearchResult>> results = new TreeMap<>();
-		
-		for (String query : queries) {
-			List<SearchResult> queryResults = exactSearch(query);
-			if (!queryResults.isEmpty()) {
-				results.put(query, queryResults);
+			// First compare by score (descending)
+			int comparison = Double.compare(other.score, this.score);
+			if (comparison != 0) {
+				return comparison;
 			}
+			
+			// Then by count (descending)
+			comparison = Integer.compare(other.count, this.count);
+			if (comparison != 0) {
+				return comparison;
+			}
+			
+			// Finally by location (ascending, case-insensitive)
+			return this.where.compareToIgnoreCase(other.where);
 		}
 		
-		return results;
+		/**
+		 * Gets the file path where matches were found.
+		 *
+		 * @return the file path
+		 */
+		public String getWhere() {
+			return where;
+		}
+		
+		/**
+		 * Gets the total number of matches found.
+		 *
+		 * @return the number of matches
+		 */
+		public int getCount() {
+			return count;
+		}
+		
+		/**
+		 * Gets the score used for ranking.
+		 *
+		 * @return the score
+		 */
+		public double getScore() {
+			return score;
+		}
 	}
 	
 	/**
-	 * Performs an exact search for a single query.
-	 *
-	 * @param query the query to search for
-	 * @return list of search results
+	 * Gets the cleaned and sorted query string from a list of stems.
+	 * 
+	 * @param stems the list of query stems
+	 * @return the query string with stems joined by spaces
 	 */
-	private List<SearchResult> exactSearch(String query) {
-		List<SearchResult> results = new ArrayList<>();
-		var locations = index.get(query);
+	private static String getQueryString(List<String> stems) {
+		return String.join(" ", stems);
+	}
+	
+	/**
+	 * Performs an exact search on the inverted index for a line of query words.
+	 * For each location found, creates a SearchResult with metadata for ranking.
+	 * 
+	 * @param line the line of query words to search for
+	 * @return a map with the query string as key and a list of sorted search results as value
+	 */
+	public Map<String, List<SearchResult>> exactSearch(String line) {
+		// Process the query line to get sorted unique stems
+		var stems = QueryProcessor.processLine(line);
+		if (stems.isEmpty()) {
+			return new TreeMap<>();
+		}
 		
-		if (locations != null) {
-			for (var entry : locations.entrySet()) {
+		// Create a map to store search results (location -> total matches)
+		TreeMap<String, Integer> matches = new TreeMap<>();
+		
+		// For each stem in the query
+		for (String stem : stems) {
+			// Skip if stem not in index
+			if (!index.containsKey(stem)) {
+				continue;
+			}
+			
+			// For each location where this stem appears
+			for (var entry : index.get(stem).entrySet()) {
 				String location = entry.getKey();
-				int score = entry.getValue().size();
-				results.add(new SearchResult(location, score));
+				int count = entry.getValue().size(); // Number of times this stem appears in this location
+				
+				// Add or update the total matches for this location
+				matches.merge(location, count, Integer::sum);
 			}
 		}
 		
-		Collections.sort(results);
-		return results;
+		// Convert matches to SearchResult objects with metadata
+		List<SearchResult> results = new ArrayList<>();
+		for (var entry : matches.entrySet()) {
+			String location = entry.getKey();
+			int matchCount = entry.getValue();
+			int totalWords = counts.get(location);
+			results.add(new SearchResult(location, matchCount, totalWords));
+		}
+		
+		// Sort results by score, count, and location
+		results.sort(null); // Uses natural ordering defined by compareTo
+		
+		// Create map with query string as key and sorted results as value
+		TreeMap<String, List<SearchResult>> searchResults = new TreeMap<>();
+		searchResults.put(getQueryString(stems), results);
+		return searchResults;
+	}
+	
+	/**
+	 * Performs exact searches for multiple query lines and returns all results.
+	 * 
+	 * @param queries the list of query lines to search for
+	 * @return a map where each key is a query string and each value is a list of sorted search results
+	 */
+	public Map<String, List<SearchResult>> exactSearchAll(List<String> queries) {
+		TreeMap<String, List<SearchResult>> allResults = new TreeMap<>();
+		for (String query : queries) {
+			allResults.putAll(exactSearch(query));
+		}
+		return allResults;
 	}
 }
