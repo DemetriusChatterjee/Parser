@@ -118,7 +118,13 @@ public class JsonWriter {
 	private static void writeValue(Object value, Writer writer, int indent) throws IOException {
 		if (value == null) {
 			writer.write("null");
-		}else{
+		} else if (value instanceof Number) {
+			writer.write(value.toString());
+		} else if (value instanceof Map<?, ?>) {
+			writeObject(asStringMap(value), writer, indent);
+		} else if (value instanceof Collection<?>) {
+			writeArray((Collection<?>) value, writer, indent);
+		} else {
 			writer.write('"');
 			writer.write(value.toString());
 			writer.write('"');
