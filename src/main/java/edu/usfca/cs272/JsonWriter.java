@@ -289,6 +289,15 @@ public class JsonWriter {
 		}
 	}
 	
+	/**
+	 * Writes a single search result as a pretty JSON object.
+	 * The JSON object will contain the count, score, and location of the search result.
+	 *
+	 * @param result the search result to write
+	 * @param writer the writer to use
+	 * @param indent the initial indent level
+	 * @throws IOException if an IO error occurs
+	 */
 	private static void writeSearchResult(
 			InvertedIndex.SearchResult result,
 			Writer writer, int indent) throws IOException {
