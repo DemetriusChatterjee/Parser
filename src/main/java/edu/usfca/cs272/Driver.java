@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -87,29 +86,14 @@ public class Driver {
 		}
 
 		// Handle search results
-		// TODO Move this into the query processor and store it there
 		Map<String, List<InvertedIndex.SearchResult>> searchResults = new TreeMap<>();
 		
 		if (parser.hasFlag("-query")) {
 			Path queryPath = parser.getPath("-query");
 			if (queryPath != null) {
 				try {
-					// Process all queries from the file
-					var queries = QueryProcessor.processQueryFile(queryPath);
-					
-					// Convert processed queries back to strings for searching
-					List<String> queryStrings = new ArrayList<>();
-					for (List<String> query : queries) {
-						queryStrings.add(String.join(" ", query));
-					}
-					
-					// Perform search based on -partial flag
 					boolean usePartialSearch = parser.hasFlag("-partial");
-					if (usePartialSearch) {
-						searchResults = index.partialSearchAll(queryStrings);
-					} else {
-						searchResults = index.exactSearchAll(queryStrings);
-					}
+					searchResults = QueryProcessor.processSearchResults(queryPath, index, usePartialSearch);
 				}
 				catch (IOException e) {
 					LOGGER.warning("Unable to process query file: " + e.getMessage());

@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeSet;
 
 /**
@@ -32,12 +33,10 @@ public final class QueryProcessor {
 	 * @param line the line of query text to process
 	 * @return a sorted list of unique stems
 	 */
-	public static List<String> processLine(final String line) { // TODO These are essentially add methods for your map of results
+	public static List<String> processLine(final String line) {
 		// Use TreeSet to handle both duplicate removal and sorting
 		final TreeSet<String> stems = FileStemmer.uniqueStems(line);
 		return new ArrayList<>(stems);
-		
-		// TODO This can store the results into the map
 	}
 	
 	/**
@@ -62,5 +61,33 @@ public final class QueryProcessor {
 		}
 		
 		return queries;
+	}
+	
+	/**
+	 * Processes a query file and returns search results from the inverted index.
+	 *
+	 * @param path the path to the query file
+	 * @param index the inverted index to search against
+	 * @param usePartialSearch whether to use partial search
+	 * @return map of search results for each query
+	 * @throws IOException if unable to read or process the query file
+	 */
+	public static Map<String, List<InvertedIndex.SearchResult>> processSearchResults(
+			final Path path, final InvertedIndex index, final boolean usePartialSearch) throws IOException {
+		final List<List<String>> queries = processQueryFile(path);
+		
+		// Convert processed queries back to strings for searching
+		final List<String> queryStrings = new ArrayList<>();
+		for (final List<String> query : queries) {
+			final String queryString = String.join(" ", query);
+			queryStrings.add(queryString);
+		}
+		
+		// Perform search based on search type
+		if (usePartialSearch) {
+			return index.partialSearchAll(queryStrings);
+		} else {
+			return index.exactSearchAll(queryStrings);
+		}
 	}
 }
