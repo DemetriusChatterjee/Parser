@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 /**
@@ -75,19 +76,32 @@ public final class QueryProcessor {
 	public static Map<String, List<InvertedIndex.SearchResult>> processSearchResults(
 			final Path path, final InvertedIndex index, final boolean usePartialSearch) throws IOException {
 		final List<List<String>> queries = processQueryFile(path);
+		final Map<String, List<InvertedIndex.SearchResult>> searchResults = new TreeMap<>();
 		
-		// Convert processed queries back to strings for searching
-		final List<String> queryStrings = new ArrayList<>();
-		for (final List<String> query : queries) {
-			final String queryString = String.join(" ", query);
-			queryStrings.add(queryString);
+		// Process each query and add to results
+		for (List<String> query : queries) {
+			String queryString = getQueryString(query);
+			List<InvertedIndex.SearchResult> results;
+			
+			if (usePartialSearch) {
+				results = index.partialSearch(query);
+			} else {
+				results = index.exactSearch(query);
+			}
+			
+			searchResults.put(queryString, results);
 		}
 		
-		// Perform search based on search type
-		if (usePartialSearch) {
-			return index.partialSearchAll(queryStrings);
-		} else {
-			return index.exactSearchAll(queryStrings);
-		}
+		return searchResults;
+	}
+	
+	/**
+	 * Gets the cleaned and sorted query string from a list of stems.
+	 * 
+	 * @param stems the list of query stems
+	 * @return the query string with stems joined by spaces
+	 */
+	public static String getQueryString(List<String> stems) {
+		return String.join(" ", stems);
 	}
 }
