@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -25,11 +26,6 @@ public final class QueryProcessor {
 	
 	/**
 	 * Processes a single line of query text into a sorted list of unique stems.
-	 * The processing includes:
-	 * 1. Cleaning and parsing the text into words
-	 * 2. Stemming each word
-	 * 3. Removing duplicates
-	 * 4. Sorting the stems alphabetically
 	 *
 	 * @param line the line of query text to process
 	 * @return a sorted list of unique stems
@@ -81,12 +77,13 @@ public final class QueryProcessor {
 		// Process each query and add to results
 		for (List<String> query : queries) {
 			String queryString = getQueryString(query);
-			List<InvertedIndex.SearchResult> results;
+			Set<String> processedQuery = new TreeSet<>(query);
 			
+			List<InvertedIndex.SearchResult> results;
 			if (usePartialSearch) {
-				results = index.partialSearch(query);
+				results = index.partialSearch(processedQuery);
 			} else {
-				results = index.exactSearch(query);
+				results = index.exactSearch(processedQuery);
 			}
 			
 			searchResults.put(queryString, results);
@@ -103,5 +100,36 @@ public final class QueryProcessor {
 	 */
 	public static String getQueryString(List<String> stems) {
 		return String.join(" ", stems);
+	}
+	
+	/**
+	 * Processes a set of query words into a sorted set of unique stems.
+	 *
+	 * @param queries the set of query words to process
+	 * @return a sorted set of unique stems
+	 */
+	public static Set<String> processQueries(Set<String> queries) {
+		TreeSet<String> stems = new TreeSet<>();
+		for (String query : queries) {
+			stems.addAll(FileStemmer.uniqueStems(query));
+		}
+		return stems;
+	}
+	
+	/**
+	 * Processes a list of query lines into a list of processed query sets.
+	 *
+	 * @param queries the list of query lines to process
+	 * @return a list of processed query sets
+	 */
+	public static List<Set<String>> processQueries(List<String> queries) {
+		List<Set<String>> processedQueries = new ArrayList<>();
+		for (String query : queries) {
+			List<String> stems = processLine(query);
+			if (!stems.isEmpty()) {
+				processedQueries.add(new TreeSet<>(stems));
+			}
+		}
+		return processedQueries;
 	}
 }

@@ -6,8 +6,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 
 /**
@@ -317,22 +315,19 @@ public class InvertedIndex {
 	 * Performs an exact search on the inverted index for a line of query words.
 	 * For each location found, creates a SearchResult with metadata for ranking.
 	 * 
-	 * @param line the line of query words to search for
-	 * @return a map with the query string as key and a list of sorted search results as value
+	 * @param queries the set of query words to search for
+	 * @return a list of sorted search results
 	 */
-	// TODO exactSearch(Set<String> queries)
-	public Map<String, List<SearchResult>> exactSearch(String line) {
-		// Process the query line to get sorted unique stems
-		var stems = QueryProcessor.processLine(line); // TODO This logic needs to move
-		if (stems.isEmpty()) {
-			return new TreeMap<>();
+	public List<SearchResult> exactSearch(Set<String> queries) {
+		if (queries.isEmpty()) {
+			return new ArrayList<>();
 		}
 		
 		// Create a map to store search results (location -> total matches)
 		TreeMap<String, Integer> matches = new TreeMap<>();
 		
 		// For each stem in the query
-		for (String stem : stems) {
+		for (String stem : queries) {
 			// Skip if stem not in index
 			if (!index.containsKey(stem)) {
 				continue;
@@ -360,14 +355,9 @@ public class InvertedIndex {
 		
 		// Sort results by score, count, and location
 		results.sort(null); // Uses natural ordering defined by compareTo
-		
-		// Create map with query string as key and sorted results as value
-		TreeMap<String, List<SearchResult>> searchResults = new TreeMap<>(); // TODO This is related to how we handle query files, remove from here---this will be created in your query processor
-		searchResults.put(getQueryString(stems), results);
-		return searchResults; // TODO Instead return results here...
+		return results;
 	}
 	
-	// TODO Your query processor can trigger this
 	/**
 	 * Performs exact searches for multiple query lines and returns all results.
 	 * 
@@ -376,8 +366,9 @@ public class InvertedIndex {
 	 */
 	public Map<String, List<SearchResult>> exactSearchAll(List<String> queries) {
 		TreeMap<String, List<SearchResult>> allResults = new TreeMap<>();
-		for (String query : queries) {
-			allResults.putAll(exactSearch(query));
+		List<Set<String>> processedQueries = QueryProcessor.processQueries(queries);
+		for (Set<String> processedQuery : processedQueries) {
+			allResults.put(String.join(" ", processedQuery), exactSearch(processedQuery));
 		}
 		return allResults;
 	}
@@ -387,21 +378,19 @@ public class InvertedIndex {
 	 * For each location found, creates a SearchResult with metadata for ranking.
 	 * Partial search matches any word that starts with the query word.
 	 * 
-	 * @param line the line of query words to search for
-	 * @return a map with the query string as key and a list of sorted search results as value
+	 * @param queries the set of query words to search for
+	 * @return a list of sorted search results
 	 */
-	public Map<String, List<SearchResult>> partialSearch(String line) {
-		// Process the query line to get sorted unique stems
-		var stems = QueryProcessor.processLine(line);
-		if (stems.isEmpty()) {
-			return new TreeMap<>();
+	public List<SearchResult> partialSearch(Set<String> queries) {
+		if (queries.isEmpty()) {
+			return new ArrayList<>();
 		}
 		
 		// Create a map to store search results (location -> total matches)
 		TreeMap<String, Integer> matches = new TreeMap<>();
 		
 		// For each stem in the query
-		for (String stem : stems) {
+		for (String stem : queries) {
 			// For each word in the index that starts with the stem
 			for (var entry : index.entrySet()) {
 				String word = entry.getKey();
@@ -430,14 +419,9 @@ public class InvertedIndex {
 		
 		// Sort results by score, count, and location
 		results.sort(null); // Uses natural ordering defined by compareTo
-		
-		// Create map with query string as key and sorted results as value
-		TreeMap<String, List<SearchResult>> searchResults = new TreeMap<>();
-		searchResults.put(getQueryString(stems), results);
-		return searchResults;
+		return results;
 	}
 	
-	// TODO Your query processor can trigger this
 	/**
 	 * Performs partial searches for multiple query lines and returns all results.
 	 * 
@@ -447,7 +431,8 @@ public class InvertedIndex {
 	public Map<String, List<SearchResult>> partialSearchAll(List<String> queries) {
 		TreeMap<String, List<SearchResult>> allResults = new TreeMap<>();
 		for (String query : queries) {
-			allResults.putAll(partialSearch(query));
+			Set<String> processedQuery = new TreeSet<>(QueryProcessor.processLine(query));
+			allResults.put(String.join(" ", processedQuery), partialSearch(processedQuery));
 		}
 		return allResults;
 	}
