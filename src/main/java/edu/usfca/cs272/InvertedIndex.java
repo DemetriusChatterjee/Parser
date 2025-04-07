@@ -33,7 +33,7 @@ public class InvertedIndex {
 	}
 	
 	/**
-	 * Adds a word stem and its position to the index for a specific file location. g
+	 * Adds a word stem and its position to the index for a specific file location.
 	 *
 	 * @param stem the word stem to add
 	 * @param location the file path where the stem was found
@@ -251,6 +251,7 @@ public class InvertedIndex {
 		counts.clear();
 	}
 
+	// TODO Fix indentation
 /**
 	 * Represents a search result with metadata for ranking.
 	 */
@@ -329,9 +330,11 @@ public class InvertedIndex {
 	 * @param stems the list of query stems
 	 * @return the query string with stems joined by spaces
 	 */
-	private static String getQueryString(List<String> stems) {
+	private static String getQueryString(List<String> stems) { // TODO Should alos move to the query processor
 		return String.join(" ", stems);
 	}
+	
+	
 	
 	/**
 	 * Performs an exact search on the inverted index for a line of query words.
@@ -340,9 +343,10 @@ public class InvertedIndex {
 	 * @param line the line of query words to search for
 	 * @return a map with the query string as key and a list of sorted search results as value
 	 */
+	// TODO exactSearch(Set<String> queries)
 	public Map<String, List<SearchResult>> exactSearch(String line) {
 		// Process the query line to get sorted unique stems
-		var stems = QueryProcessor.processLine(line);
+		var stems = QueryProcessor.processLine(line); // TODO This logic needs to move
 		if (stems.isEmpty()) {
 			return new TreeMap<>();
 		}
@@ -381,11 +385,12 @@ public class InvertedIndex {
 		results.sort(null); // Uses natural ordering defined by compareTo
 		
 		// Create map with query string as key and sorted results as value
-		TreeMap<String, List<SearchResult>> searchResults = new TreeMap<>();
+		TreeMap<String, List<SearchResult>> searchResults = new TreeMap<>(); // TODO This is related to how we handle query files, remove from here---this will be created in your query processor
 		searchResults.put(getQueryString(stems), results);
-		return searchResults;
+		return searchResults; // TODO Instead return results here...
 	}
 	
+	// TODO Your query processor can trigger this
 	/**
 	 * Performs exact searches for multiple query lines and returns all results.
 	 * 
@@ -455,6 +460,7 @@ public class InvertedIndex {
 		return searchResults;
 	}
 	
+	// TODO Your query processor can trigger this
 	/**
 	 * Performs partial searches for multiple query lines and returns all results.
 	 * 
