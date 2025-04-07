@@ -51,8 +51,12 @@ public final class QueryProcessor {
 		try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
 			String line;
 			while ((line = reader.readLine()) != null) {
-				if (!line.isBlank()) {
-					queries.add(processLine(line));
+				line = line.trim();
+				if (!line.isEmpty()) {
+					List<String> stems = processLine(line);
+					if (stems != null && !stems.isEmpty()) {
+						queries.add(stems);
+					}
 				}
 			}
 		}
