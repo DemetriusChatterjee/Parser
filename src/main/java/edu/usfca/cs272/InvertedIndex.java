@@ -327,14 +327,14 @@ public class InvertedIndex {
 		TreeMap<String, Integer> matches = new TreeMap<>();
 		
 		// For each stem in the query
-		for (String stem : queries) {
+		for (String query : queries) {
 			// Skip if stem not in index
-			if (!index.containsKey(stem)) {
+			if (!index.containsKey(query)) {
 				continue;
 			}
 			
 			// For each location where this stem appears
-			for (var entry : index.get(stem).entrySet()) {
+			for (var entry : index.get(query).entrySet()) {
 				String location = entry.getKey();
 				int count = entry.getValue().size(); // Number of times this stem appears in this location
 				
@@ -390,11 +390,11 @@ public class InvertedIndex {
 		TreeMap<String, Integer> matches = new TreeMap<>();
 		
 		// For each stem in the query
-		for (String stem : queries) {
+		for (String query : queries) {
 			// For each word in the index that starts with the stem
 			for (var entry : index.entrySet()) {
 				String word = entry.getKey();
-				if (word.startsWith(stem)) {
+				if (word.startsWith(query)) {
 					// For each location where this word appears
 					for (var locationEntry : entry.getValue().entrySet()) {
 						String location = locationEntry.getKey();
