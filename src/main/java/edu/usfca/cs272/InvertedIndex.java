@@ -224,16 +224,6 @@ public class InvertedIndex {
 	}
 	
 	/**
-	 * Writes the inverted index to a JSON file.
-	 *
-	 * @param path the path to write the JSON file to
-	 * @throws IOException if an IO error occurs
-	 */
-	public void toJson(Path path) throws IOException {
-		JsonWriter.writeObject(index, path);
-	}
-	
-	/**
 	 * Gets the word count for a specific location.
 	 *
 	 * @param location the location to look up
@@ -251,8 +241,7 @@ public class InvertedIndex {
 		counts.clear();
 	}
 
-	// TODO Fix indentation
-/**
+	/**
 	 * Represents a search result with metadata for ranking.
 	 */
 	public static class SearchResult implements Comparable<SearchResult> {
@@ -323,18 +312,6 @@ public class InvertedIndex {
 			return score;
 		}
 	}
-	
-	/**
-	 * Gets the cleaned and sorted query string from a list of stems.
-	 * 
-	 * @param stems the list of query stems
-	 * @return the query string with stems joined by spaces
-	 */
-	private static String getQueryString(List<String> stems) { // TODO Should alos move to the query processor
-		return String.join(" ", stems);
-	}
-	
-	
 	
 	/**
 	 * Performs an exact search on the inverted index for a line of query words.
