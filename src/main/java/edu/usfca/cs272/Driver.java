@@ -87,6 +87,7 @@ public class Driver {
 		}
 
 		// Handle search results
+		// TODO Move this into the query processor and store it there
 		Map<String, List<InvertedIndex.SearchResult>> searchResults = new TreeMap<>();
 		
 		if (parser.hasFlag("-query")) {

@@ -47,6 +47,11 @@ public final class InvertedIndexBuilder {
 		return name.endsWith(".txt") || name.endsWith(".text");
 	}
 	
+	/*
+	 * TODO Need to motivate this design change from your v1.4
+	 * by creating a new static method buildFile.
+	 */
+	
 	/**
 	 * Builds the index from a single text file by processing its contents.
 	 * Extracts stems from the file and adds them to the index with their

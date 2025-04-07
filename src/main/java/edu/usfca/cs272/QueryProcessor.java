@@ -32,10 +32,12 @@ public final class QueryProcessor {
 	 * @param line the line of query text to process
 	 * @return a sorted list of unique stems
 	 */
-	public static List<String> processLine(final String line) {
+	public static List<String> processLine(final String line) { // TODO These are essentially add methods for your map of results
 		// Use TreeSet to handle both duplicate removal and sorting
 		final TreeSet<String> stems = FileStemmer.uniqueStems(line);
 		return new ArrayList<>(stems);
+		
+		// TODO This can store the results into the map
 	}
 	
 	/**
