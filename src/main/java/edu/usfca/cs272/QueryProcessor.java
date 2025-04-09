@@ -21,9 +21,34 @@ import java.util.TreeSet;
  * @version Spring 2025
  */
 public final class QueryProcessor {
+	// TODO Make this a member: TreeMap<String, List<SearchResult>> allResults = new TreeMap<>();
+		
+	// TODO Take a non-static approach to this class...
+		
+	/*
+	 * TODO 
+	 * 
+	 * processQueryFile(...)
+	 *    buffered reader and calls processQueryLine(...) on every line
+	 * 
+	 * processQueryLine(...)
+	 *    stemming the line
+	 *    join the line
+	 *    collect the search results
+	 *    store the search results
+	 *    
+	 * some safe get methods
+	 * toString
+	 * toJson method...
+	 * 
+	 * Don't have to add all the other data structure methods
+	 */
+		
+		
 	/** Prevent instantiation of utility class. */
 	private QueryProcessor() {}
 	
+	// TODO Once you have an instance based approach, this method can reuse a stemmer object
 	/**
 	 * Processes a single line of query text into a sorted list of unique stems.
 	 *
@@ -33,7 +58,7 @@ public final class QueryProcessor {
 	public static List<String> processLine(final String line) {
 		// Use TreeSet to handle both duplicate removal and sorting
 		final TreeSet<String> stems = FileStemmer.uniqueStems(line);
-		return new ArrayList<>(stems);
+		return new ArrayList<>(stems); // TODO Don't copy into a list
 	}
 	
 	/**

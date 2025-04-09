@@ -242,15 +242,16 @@ public class InvertedIndex {
 	/**
 	 * Represents a search result with metadata for ranking.
 	 */
+	// TODO Make this a non-static inner class
 	public static class SearchResult implements Comparable<SearchResult> {
 		/** The path where matches were found */
 		private final String where;
 		
 		/** The total number of matches found */
-		private final int count;
+		private final int count; // TODO Make non-final
 		
 		/** The score (count/totalWords) for ranking */
-		private final double score;
+		private final double score; // TODO Make non-final
 		
 		/**
 		 * Creates a new search result.
@@ -263,7 +264,13 @@ public class InvertedIndex {
 			this.where = where;
 			this.count = count;
 			this.score = (double) count / totalWords;
+			// TODO this.score = (double) count / counts.get(where);
 		}
+		
+		/*
+		 * TODO Create a method that updates the count and when the 
+		 * count changes, updates the score...
+		 */
 		
 		@Override
 		public int compareTo(SearchResult other) {
@@ -311,6 +318,12 @@ public class InvertedIndex {
 		}
 	}
 	
+	/* TODO 
+	public List<SearchResult> search(Set<String> queries, boolean partial) {
+		return partial ? etc.
+	}
+	*/
+	
 	/**
 	 * Performs an exact search on the inverted index for a line of query words.
 	 * For each location found, creates a SearchResult with metadata for ranking.
@@ -325,6 +338,7 @@ public class InvertedIndex {
 		
 		// Create a map to store search results (location -> total matches)
 		TreeMap<String, Integer> matches = new TreeMap<>();
+		// TODO TreeMap<String, SearchResult> matches = new TreeMap<>();
 		
 		// For each stem in the query
 		for (String query : queries) {
@@ -341,6 +355,12 @@ public class InvertedIndex {
 				// Add or update the total matches for this location
 				int current = matches.getOrDefault(location, 0);
 				matches.put(location, current + count);
+				
+				/*
+				 * TODO 
+				 * if a search result is there...
+				 *     matches.get(location).addCount(...)
+				 */
 			}
 		}
 		
@@ -358,6 +378,7 @@ public class InvertedIndex {
 		return results;
 	}
 	
+	// TODO Remove exactSearchAll
 	/**
 	 * Performs exact searches for multiple query lines and returns all results.
 	 * 
@@ -422,6 +443,7 @@ public class InvertedIndex {
 		return results;
 	}
 	
+	// TODO Remove partialSearchAll
 	/**
 	 * Performs partial searches for multiple query lines and returns all results.
 	 * 
