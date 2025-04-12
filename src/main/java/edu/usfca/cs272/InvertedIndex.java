@@ -215,11 +215,6 @@ public class InvertedIndex {
 	public Map<String, TreeMap<String, TreeSet<Integer>>> getIndex() {
 		return Collections.unmodifiableMap(index);
 	}
-
-	@Override
-	public String toString() {
-		return index.toString();
-	}
 	
 	/**
 	 * Gets the word count for a specific location.

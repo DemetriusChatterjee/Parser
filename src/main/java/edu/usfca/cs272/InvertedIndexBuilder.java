@@ -122,4 +122,24 @@ public final class InvertedIndexBuilder {
 			buildFile(path);
 		}
 	}
+
+	/**
+	 * Writes the word counts to a JSON file.
+	 *
+	 * @param path the path to write the counts to
+	 * @throws IOException if an IO error occurs
+	 */
+	public void writeCounts(Path path) throws IOException {
+		JsonWriter.writeObject(index.getCounts(), path);
+	}
+
+	/**
+	 * Writes the inverted index to a JSON file.
+	 *
+	 * @param path the path to write the index to
+	 * @throws IOException if an IO error occurs
+	 */
+	public void writeIndex(Path path) throws IOException {
+		JsonWriter.writeObject(index.getIndex(), path);
+	}
 }
