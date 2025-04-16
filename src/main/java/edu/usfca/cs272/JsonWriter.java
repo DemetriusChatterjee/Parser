@@ -79,35 +79,6 @@ public class JsonWriter {
 	}
 
 	/**
-	 * Checks if a Map object has String keys and converts it to {@code Map<String, Object>}.
-	 *
-	 * @param value the object to check and convert
-	 * @return the converted map if valid
-	 * @throws IllegalArgumentException if the map has non-String keys or if value is not a Map
-	 */
-	private static Map<String, Object> asStringMap(Object value) {
-		if (value == null) {
-			throw new IllegalArgumentException("Value cannot be null");
-		}
-		
-		Map<String, Object> result = new TreeMap<>();
-		try {
-			Map<?, ?> map = (Map<?, ?>) value; // Cast value to Map since we're in try block that will catch ClassCastException
-			
-			for (var entry : map.entrySet()) {
-				try{
-					result.put((String) entry.getKey(), entry.getValue()); // Cast key to String - will throw ClassCastException if not a String key
-				} catch (ClassCastException e) {
-					throw new IllegalArgumentException("Map values must have String keys");
-				}
-			}
-			return result;
-		} catch (ClassCastException e) {
-			throw new IllegalArgumentException("Value is not a Map");
-		}
-	}
-
-	/**
 	 * Writes any other type of value in JSON format as a quoted string.
 	 *
 	 * @param value the value to write
