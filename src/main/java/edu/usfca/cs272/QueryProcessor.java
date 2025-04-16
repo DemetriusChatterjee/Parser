@@ -21,7 +21,8 @@ import java.util.TreeSet;
  * @version Spring 2025
  */
 public final class QueryProcessor {
-	// TODO Make this a member: TreeMap<String, List<SearchResult>> allResults = new TreeMap<>();
+	/** The map to store search results for each query. */
+	private final TreeMap<String, List<InvertedIndex.SearchResult>> allResults;
 		
 	// TODO Take a non-static approach to this class...
 		
@@ -45,8 +46,12 @@ public final class QueryProcessor {
 	 */
 		
 		
-	/** Prevent instantiation of utility class. */
-	private QueryProcessor() {}
+	/**
+	 * Constructor for QueryProcessor.
+	 */
+	private QueryProcessor() {
+		this.allResults = new TreeMap<>();
+	}
 	
 	// TODO Once you have an instance based approach, this method can reuse a stemmer object
 	/**
