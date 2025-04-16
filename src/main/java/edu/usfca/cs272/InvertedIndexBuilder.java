@@ -130,7 +130,7 @@ public final class InvertedIndexBuilder {
 	 * @throws IOException if an IO error occurs
 	 */
 	public void writeCounts(Path path) throws IOException {
-		JsonWriter.writeObject(index.getCounts(), path);
+		JsonWriter.writeCountsObject(index.getCounts(), path);
 	}
 
 	/**
@@ -140,6 +140,6 @@ public final class InvertedIndexBuilder {
 	 * @throws IOException if an IO error occurs
 	 */
 	public void writeIndex(Path path) throws IOException {
-		JsonWriter.writeObject(index.getIndex(), path);
+		JsonWriter.writeIndexObject(index.getIndex(), path);
 	}
 }
