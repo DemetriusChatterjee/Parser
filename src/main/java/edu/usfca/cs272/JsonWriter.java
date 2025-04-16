@@ -122,6 +122,45 @@ public class JsonWriter {
 	 * @throws IOException if an IO error occurs
 	 */
 	public static void writeIndexObject(Map<String, TreeMap<String, TreeSet<Integer>>> elements, Writer writer, int indent) throws IOException {
+		writer.write('{');
+		writer.write('\n');
+		
+		if (!elements.isEmpty()) {
+			var iterator = elements.entrySet().iterator();
+			
+			// Write first key-value pair
+			var entry = iterator.next();
+			writeIndent(writer, indent + 1);
+			writeQuote(entry.getKey(), writer, 0);
+			writer.write(": ");
+			writeLocationsObject(entry.getValue(), writer, indent + 1);
+			
+			// Write remaining pairs
+			while (iterator.hasNext()) {
+				writer.write(",\n");
+				entry = iterator.next();
+				writeIndent(writer, indent + 1);
+				writeQuote(entry.getKey(), writer, 0);
+				writer.write(": ");
+				writeLocationsObject(entry.getValue(), writer, indent + 1);
+			}
+			
+			writer.write('\n');
+		}
+		
+		writeIndent(writer, indent);
+		writer.write('}');
+	}
+	
+	/**
+	 * Writes the locations map as a pretty JSON object.
+	 *
+	 * @param locations the locations map to write
+	 * @param writer the writer to use
+	 * @param indent the initial indent level
+	 * @throws IOException if an IO error occurs
+	 */
+	private static void writeLocationsObject(TreeMap<String, TreeSet<Integer>> locations, Writer writer, int indent) throws IOException {
 		//TODO: Implement this method
 	}
 
