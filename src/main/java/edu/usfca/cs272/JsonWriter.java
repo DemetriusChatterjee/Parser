@@ -135,7 +135,7 @@ public class JsonWriter {
 	 *   the initial indentation level
 	 * @throws IOException if an IO error occurs
 	 */
-	public static void writeObject(Map<String, ?> elements, Writer writer, int indent) throws IOException {
+	public static void writeCountsObject(Map<String, Integer> elements, Writer writer, int indent) throws IOException {
 		writer.write('{');
 		writer.write('\n');
 		
@@ -264,10 +264,10 @@ public class JsonWriter {
 	 * @param elements the elements to use
 	 * @return a {@link String} containing the elements in pretty JSON format
 	 */
-	public static String writeObject(Map<String, ?> elements) {
+	public static String writeCountsObject(Map<String, Integer> elements) {
 		try {
 			StringWriter writer = new StringWriter();
-			writeObject(elements, writer, 0);
+			writeCountsObject(elements, writer, 0);
 			return writer.toString();
 		}
 		catch (IOException e) {
