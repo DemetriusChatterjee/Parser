@@ -162,7 +162,7 @@ public class JsonWriter {
 	 *   the initial indentation level
 	 * @throws IOException if an IO error occurs
 	 */
-	public static void writeArray(Collection<?> elements, Writer writer, int indent) throws IOException {
+	public static void writeArray(TreeSet<Integer> elements, Writer writer, int indent) throws IOException {
 		writer.write('[');
 		writer.write('\n');
 		
@@ -171,13 +171,13 @@ public class JsonWriter {
 			
 			// Write first element (no preceding comma needed)
 			writeIndent(writer, indent + 1);
-			writeValue(iterator.next(), writer, indent + 1);
+			writer.write(iterator.next().toString());
 			
 			// Write remaining elements (preceded by commas)
 			while (iterator.hasNext()) {
 				writer.write(",\n");
 				writeIndent(writer, indent + 1);
-				writeValue(iterator.next(), writer, indent + 1);
+				writer.write(iterator.next().toString());
 			}
 			
 			writer.write('\n');
