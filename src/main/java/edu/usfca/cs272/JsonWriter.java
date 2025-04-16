@@ -167,20 +167,6 @@ public class JsonWriter {
 	}
 
 	/**
-	 * Writes the elements as a pretty JSON object.
-	 *
-	 * @param elements the elements to write
-	 * @param writer the writer to use
-	 * @param indent the initial indent level; the first bracket is not indented,
-	 *   inner elements are indented by one, and the last bracket is indented at
-	 *   the initial indentation level
-	 * @throws IOException if an IO error occurs
-	 */
-	public static void writeCountsObject(Map<String, Integer> elements, Writer writer, int indent) throws IOException {
-		//TODO: Implement this method
-	}
-
-	/**
 	 * Writes the elements as a pretty JSON array.
 	 *
 	 * @param elements the elements to write
