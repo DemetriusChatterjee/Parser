@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.Iterator;
 
 /**
@@ -97,24 +98,16 @@ public class JsonWriter {
 	/**
 	 * Writes an integer value in JSON format.
 	 *
-	 * @param value the value to write
+	 * @param value the integer value to write
 	 * @param writer the writer to use
 	 * @param indent the current indentation level
 	 * @throws IOException if an IO error occurs
 	 */
-	private static void writeValue(Object value, Writer writer, int indent) throws IOException {
+	private static void writeValue(Integer value, Writer writer, int indent) throws IOException {
 		if (value == null) {
 			writer.write("null");
-		} else if (value instanceof Number) {
-			writer.write(value.toString());
-		} else if (value instanceof Map<?, ?>) {
-			writeObject(asStringMap(value), writer, indent);
-		} else if (value instanceof Collection<?>) {
-			writeArray((Collection<?>) value, writer, indent);
 		} else {
-			writer.write('"');
 			writer.write(value.toString());
-			writer.write('"');
 		}
 	}
 
