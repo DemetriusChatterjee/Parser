@@ -153,6 +153,20 @@ public class JsonWriter {
 	}
 
 	/**
+	 * Writes the elements as a pretty JSON object.
+	 *
+	 * @param elements the elements to write
+	 * @param writer the writer to use
+	 * @param indent the initial indent level; the first bracket is not indented,
+	 *   inner elements are indented by one, and the last bracket is indented at
+	 *   the initial indentation level
+	 * @throws IOException if an IO error occurs
+	 */
+	public static void writeCountsObject(Map<String, Integer> elements, Writer writer, int indent) throws IOException {
+		//TODO: Implement this method
+	}
+
+	/**
 	 * Writes the elements as a pretty JSON array.
 	 *
 	 * @param elements the elements to write
@@ -201,15 +215,15 @@ public class JsonWriter {
 	}
 
 	/**
-	 * Writes a Collection data structure to a file in JSON format.
+	 * Writes a Map data structure to a file in JSON format.
 	 * 
-	 * @param data the Collection data to write
+	 * @param data the Map data to write
 	 * @param path the file path to write to
 	 * @throws IOException if an IO error occurs
 	 */
-	private static void writeJson(Collection<?> data, Path path) throws IOException {
+	public static void writeCountsObject(Map<String, Integer> data, Path path) throws IOException {
 		try (BufferedWriter writer = Files.newBufferedWriter(path, UTF_8)) {
-			writeArray(data, writer, 0);
+			writeCountsObject(data, writer, 0);
 		}
 	}
 
