@@ -231,17 +231,6 @@ public class JsonWriter {
 	}
 
 	/**
-	 * Writes the elements as a pretty JSON object to file.
-	 *
-	 * @param elements the elements to write
-	 * @param path the file path to use
-	 * @throws IOException if an IO error occurs
-	 */
-	public static void writeObject(Map<String, ?> elements, Path path) throws IOException {
-		writeJson(elements, path);
-	}
-
-	/**
 	 * Returns the elements as a pretty JSON object.
 	 *
 	 * @param elements the elements to use
