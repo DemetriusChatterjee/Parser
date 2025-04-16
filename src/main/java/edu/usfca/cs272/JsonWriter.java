@@ -121,6 +121,20 @@ public class JsonWriter {
 	 *   the initial indentation level
 	 * @throws IOException if an IO error occurs
 	 */
+	public static void writeIndexObject(Map<String, TreeMap<String, TreeSet<Integer>>> elements, Writer writer, int indent) throws IOException {
+		//TODO: Implement this method
+	}
+
+	/**
+	 * Writes the elements as a pretty JSON object.
+	 *
+	 * @param elements the elements to write
+	 * @param writer the writer to use
+	 * @param indent the initial indent level; the first bracket is not indented,
+	 *   inner elements are indented by one, and the last bracket is indented at
+	 *   the initial indentation level
+	 * @throws IOException if an IO error occurs
+	 */
 	public static void writeObject(Map<String, ?> elements, Writer writer, int indent) throws IOException {
 		writer.write('{');
 		writer.write('\n');
@@ -208,9 +222,9 @@ public class JsonWriter {
 	 * @param path the file path to write to
 	 * @throws IOException if an IO error occurs
 	 */
-	private static void writeJson(Map<?, ?> data, Path path) throws IOException {
+	public static void writeIndexObject(Map<String, TreeMap<String, TreeSet<Integer>>> data, Path path) throws IOException {
 		try (BufferedWriter writer = Files.newBufferedWriter(path, UTF_8)) {
-			writeObject(asStringMap(data), writer, 0);
+			writeIndexObject(data, writer, 0);
 		}
 	}
 
@@ -228,15 +242,15 @@ public class JsonWriter {
 	}
 
 	/**
-	 * Returns the elements as a pretty JSON array.
+	 * Returns the elements as a pretty JSON object.
 	 *
 	 * @param elements the elements to use
 	 * @return a {@link String} containing the elements in pretty JSON format
 	 */
-	public static String writeArray(Collection<Object> elements) {
+	public static String writeIndexObject(Map<String, TreeMap<String, TreeSet<Integer>>> elements) {
 		try {
 			StringWriter writer = new StringWriter();
-			writeArray(elements, writer, 0);
+			writeIndexObject(elements, writer, 0);
 			return writer.toString();
 		}
 		catch (IOException e) {
