@@ -161,7 +161,34 @@ public class JsonWriter {
 	 * @throws IOException if an IO error occurs
 	 */
 	private static void writeLocationsObject(TreeMap<String, TreeSet<Integer>> locations, Writer writer, int indent) throws IOException {
-		//TODO: Implement this method
+		writer.write('{');
+		writer.write('\n');
+		
+		if (!locations.isEmpty()) {
+			var iterator = locations.entrySet().iterator();
+			
+			// Write first key-value pair
+			var entry = iterator.next();
+			writeIndent(writer, indent + 1);
+			writeQuote(entry.getKey(), writer, 0);
+			writer.write(": ");
+			writeArray(entry.getValue(), writer, indent + 1);
+			
+			// Write remaining pairs
+			while (iterator.hasNext()) {
+				writer.write(",\n");
+				entry = iterator.next();
+				writeIndent(writer, indent + 1);
+				writeQuote(entry.getKey(), writer, 0);
+				writer.write(": ");
+				writeArray(entry.getValue(), writer, indent + 1);
+			}
+			
+			writer.write('\n');
+		}
+		
+		writeIndent(writer, indent);
+		writer.write('}');
 	}
 
 	/**
