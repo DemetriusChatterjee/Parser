@@ -79,7 +79,23 @@ public class JsonWriter {
 	}
 
 	/**
-	 * Writes any other type of value in JSON format as a quoted string.
+	 * Writes a set value in JSON format.
+	 *
+	 * @param value the set value to write
+	 * @param writer the writer to use
+	 * @param indent the current indentation level
+	 * @throws IOException if an IO error occurs
+	 */
+	private static void writeValue(TreeSet<Integer> value, Writer writer, int indent) throws IOException {
+		if (value == null) {
+			writer.write("null");
+		} else {
+			writeArray(value, writer, indent);
+		}
+	}
+
+	/**
+	 * Writes an integer value in JSON format.
 	 *
 	 * @param value the value to write
 	 * @param writer the writer to use
