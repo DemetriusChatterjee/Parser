@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.Collections;
 
 /**
  * A utility class for processing search queries. This class provides methods for cleaning,
@@ -95,10 +96,10 @@ public final class QueryProcessor {
 				results = index.exactSearch(processedQuery);
 			}
 			
-			searchResults.put(queryString, results);
+			allResults.put(queryString, Collections.unmodifiableList(results));
 		}
 		
-		return searchResults;
+		return Collections.unmodifiableMap(allResults);
 	}
 	
 	/**
