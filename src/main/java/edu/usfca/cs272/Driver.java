@@ -24,6 +24,9 @@ public class Driver {
 	 */
 	private static final Logger LOGGER = Logger.getLogger(Driver.class.getName());
 
+	/** Default number of worker threads to use if not specified or invalid. */
+	private static final int DEFAULT_THREADS = 5;
+
 	/**
 	 * Initializes the classes necessary based on the provided command-line
 	 * arguments. This includes (but is not limited to) how to build or search an
@@ -36,6 +39,7 @@ public class Driver {
 	 *             "-query" for query file path
 	 *             "-results" for search results output path
 	 *             "-partial" to use partial search instead of exact search
+	 *             "-threads [num]" to enable multithreaded search with optional number of threads
 	 */
 	public static void main(final String[] args) {
 		final Instant start = Instant.now();
@@ -94,7 +98,26 @@ public class Driver {
 				try {
 					boolean usePartialSearch = parser.hasFlag("-partial");
 					QueryProcessor queryProcessor = new QueryProcessor();
-					searchResults = queryProcessor.processSearchResults(queryPath, index, usePartialSearch);
+					
+					// Check if multithreaded search is enabled
+					if (parser.hasFlag("-threads")) {
+						int numThreads = parser.getInteger("-threads", DEFAULT_THREADS);
+						if (numThreads < 2) {
+							System.err.println("Invalid number of threads. Using default: " + DEFAULT_THREADS);
+							numThreads = DEFAULT_THREADS;
+						}
+						
+						// Initialize thread-safe components and perform multithreaded search
+						ThreadSafeInvertedIndex threadSafeIndex = new ThreadSafeInvertedIndex(index);
+						WorkQueue workQueue = new WorkQueue(numThreads);
+						MultithreadedQueryProcessor multiProcessor = new MultithreadedQueryProcessor(threadSafeIndex, workQueue);
+						searchResults = multiProcessor.processSearchResults(queryPath, usePartialSearch);
+						workQueue.shutdown();
+					}
+					else {
+						// Perform single-threaded search
+						searchResults = queryProcessor.processSearchResults(queryPath, index, usePartialSearch);
+					}
 				}
 				catch (IOException e) {
 					LOGGER.warning("Unable to process query file: " + e.getMessage());
