@@ -37,10 +37,10 @@ public final class QueryProcessor {
 	 * @param line the line of query text to process
 	 * @return a sorted list of unique stems
 	 */
-	public static List<String> processLine(final String line) {
+	private TreeSet<String> processLine(final String line) {
 		// Use TreeSet to handle both duplicate removal and sorting
-		final TreeSet<String> stems = FileStemmer.uniqueStems(line);
-		return new ArrayList<>(stems); // TODO Don't copy into a list
+		FileStemmer stemmer = new FileStemmer();
+		return stemmer.uniqueStems(line);
 	}
 	
 	/**
