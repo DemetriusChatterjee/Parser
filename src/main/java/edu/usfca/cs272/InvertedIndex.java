@@ -87,14 +87,6 @@ public class InvertedIndex {
 	}
 	
 	/**
-	 * Clears both the inverted index and word counts.
-	 */
-	public void clear() {
-		index.clear();
-		counts.clear();
-	}
-
-	/**
 	 * Represents a search result with metadata for ranking.
 	 */
 	// TODO Make this a non-static inner class
