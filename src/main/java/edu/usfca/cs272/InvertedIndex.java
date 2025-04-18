@@ -38,14 +38,14 @@ public class InvertedIndex {
 	 * @param position the position of the stem in the file (1-based)
 	 */
 	public void add(String stem, String location, int position) {
-		var locations = index.get(stem);
+		TreeMap<String, TreeSet<Integer>> locations = index.get(stem);
 		
 		if (locations == null) {
 			locations = new TreeMap<>();
 			index.put(stem, locations);
 		}
 		
-		var positions = locations.get(location);
+		TreeSet<Integer> positions = locations.get(location);
 		
 		if (positions == null) {
 			positions = new TreeSet<>();
