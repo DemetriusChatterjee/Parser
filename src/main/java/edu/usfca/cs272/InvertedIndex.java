@@ -208,17 +208,10 @@ public class InvertedIndex {
 					result.updateCount(result.getCount() + count);
 				}
 			}
-		
-		// Convert matches to SearchResult objects with metadata
-		List<SearchResult> results = new ArrayList<>();
-		for (var entry : matches.entrySet()) {
-			String location = entry.getKey();
-			int matchCount = entry.getValue();
-			int totalWords = counts.get(location);
-			results.add(new SearchResult(location, matchCount, totalWords));
 		}
 		
-		// Sort results by score, count, and location
+		// Convert matches to sorted list
+		List<SearchResult> results = new ArrayList<>(matches.values());
 		results.sort(null); // Uses natural ordering defined by compareTo
 		return results;
 	}
