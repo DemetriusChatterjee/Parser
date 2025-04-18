@@ -51,7 +51,7 @@ public class ArgumentParser {
 	 * @see Character#isDigit(int)
 	 * @see Character#isWhitespace(int)
 	 */
-	public static boolean isFlag(String arg) {
+	private static boolean isFlag(String arg) {
 		if (arg == null || arg.length() < 2 || !arg.startsWith("-")) {
 			return false;
 		}
@@ -68,7 +68,7 @@ public class ArgumentParser {
 	 * @param arg the argument to test if its a value
 	 * @return {@code true} if the argument is a value
 	 */
-	public static boolean isValue(String arg) {
+	private static boolean isValue(String arg) {
 		return !isFlag(arg);
 	}
 
@@ -81,7 +81,7 @@ public class ArgumentParser {
 	 * @see #isFlag(String)
 	 * @see #isValue(String)
 	 */
-	public final void parse(String[] args) {
+	private final void parse(String[] args) {
 		for (int i = 0; i < args.length; i++) {
 			if (isFlag(args[i])) {
 				String flag = args[i];
