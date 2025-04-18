@@ -42,8 +42,8 @@ public final class InvertedIndexBuilder {
 	 * @param path the path to test
 	 * @return true if the path has a .txt or .text extension
 	 */
-	public static boolean isTextFile(Path path) {
-		var name = path.toString().toLowerCase();
+	private static boolean isTextFile(Path path) {
+		String name = path.toString().toLowerCase();
 		return name.endsWith(".txt") || name.endsWith(".text");
 	}
 	
@@ -57,7 +57,7 @@ public final class InvertedIndexBuilder {
 	 * @param index the inverted index to build
 	 * @throws IOException if an IO error occurs during file reading or processing
 	 */
-	public static void buildFile(Path path, InvertedIndex index) throws IOException {
+	private static void buildFile(Path path, InvertedIndex index) throws IOException {
 		try (var reader = Files.newBufferedReader(path)) {
 			String line;
 			var stemmer = new SnowballStemmer(SnowballStemmer.ALGORITHM.ENGLISH);
@@ -80,7 +80,7 @@ public final class InvertedIndexBuilder {
 	 * @param path the text file to process
 	 * @throws IOException if an IO error occurs during file reading or processing
 	 */
-	public void buildFile(Path path) throws IOException {
+	private void buildFile(Path path) throws IOException {
 		buildFile(path, this.index);
 	}
 
@@ -92,7 +92,7 @@ public final class InvertedIndexBuilder {
 	 * @param directory the directory to process
 	 * @throws IOException if an IO error occurs during directory traversal or file processing
 	 */
-	public void buildDirectory(Path directory) throws IOException { 
+	private void buildDirectory(Path directory) throws IOException { 
 		try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
 			for (var path : stream) {
 				if (Files.isDirectory(path)) {
