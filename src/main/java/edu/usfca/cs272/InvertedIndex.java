@@ -192,8 +192,9 @@ public class InvertedIndex {
 				continue;
 			}
 			
+			TreeMap<String, TreeSet<Integer>> locations = index.get(query);
 			// For each location where this stem appears
-			for (var entry : index.get(query).entrySet()) {
+			for (var entry : locations.entrySet()) {
 				String location = entry.getKey();
 				int count = entry.getValue().size(); // Number of times this stem appears in this location
 				
