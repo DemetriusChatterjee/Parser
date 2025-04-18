@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Map;
+
 import opennlp.tools.stemmer.snowball.SnowballStemmer;
 
 
@@ -141,5 +144,16 @@ public final class InvertedIndexBuilder {
 	 */
 	public void writeIndex(Path path) throws IOException {
 		JsonWriter.writeIndexObject(index.getIndex(), path);
+	}
+
+	/**
+	 * Writes the search results to a JSON file.
+	 *
+	 * @param searchResults the search results to write
+	 * @param path the path to write the search results to
+	 * @throws IOException if an IO error occurs
+	 */
+	public void writeSearchResults(Map<String, List<InvertedIndex.SearchResult>> searchResults, Path path) throws IOException {
+		JsonWriter.writeSearchResults(searchResults, path);
 	}
 }
