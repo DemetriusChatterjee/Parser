@@ -89,16 +89,15 @@ public class InvertedIndex {
 	/**
 	 * Represents a search result with metadata for ranking.
 	 */
-	// TODO Make this a non-static inner class
-	public static class SearchResult implements Comparable<SearchResult> {
+	public class SearchResult implements Comparable<SearchResult> {
 		/** The path where matches were found */
 		private final String where;
 		
 		/** The total number of matches found */
-		private final int count; // TODO Make non-final
+		private int count;
 		
 		/** The score (count/totalWords) for ranking */
-		private final double score; // TODO Make non-final
+		private double score;
 		
 		/**
 		 * Creates a new search result.
@@ -110,14 +109,20 @@ public class InvertedIndex {
 		public SearchResult(String where, int count, int totalWords) {
 			this.where = where;
 			this.count = count;
-			this.score = (double) count / totalWords;
-			// TODO this.score = (double) count / counts.get(where);
+			this.score = (double) count / counts.get(where);
 		}
 		
-		/*
-		 * TODO Create a method that updates the count and when the 
-		 * count changes, updates the score...
+		/**
+		 * Updates the count and score for this search result.
+		 * 
+		 * @param count the new count value
 		 */
+		private void updateCount(int count) {
+			if (this.count != count) {
+				this.count = count;
+				this.score = (double) count / counts.get(where);
+			}
+		}
 		
 		@Override
 		public int compareTo(SearchResult other) {
