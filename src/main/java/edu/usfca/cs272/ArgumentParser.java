@@ -2,7 +2,6 @@ package edu.usfca.cs272;
 
 import java.nio.file.Path;
 import java.util.HashMap;
-import java.util.Objects;
 
 /**
  * Parses and stores command-line arguments into simple flag/value pairs.
@@ -97,16 +96,6 @@ public class ArgumentParser {
 	}
 
 	/**
-	 * Returns the number of unique flags.
-	 *
-	 * @return number of unique flags
-	 */
-	public int numFlags() {
-		// Return the size of the map, which represents the number of unique flags
-		return map.size();
-	}
-
-	/**
 	 * Determines whether the specified flag exists.
 	 *
 	 * @param flag the flag check
@@ -120,45 +109,6 @@ public class ArgumentParser {
 
 		// Return true if the map contains this flag as a key
 		return map.containsKey(flag);
-	}
-
-	/**
-	 * Determines whether the specified flag is mapped to a non-null value.
-	 *
-	 * @param flag the flag to find
-	 * @return {@code true} if the flag is mapped to a non-null value
-	 */
-	public boolean hasValue(String flag) {
-		return map.get(flag) != null;
-	}
-
-	/**
-	 * Returns the value to which the specified flag is mapped as a {@link String}
-	 * or the backup value if there is no mapping.
-	 *
-	 * @param flag the flag whose associated value is to be returned
-	 * @param backup the backup value to return if there is no mapping
-	 * @return the value to which the specified flag is mapped,
-	 *   or the backup value if there is no mapping
-	 *
-	 * @see Objects#requireNonNullElse(Object, Object)
-	 */
-	public String getString(String flag, String backup) {
-		// Return the value of the flag or the backup value if the flag is not in the map
-		return Objects.requireNonNullElse(map.get(flag), backup);
-	}
-
-	/**
-	 * Returns the value to which the specified flag is mapped as a {@link String}
-	 * or null if there is no mapping.
-	 *
-	 * @param flag the flag whose associated value is to be returned
-	 * @return the value to which the specified flag is mapped or {@code null} if
-	 *   there is no mapping
-	 */
-	public String getString(String flag) {
-		// Return the value of the flag or null if the flag is not in the map
-		return map.get(flag);
 	}
 
 	/**
@@ -221,26 +171,5 @@ public class ArgumentParser {
 		catch (NumberFormatException e) {
 			return backup;
 		}
-	}
-
-	/**
-	 * Returns the value the specified flag is mapped as an int value, or 0 if
-	 * unable to retrieve this mapping (including being unable to convert the value
-	 * to an int or if no value exists).
-	 *
-	 * @param flag the flag whose associated value will be returned
-	 * @return the value the specified flag is mapped as an int, or 0 if there is no
-	 *   valid mapping
-	 *
-	 * @see #getInteger(String, int)
-	 */
-	public int getInteger(String flag) {
-		// Use the other getInteger method with 0 as backup
-		return getInteger(flag, 0);
-	}
-
-	@Override
-	public String toString() {
-		return this.map.toString();
 	}
 }
