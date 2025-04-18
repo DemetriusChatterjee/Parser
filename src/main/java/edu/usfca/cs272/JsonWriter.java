@@ -25,7 +25,7 @@ import java.util.Iterator;
  * @author CS 272 Software Development (University of San Francisco)
  * @version Spring 2025
  */
-public class JsonWriter {
+public final class JsonWriter {
 	
 	/**
 	 * Initializes a JsonWriter object. Private constructor to prevent instantiation
