@@ -41,13 +41,13 @@ public class Driver {
 		final Instant start = Instant.now();
 		final ArgumentParser parser = new ArgumentParser(args);
 		final InvertedIndex index = new InvertedIndex();
+		final InvertedIndexBuilder builder = new InvertedIndexBuilder(index);
 		
 		// Process input path if provided
 		if (parser.hasFlag("-text")) {
 			Path inputPath = parser.getPath("-text");
 			if (inputPath != null) {
 				try {
-					InvertedIndexBuilder builder = new InvertedIndexBuilder(index);
 					builder.build(inputPath);
 				}
 				catch (IllegalArgumentException e) {
@@ -67,7 +67,6 @@ public class Driver {
 		if (parser.hasFlag("-counts")) {
 			Path countsPath = parser.getPath("-counts", Path.of("counts.json"));
 			try {
-				InvertedIndexBuilder builder = new InvertedIndexBuilder(index);
 				builder.writeCounts(countsPath);
 			}
 			catch (IOException e) {
@@ -79,7 +78,6 @@ public class Driver {
 		if (parser.hasFlag("-index")) {
 			Path indexPath = parser.getPath("-index", Path.of("index.json")); 
 			try {
-				InvertedIndexBuilder builder = new InvertedIndexBuilder(index);
 				builder.writeIndex(indexPath);
 			}
 			catch (IOException e) {
@@ -108,7 +106,7 @@ public class Driver {
 		if (parser.hasFlag("-results")) {
 			try {
 				Path resultsPath = parser.getPath("-results", Path.of("results.json"));
-				JsonWriter.writeSearchResults(searchResults, resultsPath);
+				builder.writeSearchResults(searchResults, resultsPath);
 			}
 			catch (IOException e) {
 				LOGGER.warning("Unable to write results to file: " + e.getMessage());
