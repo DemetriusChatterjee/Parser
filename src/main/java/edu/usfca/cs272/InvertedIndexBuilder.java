@@ -63,7 +63,7 @@ public final class InvertedIndexBuilder {
 			var stemmer = new SnowballStemmer(SnowballStemmer.ALGORITHM.ENGLISH);
 			int position = 1;
 			while ((line = reader.readLine()) != null) {
-				for (String word : FileStemmer.parse(line)) {
+				for (String word : new FileStemmer().parse(line)) {
 					String stem = stemmer.stem(word).toString();
 					index.add(stem, path.toString(), position);
 					position++;
