@@ -23,37 +23,14 @@ import java.util.TreeSet;
 public final class QueryProcessor {
 	/** The map to store search results for each query. */
 	private final TreeMap<String, List<InvertedIndex.SearchResult>> allResults;
-		
-	// TODO Take a non-static approach to this class...
-		
-	/*
-	 * TODO 
-	 * 
-	 * processQueryFile(...)
-	 *    buffered reader and calls processQueryLine(...) on every line
-	 * 
-	 * processQueryLine(...)
-	 *    stemming the line
-	 *    join the line
-	 *    collect the search results
-	 *    store the search results
-	 *    
-	 * some safe get methods
-	 * toString
-	 * toJson method...
-	 * 
-	 * Don't have to add all the other data structure methods
-	 */
-		
-		
+	
 	/**
 	 * Constructor for QueryProcessor.
 	 */
-	private QueryProcessor() {
+	public QueryProcessor() {
 		this.allResults = new TreeMap<>();
 	}
 	
-	// TODO Once you have an instance based approach, this method can reuse a stemmer object
 	/**
 	 * Processes a single line of query text into a sorted list of unique stems.
 	 *
@@ -75,15 +52,15 @@ public final class QueryProcessor {
 	 * @return a list of processed queries, where each query is a sorted list of unique stems
 	 * @throws IOException if unable to read or process the query file
 	 */
-	public static List<List<String>> processQueryFile(final Path path) throws IOException {
-		final List<List<String>> queries = new ArrayList<>();
+	private List<TreeSet<String>> processQueryFile(Path path) throws IOException {
+		List<TreeSet<String>> queries = new ArrayList<>();
 		
 		try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
 			String line;
 			while ((line = reader.readLine()) != null) {
 				line = line.trim();
 				if (!line.isEmpty()) {
-					List<String> stems = processLine(line);
+					TreeSet<String> stems = processLine(line);
 					if (stems != null && !stems.isEmpty()) {
 						queries.add(stems);
 					}
@@ -103,15 +80,14 @@ public final class QueryProcessor {
 	 * @return map of search results for each query
 	 * @throws IOException if unable to read or process the query file
 	 */
-	public static Map<String, List<InvertedIndex.SearchResult>> processSearchResults(
-			final Path path, final InvertedIndex index, final boolean usePartialSearch) throws IOException {
-		final List<List<String>> queries = processQueryFile(path);
-		final Map<String, List<InvertedIndex.SearchResult>> searchResults = new TreeMap<>();
+	public Map<String, List<InvertedIndex.SearchResult>> processSearchResults(
+			Path path, InvertedIndex index, boolean usePartialSearch) throws IOException {
+		List<TreeSet<String>> queries = processQueryFile(path);
 		
 		// Process each query and add to results
-		for (List<String> query : queries) {
+		for (TreeSet<String> query : queries) {
 			String queryString = getQueryString(query);
-			Set<String> processedQuery = new TreeSet<>(query);
+			TreeSet<String> processedQuery = query;
 			
 			List<InvertedIndex.SearchResult> results;
 			if (usePartialSearch) {
@@ -132,7 +108,7 @@ public final class QueryProcessor {
 	 * @param stems the list of query stems
 	 * @return the query string with stems joined by spaces
 	 */
-	public static String getQueryString(List<String> stems) {
+	private String getQueryString(TreeSet<String> stems) {
 		return String.join(" ", stems);
 	}
 	
