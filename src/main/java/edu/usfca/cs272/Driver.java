@@ -95,7 +95,8 @@ public class Driver {
 			if (queryPath != null) {
 				try {
 					boolean usePartialSearch = parser.hasFlag("-partial");
-					searchResults = QueryProcessor.processSearchResults(queryPath, index, usePartialSearch);
+					QueryProcessor queryProcessor = new QueryProcessor();
+					searchResults = queryProcessor.processSearchResults(queryPath, index, usePartialSearch);
 				}
 				catch (IOException e) {
 					LOGGER.warning("Unable to process query file: " + e.getMessage());
