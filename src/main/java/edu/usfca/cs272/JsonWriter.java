@@ -43,7 +43,7 @@ public class JsonWriter {
 	 * @param indent the number of times to indent
 	 * @throws IOException if an IO error occurs
 	 */
-	public static void writeIndent(Writer writer, int indent) throws IOException {
+	private static void writeIndent(Writer writer, int indent) throws IOException {
 		while (indent-- > 0) {
 			writer.write("  ");
 		}
@@ -71,7 +71,7 @@ public class JsonWriter {
 	 * @param indent the number of times to indent
 	 * @throws IOException if an IO error occurs
 	 */
-	public static void writeQuote(String element, Writer writer, int indent) throws IOException {
+	private static void writeQuote(String element, Writer writer, int indent) throws IOException {
 		writeIndent(writer, indent);
 		writer.write('"');
 		writer.write(element);
@@ -104,7 +104,7 @@ public class JsonWriter {
 	 *   the initial indentation level
 	 * @throws IOException if an IO error occurs
 	 */
-	public static void writeIndexObject(Map<String, TreeMap<String, TreeSet<Integer>>> elements, Writer writer, int indent) throws IOException {
+	private static void writeIndexObject(Map<String, TreeMap<String, TreeSet<Integer>>> elements, Writer writer, int indent) throws IOException {
 		writer.write('{');
 		writer.write('\n');
 		
@@ -184,7 +184,7 @@ public class JsonWriter {
 	 *   the initial indentation level
 	 * @throws IOException if an IO error occurs
 	 */
-	public static void writeCountsObject(Map<String, Integer> elements, Writer writer, int indent) throws IOException {
+	private static void writeCountsObject(Map<String, Integer> elements, Writer writer, int indent) throws IOException {
 		writer.write('{');
 		writer.write('\n');
 		
@@ -225,7 +225,7 @@ public class JsonWriter {
 	 *   the initial indentation level
 	 * @throws IOException if an IO error occurs
 	 */
-	public static void writeArray(TreeSet<Integer> elements, Writer writer, int indent) throws IOException {
+	private static void writeArray(TreeSet<Integer> elements, Writer writer, int indent) throws IOException {
 		writer.write('[');
 		writer.write('\n');
 		
@@ -391,7 +391,7 @@ public class JsonWriter {
 	 * @param indent the initial indent level
 	 * @throws IOException if an IO error occurs
 	 */
-	public static void writeSearchResults(
+	private static void writeSearchResults(
 			Map<String, List<InvertedIndex.SearchResult>> results,
 			Writer writer, int indent) throws IOException {
 		writer.write('{');
