@@ -50,19 +50,6 @@ public class JsonWriter {
 	}
 
 	/**
-	 * Indents and then writes the String element.
-	 *
-	 * @param element the element to write
-	 * @param writer the writer to use
-	 * @param indent the number of times to indent
-	 * @throws IOException if an IO error occurs
-	 */
-	public static void writeIndent(String element, Writer writer, int indent) throws IOException {
-		writeIndent(writer, indent);
-		writer.write(element);
-	}
-
-	/**
 	 * Indents and then writes the text element surrounded by {@code " "}
 	 * quotation marks.
 	 *
@@ -293,23 +280,6 @@ public class JsonWriter {
 		}
 	}
 
-	/**
-	 * Returns the elements as a pretty JSON object.
-	 *
-	 * @param elements the elements to use
-	 * @return a {@link String} containing the elements in pretty JSON format
-	 */
-	public static String writeCountsObject(Map<String, Integer> elements) {
-		try {
-			StringWriter writer = new StringWriter();
-			writeCountsObject(elements, writer, 0);
-			return writer.toString();
-		}
-		catch (IOException e) {
-			return null;
-		}
-	}
-	
 	/**
 	 * Writes a single search result as a pretty JSON object.
 	 * The JSON object will contain the count, score, and location of the search result.
