@@ -27,13 +27,12 @@ import opennlp.tools.stemmer.snowball.SnowballStemmer.ALGORITHM;
  */
 public class FileStemmer {
 	/** Regular expression that matches any whitespace. **/
-	public static final Pattern SPLIT_REGEX = Pattern.compile("(?U)\\p{Space}+");
+	// Source: ChatGPT prompting with the idea of being more inclusive to all languages
+	private final Pattern SPLIT_REGEX = Pattern.compile("(?U)\\p{Space}+");
 
 	/** Regular expression that matches non-alphabetic characters. **/
-	public static final Pattern CLEAN_REGEX = Pattern.compile("(?U)[^\\p{Alpha}\\p{Space}]+");
-
-	/** Reusable empty array. */
-	public static final String[] EMPTY = new String[0];
+	// Source: ChatGPT prompting with the idea of being more inclusive to all languages
+	private final Pattern CLEAN_REGEX = Pattern.compile("(?U)[^\\p{Alpha}\\p{Space}]+");
 
 	/**
 	 * Cleans the text by removing any non-alphabetic characters (e.g. non-letters
