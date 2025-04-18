@@ -103,10 +103,10 @@ public final class QueryProcessor {
 	}
 	
 	/**
-	 * Gets the cleaned and sorted query string from a list of stems.
-	 * 
-	 * @param stems the list of query stems
-	 * @return the query string with stems joined by spaces
+	 * Returns the query string from the given stems.
+	 *
+	 * @param stems the stems to use
+	 * @return the query string
 	 */
 	private String getQueryString(TreeSet<String> stems) {
 		return String.join(" ", stems);
