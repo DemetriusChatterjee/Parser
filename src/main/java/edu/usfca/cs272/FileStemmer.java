@@ -67,7 +67,6 @@ public class FileStemmer {
 	 * collection.
 	 *
 	 * @param line the line of words to clean, split, and stem
-	 * @param stemmer the stemmer to use
 	 * @param stems the collection to add stems
 	 *
 	 * @see #parse(String)
@@ -92,12 +91,11 @@ public class FileStemmer {
 	 * Parses the line into a set of unique, sorted, cleaned, and stemmed words.
 	 *
 	 * @param line the line of words to parse and stem
-	 * @param stemmer the stemmer to use
 	 * @return a sorted set of unique cleaned and stemmed words
 	 *
 	 * @see #parse(String)
 	 * @see Stemmer#stem(CharSequence)
-	 * @see #addStems(String, Stemmer, Collection)
+	 * @see #addStems(String, TreeSet)
 	 */
 	public TreeSet<String> uniqueStems(String line) {
 		// Create TreeSet to store unique stems in sorted order
