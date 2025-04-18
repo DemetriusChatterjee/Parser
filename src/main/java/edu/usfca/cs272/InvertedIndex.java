@@ -230,8 +230,8 @@ public class InvertedIndex {
 			return new ArrayList<>();
 		}
 		
-		// Create a map to store search results (location -> total matches)
-		TreeMap<String, Integer> matches = new TreeMap<>();
+		// Create a map to store search results (location -> SearchResult)
+		TreeMap<String, SearchResult> matches = new TreeMap<>();
 		
 		// For each stem in the query
 		for (String query : queries) {
@@ -244,23 +244,21 @@ public class InvertedIndex {
 						String location = locationEntry.getKey();
 						int count = locationEntry.getValue().size(); // Number of times this word appears in this location
 						
-						// Add or update the total matches for this location
-						int current = matches.getOrDefault(location, 0);
-						matches.put(location, current + count);
+						// Get or create SearchResult for this location
+						SearchResult result = matches.get(location);
+						if (result == null) {
+							int totalWords = counts.get(location);
+							result = new SearchResult(location, count, totalWords);
+							matches.put(location, result);
+						} else {
+							// Update existing result with additional matches
+							result.updateCount(result.getCount() + count);
+						}
 					}
 				}
 			}
 		}
-		
-		// Convert matches to SearchResult objects with metadata
-		List<SearchResult> results = new ArrayList<>();
-		for (var entry : matches.entrySet()) {
-			String location = entry.getKey();
-			int matchCount = entry.getValue();
-			int totalWords = counts.get(location);
-			results.add(new SearchResult(location, matchCount, totalWords));
-		}
-		
+		List<SearchResult> results = new ArrayList<>(matches.values());
 		// Sort results by score, count, and location
 		results.sort(null); // Uses natural ordering defined by compareTo
 		return results;
