@@ -95,7 +95,7 @@ public class FileStemmer {
 	 *
 	 * @see #parse(String)
 	 * @see Stemmer#stem(CharSequence)
-	 * @see #addStems(String, TreeSet)
+	 * @see #addStems(String, Collection)
 	 */
 	public TreeSet<String> uniqueStems(String line) {
 		// Create TreeSet to store unique stems in sorted order
