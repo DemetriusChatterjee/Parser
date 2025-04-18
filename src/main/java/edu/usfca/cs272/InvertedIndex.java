@@ -232,22 +232,6 @@ public class InvertedIndex {
 		results.sort(null); // Uses natural ordering defined by compareTo
 		return results;
 	}
-	
-	// TODO Remove exactSearchAll
-	/**
-	 * Performs exact searches for multiple query lines and returns all results.
-	 * 
-	 * @param queries the list of query lines to search for
-	 * @return a map where each key is a query string and each value is a list of sorted search results
-	 */
-	public Map<String, List<SearchResult>> exactSearchAll(List<String> queries) {
-		TreeMap<String, List<SearchResult>> allResults = new TreeMap<>();
-		List<Set<String>> processedQueries = QueryProcessor.processQueries(queries);
-		for (Set<String> processedQuery : processedQueries) {
-			allResults.put(String.join(" ", processedQuery), exactSearch(processedQuery));
-		}
-		return allResults;
-	}
 
 	/**
 	 * Performs a partial search on the inverted index for a line of query words.
@@ -296,21 +280,5 @@ public class InvertedIndex {
 		// Sort results by score, count, and location
 		results.sort(null); // Uses natural ordering defined by compareTo
 		return results;
-	}
-	
-	// TODO Remove partialSearchAll
-	/**
-	 * Performs partial searches for multiple query lines and returns all results.
-	 * 
-	 * @param queries the list of query lines to search for
-	 * @return a map where each key is a query string and each value is a list of sorted search results
-	 */
-	public Map<String, List<SearchResult>> partialSearchAll(List<String> queries) {
-		TreeMap<String, List<SearchResult>> allResults = new TreeMap<>();
-		for (String query : queries) {
-			Set<String> processedQuery = new TreeSet<>(QueryProcessor.processLine(query));
-			allResults.put(String.join(" ", processedQuery), partialSearch(processedQuery));
-		}
-		return allResults;
 	}
 }
