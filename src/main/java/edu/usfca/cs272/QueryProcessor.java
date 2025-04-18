@@ -8,7 +8,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -110,36 +109,5 @@ public final class QueryProcessor {
 	 */
 	private String getQueryString(TreeSet<String> stems) {
 		return String.join(" ", stems);
-	}
-	
-	/**
-	 * Processes a set of query words into a sorted set of unique stems.
-	 *
-	 * @param queries the set of query words to process
-	 * @return a sorted set of unique stems
-	 */
-	public static Set<String> processQueries(Set<String> queries) {
-		TreeSet<String> stems = new TreeSet<>();
-		for (String query : queries) {
-			stems.addAll(FileStemmer.uniqueStems(query));
-		}
-		return stems;
-	}
-	
-	/**
-	 * Processes a list of query lines into a list of processed query sets.
-	 *
-	 * @param queries the list of query lines to process
-	 * @return a list of processed query sets
-	 */
-	public static List<Set<String>> processQueries(List<String> queries) {
-		List<Set<String>> processedQueries = new ArrayList<>();
-		for (String query : queries) {
-			List<String> stems = processLine(query);
-			if (!stems.isEmpty()) {
-				processedQueries.add(new TreeSet<>(stems));
-			}
-		}
-		return processedQueries;
 	}
 }
