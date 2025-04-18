@@ -170,12 +170,6 @@ public class InvertedIndex {
 		}
 	}
 	
-	/* TODO 
-	public List<SearchResult> search(Set<String> queries, boolean partial) {
-		return partial ? etc.
-	}
-	*/
-	
 	/**
 	 * Performs an exact search on the inverted index for a line of query words.
 	 * For each location found, creates a SearchResult with metadata for ranking.
