@@ -91,8 +91,6 @@ public class Driver {
 
 		// Handle search results
 		Map<String, List<InvertedIndex.SearchResult>> searchResults = new TreeMap<>();
-		// Initialize work queue
-		WorkQueue workQueue = null;
 		
 		if (parser.hasFlag("-query")) {
 			Path queryPath = parser.getPath("-query");
