@@ -52,7 +52,7 @@ public final class QueryProcessor {
 	 * @return a list of processed queries, where each query is a sorted list of unique stems
 	 * @throws IOException if unable to read or process the query file
 	 */
-	private List<TreeSet<String>> processQueryFile(Path path) throws IOException {
+	public List<TreeSet<String>> processQueryFile(Path path) throws IOException {
 		List<TreeSet<String>> queries = new ArrayList<>();
 		
 		try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
@@ -71,6 +71,29 @@ public final class QueryProcessor {
 		return queries;
 	}
 	
+	/**
+	 * Returns a defensive copy of all search results.
+	 *
+	 * @return an unmodifiable map of all search results
+	 */
+	public Map<String, List<InvertedIndex.SearchResult>> getAllResults() {
+		Map<String, List<InvertedIndex.SearchResult>> copy = new TreeMap<>();
+		allResults.forEach((key, value) -> 
+			copy.put(key, Collections.unmodifiableList(new ArrayList<>(value))));
+		return Collections.unmodifiableMap(copy);
+	}
+
+	/**
+	 * Adds search results for a query in a thread-safe manner. The results list
+	 * is made unmodifiable before being stored.
+	 *
+	 * @param query the query string
+	 * @param results the search results for the query
+	 */
+	public synchronized void addResults(String query, List<InvertedIndex.SearchResult> results) {
+		allResults.put(query, Collections.unmodifiableList(new ArrayList<>(results)));
+	}
+
 	/**
 	 * Processes a query file and returns search results from the inverted index.
 	 *
@@ -96,10 +119,10 @@ public final class QueryProcessor {
 				results = index.exactSearch(processedQuery);
 			}
 			
-			allResults.put(queryString, Collections.unmodifiableList(results));
+			addResults(queryString, results);
 		}
 		
-		return Collections.unmodifiableMap(allResults);
+		return getAllResults();
 	}
 	
 	/**
@@ -108,7 +131,7 @@ public final class QueryProcessor {
 	 * @param stems the stems to use
 	 * @return the query string
 	 */
-	private String getQueryString(TreeSet<String> stems) {
+	public String getQueryString(TreeSet<String> stems) {
 		return String.join(" ", stems);
 	}
 }
