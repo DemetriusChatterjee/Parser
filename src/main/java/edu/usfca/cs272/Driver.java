@@ -97,7 +97,6 @@ public class Driver {
 			if (queryPath != null) {
 				try {
 					boolean usePartialSearch = parser.hasFlag("-partial");
-					QueryProcessor queryProcessor = new QueryProcessor();
 					
 					// Check if multithreaded search is enabled
 					if (parser.hasFlag("-threads")) {
