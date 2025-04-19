@@ -44,9 +44,23 @@ public class Driver {
 	public static void main(final String[] args) {
 		final Instant start = Instant.now();
 		final ArgumentParser parser = new ArgumentParser(args);
-		final InvertedIndex index = new InvertedIndex();
-		final InvertedIndexBuilder builder = new InvertedIndexBuilder(index);
+		final InvertedIndex index;
+		final InvertedIndexBuilder builder;
 		
+		// Initialize the index based on the thread configuration
+		if (parser.hasFlag("-threads")) {
+			int numThreads = parser.getInteger("-threads", DEFAULT_THREADS);
+			if (numThreads < 1) {
+				System.err.println("Invalid number of threads. Using default: " + DEFAULT_THREADS);
+				numThreads = DEFAULT_THREADS;
+			}
+			index = new ThreadSafeInvertedIndex(numThreads);
+		} else {
+			index = new InvertedIndex();
+		}
+		
+		builder = new InvertedIndexBuilder(index);
+
 		// Process input path if provided
 		if (parser.hasFlag("-text")) {
 			Path inputPath = parser.getPath("-text");
@@ -100,21 +114,10 @@ public class Driver {
 					
 					// Check if multithreaded search is enabled
 					if (parser.hasFlag("-threads")) {
-						int numThreads = parser.getInteger("-threads", DEFAULT_THREADS);
-						if (numThreads < 2) {
-							System.err.println("Invalid number of threads. Using default: " + DEFAULT_THREADS);
-							numThreads = DEFAULT_THREADS;
-						}
-						
-						// Initialize thread-safe components and perform multithreaded search
-						ThreadSafeInvertedIndex threadSafeIndex = new ThreadSafeInvertedIndex(index);
-						WorkQueue workQueue = new WorkQueue(numThreads);
-						MultithreadedQueryProcessor multiProcessor = new MultithreadedQueryProcessor(threadSafeIndex, workQueue);
-						searchResults = multiProcessor.processSearchResults(queryPath, usePartialSearch);
-						workQueue.shutdown();
-					}
-					else {
-						// Perform single-threaded search
+						ThreadSafeInvertedIndex threadSafeIndex = (ThreadSafeInvertedIndex) index;
+						searchResults = threadSafeIndex.processThreadSafeSearchResults(queryPath, usePartialSearch);
+					} else {
+						QueryProcessor queryProcessor = new QueryProcessor();
 						searchResults = queryProcessor.processSearchResults(queryPath, index, usePartialSearch);
 					}
 				}
