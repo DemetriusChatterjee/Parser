@@ -38,6 +38,8 @@ public final class QueryProcessor {
 	
 	/**
 	 * Constructor for QueryProcessor.
+	 * 
+	 * @param index the inverted index to use for searching
 	 */
 	public QueryProcessor(InvertedIndex index) {
 		this.allResultsExact = new TreeMap<>();
@@ -50,7 +52,7 @@ public final class QueryProcessor {
 	 * Processes a single line of query text into a sorted list of unique stems.
 	 *
 	 * @param line the line of query text to process
-	 * @return a sorted list of unique stems
+	 * @return a sorted TreeSet of unique stems from the processed line
 	 */
 	public TreeSet<String> processLine(final String line) {
 		// Use TreeSet to handle both duplicate removal and sorting
@@ -61,7 +63,6 @@ public final class QueryProcessor {
 	 * Processes a single query line, stems the words, searches the index, and stores the results.
 	 *
 	 * @param line the query line to process
-	 * @param index the inverted index to search against
 	 * @param usePartialSearch whether to use partial search
 	**/
 	public List<InvertedIndex.SearchResult> processQueryLine(String line, boolean usePartialSearch) {
