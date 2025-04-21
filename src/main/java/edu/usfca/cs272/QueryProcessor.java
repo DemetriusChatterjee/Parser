@@ -64,6 +64,7 @@ public final class QueryProcessor {
 	 *
 	 * @param line the query line to process
 	 * @param usePartialSearch whether to use partial search
+	 * @return a list of search results from the inverted index
 	**/
 	public List<InvertedIndex.SearchResult> processQueryLine(String line, boolean usePartialSearch) {
 		// Process the line into stems
