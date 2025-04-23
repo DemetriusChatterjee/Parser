@@ -24,9 +24,10 @@ import java.util.Collections;
  * @author Demetrius Chatterjee
  * @version Spring 2025
  */
-public final class QueryProcessor {
+public final class QueryProcessor { // TODO Why make the class final?
 	/** The map to store exact search results for each query. */
 	private final TreeMap<String, List<InvertedIndex.SearchResult>> allResultsExact;
+	
 	/** The map to store partial search results for each query. */
 	private final TreeMap<String, List<InvertedIndex.SearchResult>> allResultsPartial;
 
@@ -59,6 +60,8 @@ public final class QueryProcessor {
 		return FileStemmer.uniqueStems(line, stemmer);
 	}
 	
+	// TODO private Map<...> getAllResults(boolean ...) { return exact or partial }
+	
 	/**
 	 * Processes a single query line, stems the words, searches the index, and stores the results.
 	 *
@@ -76,13 +79,24 @@ public final class QueryProcessor {
 		// Get the query string
 		String queryString = getQueryString(stems);
 		
+		/*
+		 * TODO
+		 * 
+		 * var allResults = getAllResults(...);
+		 * 
+		 * if the queryString is already in the allResults map, skip searching...
+		 */
+		
+		
 		// Search the index
 		List<InvertedIndex.SearchResult> results;
-		if (usePartialSearch) {
+		if (usePartialSearch) { // TODO results = index.search(stems, usePartialSearch)
 			results = index.partialSearch(stems);
 		} else {
 			results = index.exactSearch(stems);
 		}
+		
+		// TODO allResults.put(...)
 		
 		// Store the results
 		if (usePartialSearch) {
@@ -101,12 +115,12 @@ public final class QueryProcessor {
 	 * @param usePartialSearch whether to use partial search
 	 * @throws IOException if unable to read or process the query file
 	 */
-	public void processSearchResults(Path path, boolean usePartialSearch) throws IOException {
+	public void processSearchResults(Path path, boolean usePartialSearch) throws IOException { // TODO processQueryFile
 		try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
 			String line;
 			while ((line = reader.readLine()) != null) {
-				line = line.trim();
-				if (!line.isEmpty()) {
+				line = line.trim(); // TODO Remove
+				if (!line.isEmpty()) { // TODO Remove
 					processQueryLine(line, usePartialSearch);
 				}
 			}
@@ -119,9 +133,17 @@ public final class QueryProcessor {
 	 * @param stems the stems to use
 	 * @return the query string
 	 */
-	public String getQueryString(TreeSet<String> stems) {
+	public String getQueryString(TreeSet<String> stems) { // TODO Make static
 		return String.join(" ", stems);
 	}
+	
+	/* TODO Pass in the boolean for the get methods to match your process methods...
+	public ???? getResults(boolean usePartialResults) {
+		
+	}
+	
+	The get methods below break encapsulation
+	*/
 	
 	/**
 	 * Returns the exact search results.
@@ -140,4 +162,6 @@ public final class QueryProcessor {
 	public Map<String, List<InvertedIndex.SearchResult>> getPartialResults() {
 		return Collections.unmodifiableMap(allResultsPartial);
 	}
+	
+	// TODO toString
 }
