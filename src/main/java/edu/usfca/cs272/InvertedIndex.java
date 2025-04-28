@@ -58,6 +58,8 @@ public class InvertedIndex {
 		counts.put(location, counts.getOrDefault(location, 0) + 1);
 	}
 	
+	// TODO Revisit version from last project v1.4 
+	
 	/**
 	 * Gets an unmodifiable view of the word counts data structure.
 	 *
@@ -170,6 +172,12 @@ public class InvertedIndex {
 		}
 	}
 	
+	/* TODO 
+	public List<SearchResult> search(Set<String> queries, boolean usePartialSearch) {
+		return usePartialSearch ? partialSearch(queries) : exactSearch(queries);
+	}
+	*/
+	
 	/**
 	 * Performs an exact search on the inverted index for a line of query words.
 	 * For each location found, creates a SearchResult with metadata for ranking.
@@ -178,12 +186,13 @@ public class InvertedIndex {
 	 * @return a list of sorted search results
 	 */
 	public List<SearchResult> exactSearch(Set<String> queries) {
-		if (queries.isEmpty()) {
+		if (queries.isEmpty()) { // TODO Remove
 			return new ArrayList<>();
 		}
 		
 		// Create a map to store search results (location -> SearchResult)
-		TreeMap<String, SearchResult> matches = new TreeMap<>();
+		TreeMap<String, SearchResult> matches = new TreeMap<>(); // TODO Do you need the sorting from the TreeMap?
+		// TODO List<SearchResult> results = new ArrayList<>(); // TODO We use this for sorting... why not a TreeSet? (Just think about this, don't change)
 		
 		// For each stem in the query
 		for (String query : queries) {
