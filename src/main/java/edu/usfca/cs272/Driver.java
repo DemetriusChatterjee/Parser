@@ -67,7 +67,7 @@ public class Driver {
 		if (parser.hasFlag("-counts")) {
 			Path countsPath = parser.getPath("-counts", Path.of("counts.json"));
 			try {
-				builder.writeCounts(countsPath);
+				JsonWriter.writeCountsObject(index.getCounts(), countsPath);
 			}
 			catch (IOException e) {
 				LOGGER.warning("Unable to write counts to file: " + e.getMessage());
@@ -78,7 +78,7 @@ public class Driver {
 		if (parser.hasFlag("-index")) {
 			Path indexPath = parser.getPath("-index", Path.of("index.json")); 
 			try {
-				builder.writeIndex(indexPath);
+				index.toJson(indexPath);
 			}
 			catch (IOException e) {
 				LOGGER.warning("Unable to write index to file: " + e.getMessage());
