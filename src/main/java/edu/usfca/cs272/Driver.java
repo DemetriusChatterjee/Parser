@@ -93,13 +93,9 @@ public class Driver {
 			if (queryPath != null) {
 				try {
 					boolean usePartialSearch = parser.hasFlag("-partial");
-					QueryProcessor queryProcessor = new QueryProcessor(index);
-					queryProcessor.processSearchResults(queryPath, usePartialSearch);
-					if (usePartialSearch) {
-						searchResults = queryProcessor.getPartialResults();
-					} else {
-						searchResults = queryProcessor.getExactResults();
-					}
+					QueryProcessor queryProcessor = new QueryProcessor(index, usePartialSearch);
+					queryProcessor.processQueryFile(queryPath);
+					searchResults = queryProcessor.getAllResults(usePartialSearch);
 				}
 				catch (IOException e) {
 					LOGGER.warning("Unable to process query file: " + e.getMessage());
