@@ -42,6 +42,8 @@ public class Driver {
 		final ArgumentParser parser = new ArgumentParser(args);
 		final InvertedIndex index = new InvertedIndex();
 		final InvertedIndexBuilder builder = new InvertedIndexBuilder(index);
+		boolean usePartialSearch = parser.hasFlag("-partial");
+		QueryProcessor queryProcessor = new QueryProcessor(index, usePartialSearch);
 		
 		// Process input path if provided
 		if (parser.hasFlag("-text")) {
@@ -85,17 +87,12 @@ public class Driver {
 			}
 		}
 
-		// Handle search results
-		Map<String, List<InvertedIndex.SearchResult>> searchResults = new TreeMap<>();
 		
 		if (parser.hasFlag("-query")) {
 			Path queryPath = parser.getPath("-query");
 			if (queryPath != null) {
 				try {
-					boolean usePartialSearch = parser.hasFlag("-partial");
-					QueryProcessor queryProcessor = new QueryProcessor(index, usePartialSearch);
 					queryProcessor.processQueryFile(queryPath);
-					searchResults = queryProcessor.getAllResults(usePartialSearch);
 				}
 				catch (IOException e) {
 					LOGGER.warning("Unable to process query file: " + e.getMessage());
@@ -107,7 +104,7 @@ public class Driver {
 		if (parser.hasFlag("-results")) {
 			try {
 				Path resultsPath = parser.getPath("-results", Path.of("results.json"));
-				builder.writeSearchResults(searchResults, resultsPath);
+				queryProcessor.toJson(resultsPath, usePartialSearch);
 			}
 			catch (IOException e) {
 				LOGGER.warning("Unable to write results to file: " + e.getMessage());
