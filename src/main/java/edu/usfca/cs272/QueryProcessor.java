@@ -1,20 +1,18 @@
 package edu.usfca.cs272;
 
-import static opennlp.tools.stemmer.snowball.SnowballStemmer.ALGORITHM.ENGLISH;
+import static opennlp.tools.stemmer.snowball.SnowballStemmer.ALGORITHM.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
 import opennlp.tools.stemmer.snowball.SnowballStemmer;
-
-import java.util.Collections;
 
 /**
  * A utility class for processing search queries. This class provides methods for cleaning,
@@ -24,7 +22,7 @@ import java.util.Collections;
  * @author Demetrius Chatterjee
  * @version Spring 2025
  */
-public final class QueryProcessor { // TODO Why make the class final?
+public class QueryProcessor {
 	/** The map to store exact search results for each query. */
 	private final TreeMap<String, List<InvertedIndex.SearchResult>> allResultsExact;
 	
@@ -36,17 +34,21 @@ public final class QueryProcessor { // TODO Why make the class final?
 
 	/** The inverted index to store the results of the search to. */
 	private final InvertedIndex index;
+
+	/** Whether to use partial search. */
+	private final boolean usePartialSearch;
 	
 	/**
 	 * Constructor for QueryProcessor.
 	 * 
 	 * @param index the inverted index to use for searching
 	 */
-	public QueryProcessor(InvertedIndex index) {
+	public QueryProcessor(InvertedIndex index, boolean usePartialSearch) {
 		this.allResultsExact = new TreeMap<>();
 		this.allResultsPartial = new TreeMap<>();
 		this.stemmer = new SnowballStemmer(ENGLISH);
 		this.index = index;
+		this.usePartialSearch = usePartialSearch;
 	}
 	
 	/**
@@ -60,8 +62,6 @@ public final class QueryProcessor { // TODO Why make the class final?
 		return FileStemmer.uniqueStems(line, stemmer);
 	}
 	
-	// TODO private Map<...> getAllResults(boolean ...) { return exact or partial }
-	
 	/**
 	 * Processes a single query line, stems the words, searches the index, and stores the results.
 	 *
@@ -69,7 +69,7 @@ public final class QueryProcessor { // TODO Why make the class final?
 	 * @param usePartialSearch whether to use partial search
 	 * @return a list of search results from the inverted index
 	**/
-	public List<InvertedIndex.SearchResult> processQueryLine(String line, boolean usePartialSearch) {
+	public List<InvertedIndex.SearchResult> processQueryLine(String line) {
 		// Process the line into stems
 		TreeSet<String> stems = processLine(line);
 		if (stems.isEmpty()) {
@@ -79,24 +79,19 @@ public final class QueryProcessor { // TODO Why make the class final?
 		// Get the query string
 		String queryString = getQueryString(stems);
 		
-		/*
-		 * TODO
-		 * 
-		 * var allResults = getAllResults(...);
-		 * 
-		 * if the queryString is already in the allResults map, skip searching...
-		 */
-		
-		
-		// Search the index
-		List<InvertedIndex.SearchResult> results;
-		if (usePartialSearch) { // TODO results = index.search(stems, usePartialSearch)
-			results = index.partialSearch(stems);
+		// Check if we already have results for this query
+		if (usePartialSearch) {
+			if (allResultsPartial.containsKey(queryString)) {
+				return allResultsPartial.get(queryString);
+			}
 		} else {
-			results = index.exactSearch(stems);
+			if (allResultsExact.containsKey(queryString)) {
+				return allResultsExact.get(queryString);
+			}
 		}
 		
-		// TODO allResults.put(...)
+		// Search the index
+		List<InvertedIndex.SearchResult> results = index.search(stems, usePartialSearch);
 		
 		// Store the results
 		if (usePartialSearch) {
@@ -115,14 +110,11 @@ public final class QueryProcessor { // TODO Why make the class final?
 	 * @param usePartialSearch whether to use partial search
 	 * @throws IOException if unable to read or process the query file
 	 */
-	public void processSearchResults(Path path, boolean usePartialSearch) throws IOException { // TODO processQueryFile
+	public void processQueryFile(Path path) throws IOException {
 		try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
 			String line;
 			while ((line = reader.readLine()) != null) {
-				line = line.trim(); // TODO Remove
-				if (!line.isEmpty()) { // TODO Remove
-					processQueryLine(line, usePartialSearch);
-				}
+				processQueryLine(line);
 			}
 		}
 	}
@@ -133,35 +125,34 @@ public final class QueryProcessor { // TODO Why make the class final?
 	 * @param stems the stems to use
 	 * @return the query string
 	 */
-	public String getQueryString(TreeSet<String> stems) { // TODO Make static
+	public static String getQueryString(TreeSet<String> stems) {
 		return String.join(" ", stems);
 	}
-	
-	/* TODO Pass in the boolean for the get methods to match your process methods...
-	public ???? getResults(boolean usePartialResults) {
-		
-	}
-	
-	The get methods below break encapsulation
-	*/
-	
+
 	/**
-	 * Returns the exact search results.
+	 * Writes the search results to a JSON file.
+	 * 
+	 * @param path the path to write the JSON file to
+	 * @param usePartialResults whether to use partial search
+	 * @throws IOException if an IO error occurs
+	 */
+	public void toJson(Path path, boolean usePartialResults) throws IOException {
+		if(usePartialResults){
+			JsonWriter.writeSearchResults(allResultsPartial, path);
+		} else {
+			JsonWriter.writeSearchResults(allResultsExact, path);
+		}
+	}
+
+	/**
+	 * Returns a string representation of the QueryProcessor object.
 	 *
-	 * @return the exact search results
+	 * @return a string representation of the QueryProcessor object
 	 */
-	public Map<String, List<InvertedIndex.SearchResult>> getExactResults() {
-		return Collections.unmodifiableMap(allResultsExact);
+	@Override
+	public String toString() {
+		return String.format("QueryProcessor[exact=%d, partial=%d]", 
+			allResultsExact.toString(), allResultsPartial.toString());
 	}
 	
-	/**
-	 * Returns the partial search results.
-	 *	
-	 * @return the partial search results
-	 */
-	public Map<String, List<InvertedIndex.SearchResult>> getPartialResults() {
-		return Collections.unmodifiableMap(allResultsPartial);
-	}
-	
-	// TODO toString
 }

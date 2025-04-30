@@ -1,12 +1,15 @@
 package edu.usfca.cs272;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.ArrayList;
+import java.io.IOException;
+import java.nio.file.Path;
 
 /**
  * Data structure to store an inverted index and word counts from text files. 
@@ -58,15 +61,184 @@ public class InvertedIndex {
 		counts.put(location, counts.getOrDefault(location, 0) + 1);
 	}
 	
-	// TODO Revisit version from last project v1.4 
+	/**
+	 * Adds all stems from a list to the index for a specific file location.
+	 *
+	 * @param stems the list of word stems to add
+	 * @param location the file path where the stems were found
+	 */
+	public void addAll(List<String> stems, String location) {
+		if (!stems.isEmpty()) {
+			counts.put(location, stems.size());
+			int position = 1;
+			for (String stem : stems) {
+				add(stem, location, position++);
+			}
+		}
+	}
+
+	/**
+	 * Returns whether the index contains the given stem.
+	 *
+	 * @param stem the stem to look for
+	 * @return true if the stem is in the index
+	 */
+	public boolean containsStem(String stem) {
+		return index.containsKey(stem);
+	}
+	
+	/**
+	 * Returns whether the index contains a word count for the given location.
+	 *
+	 * @param location the location to look for
+	 * @return true if the location has a word count
+	 */
+	public boolean containsCount(String location) {
+		return counts.containsKey(location);
+	}
+	
+	/**
+	 * Returns whether the index contains the given stem and location.
+	 *
+	 * @param stem the stem to look for
+	 * @param location the location to look for
+	 * @return true if the location is found for the stem
+	 */
+	public boolean containsLocation(String stem, String location) {
+		var locations = index.get(stem);
+		return locations != null && locations.containsKey(location);
+	}
+	
+	/**
+	 * Returns whether the index contains the given position for a stem and location.
+	 *
+	 * @param stem the stem to look for
+	 * @param location the location to look for
+	 * @param position the position to look for
+	 * @return true if the position is found
+	 */
+	public boolean containsPosition(String stem, String location, int position) {
+		var locations = index.get(stem);
+		if (locations == null) {
+			return false;
+		}
+		var positions = locations.get(location);
+		return positions != null && positions.contains(position);
+	}
+	
+	/**
+	 * Returns the number of locations that have word counts.
+	 *
+	 * @return the number of locations with counts
+	 */
+	public int numCounts() {
+		return counts.size();
+	}
+	
+	/**
+	 * Returns the number of unique stems in the index.
+	 *
+	 * @return the number of stems
+	 */
+	public int numStems() {
+		return index.size();
+	}
+	
+	/**
+	 * Returns the number of locations for a given stem.
+	 *
+	 * @param stem the stem to look up
+	 * @return the number of locations or 0 if stem not found
+	 */
+	public int numLocations(String stem) {
+		var locations = index.get(stem);
+		return locations == null ? 0 : locations.size();
+	}
+	
+	/**
+	 * Returns the number of positions for a stem in a location.
+	 *
+	 * @param stem the stem to look up
+	 * @param location the location to look up
+	 * @return the number of positions or 0 if not found
+	 */
+	public int numPositions(String stem, String location) {
+		var locations = index.get(stem);
+		if (locations == null) {
+			return 0;
+		}
+		var positions = locations.get(location);
+		return positions == null ? 0 : positions.size();
+	}
+	
+	/**
+	 * Returns an unmodifiable view of the stems in the index.
+	 *
+	 * @return set of stems
+	 */
+	public Set<String> getStems() {
+		return Collections.unmodifiableSet(index.keySet());
+	}
+	
+	/**
+	 * Returns an unmodifiable view of the locations for a stem.
+	 *
+	 * @param stem the stem to look up
+	 * @return set of locations or empty set if stem not found
+	 */
+	public Set<String> getLocations(String stem) {
+		if (!index.containsKey(stem)) {
+			return Collections.emptySet();
+		}
+		return Collections.unmodifiableSet(index.get(stem).keySet());
+	}
+	
+	/**
+	 * Returns an unmodifiable view of the positions for a stem and location.
+	 *
+	 * @param stem the stem to look up
+	 * @param location the location to look up
+	 * @return set of positions or empty set if not found
+	 */
+	public Set<Integer> getPositions(String stem, String location) {
+		var locations = index.get(stem);
+		if (locations == null) {
+			return Collections.emptySet();
+		}
+		var positions = locations.get(location);
+		return positions == null ? Collections.emptySet() : Collections.unmodifiableSet(positions);
+	}
+	
+	@Override
+	public String toString() {
+		return index.toString();
+	}
+	
+	/**
+	 * Writes the inverted index to a JSON file.
+	 *
+	 * @param path the path to write the JSON file to
+	 * @throws IOException if an IO error occurs
+	 */
+	public void toJson(Path path) throws IOException {
+		JsonWriter.writeIndexObject(index, path);
+	}
 	
 	/**
 	 * Gets an unmodifiable view of the word counts data structure.
 	 *
 	 * @return an unmodifiable view of the word counts
 	 */
-	public TreeMap<String, Integer> getCounts() {
-		return new TreeMap<>(counts);
+	public Map<String, Integer> getCounts() {
+		return Collections.unmodifiableMap(counts);
+	}
+
+	/**
+	 * Clears both the inverted index and word counts.
+	 */
+	public void clear() {
+		index.clear();
+		counts.clear();
 	}
 
 	/**
@@ -172,11 +344,16 @@ public class InvertedIndex {
 		}
 	}
 	
-	/* TODO 
+	/**
+	 * Performs a search on the inverted index for a line of query words.
+	 * 
+	 * @param queries the set of query words to search for
+	 * @param usePartialSearch whether to use partial search
+	 * @return a list of sorted search results
+	 */
 	public List<SearchResult> search(Set<String> queries, boolean usePartialSearch) {
 		return usePartialSearch ? partialSearch(queries) : exactSearch(queries);
 	}
-	*/
 	
 	/**
 	 * Performs an exact search on the inverted index for a line of query words.
@@ -186,13 +363,8 @@ public class InvertedIndex {
 	 * @return a list of sorted search results
 	 */
 	public List<SearchResult> exactSearch(Set<String> queries) {
-		if (queries.isEmpty()) { // TODO Remove
-			return new ArrayList<>();
-		}
-		
 		// Create a map to store search results (location -> SearchResult)
-		TreeMap<String, SearchResult> matches = new TreeMap<>(); // TODO Do you need the sorting from the TreeMap?
-		// TODO List<SearchResult> results = new ArrayList<>(); // TODO We use this for sorting... why not a TreeSet? (Just think about this, don't change)
+		HashMap<String, SearchResult> matches = new HashMap<>();
 		
 		// For each stem in the query
 		for (String query : queries) {
@@ -240,7 +412,7 @@ public class InvertedIndex {
 		}
 		
 		// Create a map to store search results (location -> SearchResult)
-		TreeMap<String, SearchResult> matches = new TreeMap<>();
+		HashMap<String, SearchResult> matches = new HashMap<>();
 		
 		// For each stem in the query
 		for (String query : queries) {
