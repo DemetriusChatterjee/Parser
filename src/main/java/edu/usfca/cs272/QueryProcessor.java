@@ -67,7 +67,6 @@ public class QueryProcessor {
 	 * Processes a single query line, stems the words, searches the index, and stores the results.
 	 *
 	 * @param line the query line to process
-	 * @param usePartialSearch whether to use partial search
 	 * @return a list of search results from the inverted index
 	**/
 	public List<InvertedIndex.SearchResult> processQueryLine(String line) {
@@ -108,7 +107,6 @@ public class QueryProcessor {
 	 * Processes a query file and stores search results from the inverted index.
 	 *
 	 * @param path the path to the query file
-	 * @param usePartialSearch whether to use partial search
 	 * @throws IOException if unable to read or process the query file
 	 */
 	public void processQueryFile(Path path) throws IOException {
