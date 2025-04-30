@@ -18,7 +18,7 @@ import opennlp.tools.stemmer.snowball.SnowballStemmer;
  * @version Spring 2025
  * @see InvertedIndex
  */
-public final class InvertedIndexBuilder {
+public final class InvertedIndexBuilder { // TODO Remove final
 	/** 
 	 * The inverted index data structure to populate with processed text.
 	 * This is marked final to ensure thread-safety and prevent modification
@@ -39,6 +39,7 @@ public final class InvertedIndexBuilder {
 		this.index = index;
 	}
 	
+	// TODO public
 	/**
 	 * Tests whether a path is a text file by checking its extension.
 	 *
@@ -51,6 +52,7 @@ public final class InvertedIndexBuilder {
 	}
 	
 
+	// TODO public static buildFile
 	/**
 	 * Builds the index from a single text file by processing its contents.
 	 * Extracts stems from the file and adds them to the index with their
@@ -63,6 +65,7 @@ public final class InvertedIndexBuilder {
 	private static void buildFile(Path path, InvertedIndex index) throws IOException {
 		try (var reader = Files.newBufferedReader(path)) {
 			String line;
+			// TODO String location = path.toString() and reuse
 			var stemmer = new SnowballStemmer(SnowballStemmer.ALGORITHM.ENGLISH);
 			int position = 1;
 			while ((line = reader.readLine()) != null) {
@@ -72,6 +75,8 @@ public final class InvertedIndexBuilder {
 					position++;
 				}
 			}
+			
+			// TODO Why not update the count here? (Can ignore this now)
 		}
 	}
 	
@@ -83,7 +88,7 @@ public final class InvertedIndexBuilder {
 	 * @param path the text file to process
 	 * @throws IOException if an IO error occurs during file reading or processing
 	 */
-	private void buildFile(Path path) throws IOException {
+	private void buildFile(Path path) throws IOException { // TODO public
 		buildFile(path, this.index);
 	}
 
@@ -95,6 +100,7 @@ public final class InvertedIndexBuilder {
 	 * @param directory the directory to process
 	 * @throws IOException if an IO error occurs during directory traversal or file processing
 	 */
+	// TODO public
 	private void buildDirectory(Path directory) throws IOException { 
 		try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
 			for (var path : stream) {
@@ -117,7 +123,7 @@ public final class InvertedIndexBuilder {
 	 * @throws IOException if an IO error occurs during file processing
 	 * @throws IllegalArgumentException if the path is null or does not exist
 	 */
-	public final void build(Path path) throws IOException {
+	public final void build(Path path) throws IOException { // TODO non-final
 		if (Files.isDirectory(path)) {
 			buildDirectory(path);
 		}
@@ -126,6 +132,8 @@ public final class InvertedIndexBuilder {
 		}
 	}
 
+	// TODO Remove the write methods
+	
 	/**
 	 * Writes the word counts to a JSON file.
 	 *

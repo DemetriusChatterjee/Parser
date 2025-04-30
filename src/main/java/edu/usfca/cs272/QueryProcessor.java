@@ -136,12 +136,20 @@ public class QueryProcessor {
 	 * @throws IOException if an IO error occurs
 	 */
 	public void toJson(Path path, boolean usePartialResults) throws IOException {
-		if(usePartialResults){
+		// TODO JsonWriter.writeSearchResults(getResults(usePartialResults), path);
+			
+		if(usePartialResults) {
 			JsonWriter.writeSearchResults(allResultsPartial, path);
 		} else {
 			JsonWriter.writeSearchResults(allResultsExact, path);
 		}
 	}
+	
+	/* TODO Create this and use it in your other methods!
+	private TreeMap<String, List<InvertedIndex.SearchResult>> getResults(boolean usePartialResults) {
+		return usePartialResults ? allResultsPartial : allResultsExact;
+	}
+	*/
 
 	/**
 	 * Returns a string representation of the QueryProcessor object.
@@ -153,5 +161,7 @@ public class QueryProcessor {
 		return String.format("QueryProcessor[exact=%d, partial=%d]", 
 			allResultsExact.toString(), allResultsPartial.toString());
 	}
+	
+	// TODO Missing a public get method
 	
 }

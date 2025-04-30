@@ -57,6 +57,20 @@ public class InvertedIndex {
 		
 		positions.add(position);
 		
+		/*
+		 * TODO Only update if this isn't a duplicate!
+		 * 
+		 * add(hello, hello.txt, 12)
+		 * add(hello, hello.txt, 12)
+		 * add(hello, hello.txt, 12)
+		 * add(hello, hello.txt, 12) 
+		 * 
+		 * Should only increase hello.txt count by 1
+		 * 
+		 * Check if positions.add returned true or false!
+		 */
+		
+		
 		// Update counts map
 		counts.put(location, counts.getOrDefault(location, 0) + 1);
 	}
@@ -69,7 +83,7 @@ public class InvertedIndex {
 	 */
 	public void addAll(List<String> stems, String location) {
 		if (!stems.isEmpty()) {
-			counts.put(location, stems.size());
+			counts.put(location, stems.size()); // TODO Remove
 			int position = 1;
 			for (String stem : stems) {
 				add(stem, location, position++);
@@ -187,6 +201,7 @@ public class InvertedIndex {
 	 * @return set of locations or empty set if stem not found
 	 */
 	public Set<String> getLocations(String stem) {
+			// TODO Not efficient
 		if (!index.containsKey(stem)) {
 			return Collections.emptySet();
 		}
@@ -241,6 +256,7 @@ public class InvertedIndex {
 		counts.clear();
 	}
 
+	// TODO Breaking encapsulation
 	/**
 	 * Gets an unmodifiable view of the inverted index data structure.
 	 *
