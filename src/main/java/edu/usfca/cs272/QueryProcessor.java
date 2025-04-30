@@ -42,6 +42,7 @@ public class QueryProcessor {
 	 * Constructor for QueryProcessor.
 	 * 
 	 * @param index the inverted index to use for searching
+	 * @param usePartialSearch whether to use partial search
 	 */
 	public QueryProcessor(InvertedIndex index, boolean usePartialSearch) {
 		this.allResultsExact = new TreeMap<>();
