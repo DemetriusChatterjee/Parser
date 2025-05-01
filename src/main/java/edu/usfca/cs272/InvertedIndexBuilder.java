@@ -71,8 +71,6 @@ public class InvertedIndexBuilder {
 					position++;
 				}
 			}
-			
-			// TODO Why not update the count here? (Can ignore this now)
 		}
 	}
 	
