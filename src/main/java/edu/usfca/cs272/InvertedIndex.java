@@ -55,10 +55,11 @@ public class InvertedIndex {
 			locations.put(location, positions);
 		}
 		
-		positions.add(position);
-		
-		// Update counts map
-		counts.put(location, counts.getOrDefault(location, 0) + 1);
+		// Only update counts if this is a new position
+		// it will add to the set and also return the boolean in one line
+		if (positions.add(position)) {
+			counts.put(location, counts.getOrDefault(location, 0) + 1);
+		}
 	}
 	
 	/**
@@ -69,7 +70,6 @@ public class InvertedIndex {
 	 */
 	public void addAll(List<String> stems, String location) {
 		if (!stems.isEmpty()) {
-			counts.put(location, stems.size());
 			int position = 1;
 			for (String stem : stems) {
 				add(stem, location, position++);
@@ -187,10 +187,8 @@ public class InvertedIndex {
 	 * @return set of locations or empty set if stem not found
 	 */
 	public Set<String> getLocations(String stem) {
-		if (!index.containsKey(stem)) {
-			return Collections.emptySet();
-		}
-		return Collections.unmodifiableSet(index.get(stem).keySet());
+		var locations = index.get(stem);
+		return (locations == null) ? Collections.emptySet() : Collections.unmodifiableSet(locations.keySet());
 	}
 	
 	/**
@@ -242,12 +240,34 @@ public class InvertedIndex {
 	}
 
 	/**
-	 * Gets an unmodifiable view of the inverted index data structure.
+	 * Writes the word counts to a JSON file.
 	 *
-	 * @return an unmodifiable view of the inverted index
+	 * @param path the path to write the counts to
+	 * @throws IOException if an IO error occurs
 	 */
-	public Map<String, TreeMap<String, TreeSet<Integer>>> getIndex() {
-		return Collections.unmodifiableMap(index);
+	public void writeCounts(Path path) throws IOException {
+		JsonWriter.writeCountsObject(counts, path);
+	}
+
+	/**
+	 * Writes the inverted index to a JSON file.
+	 *
+	 * @param path the path to write the index to
+	 * @throws IOException if an IO error occurs
+	 */
+	public void writeIndex(Path path) throws IOException {
+		JsonWriter.writeIndexObject(index, path);
+	}
+
+	/**
+	 * Writes the search results to a JSON file.
+	 *
+	 * @param searchResults the search results to write
+	 * @param path the path to write the search results to
+	 * @throws IOException if an IO error occurs
+	 */
+	public void writeSearchResults(Map<String, List<SearchResult>> searchResults, Path path) throws IOException {
+		JsonWriter.writeSearchResults(searchResults, path);
 	}
 	
 	/**

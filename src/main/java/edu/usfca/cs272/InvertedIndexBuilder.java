@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.Map;
 
 import opennlp.tools.stemmer.snowball.SnowballStemmer;
 
@@ -18,7 +16,7 @@ import opennlp.tools.stemmer.snowball.SnowballStemmer;
  * @version Spring 2025
  * @see InvertedIndex
  */
-public final class InvertedIndexBuilder {
+public class InvertedIndexBuilder {
 	/** 
 	 * The inverted index data structure to populate with processed text.
 	 * This is marked final to ensure thread-safety and prevent modification
@@ -45,7 +43,7 @@ public final class InvertedIndexBuilder {
 	 * @param path the path to test
 	 * @return true if the path has a .txt or .text extension
 	 */
-	private static boolean isTextFile(Path path) {
+	public static boolean isTextFile(Path path) {
 		String name = path.toString().toLowerCase();
 		return name.endsWith(".txt") || name.endsWith(".text");
 	}
@@ -60,18 +58,21 @@ public final class InvertedIndexBuilder {
 	 * @param index the inverted index to build
 	 * @throws IOException if an IO error occurs during file reading or processing
 	 */
-	private static void buildFile(Path path, InvertedIndex index) throws IOException {
+	public static void buildFile(Path path, InvertedIndex index) throws IOException {
 		try (var reader = Files.newBufferedReader(path)) {
 			String line;
+			String location = path.toString();
 			var stemmer = new SnowballStemmer(SnowballStemmer.ALGORITHM.ENGLISH);
 			int position = 1;
 			while ((line = reader.readLine()) != null) {
 				for (String word : FileStemmer.parse(line)) {
 					String stem = stemmer.stem(word).toString();
-					index.add(stem, path.toString(), position);
+					index.add(stem, location, position);
 					position++;
 				}
 			}
+			
+			// TODO Why not update the count here? (Can ignore this now)
 		}
 	}
 	
@@ -83,7 +84,7 @@ public final class InvertedIndexBuilder {
 	 * @param path the text file to process
 	 * @throws IOException if an IO error occurs during file reading or processing
 	 */
-	private void buildFile(Path path) throws IOException {
+	public void buildFile(Path path) throws IOException {
 		buildFile(path, this.index);
 	}
 
@@ -95,7 +96,7 @@ public final class InvertedIndexBuilder {
 	 * @param directory the directory to process
 	 * @throws IOException if an IO error occurs during directory traversal or file processing
 	 */
-	private void buildDirectory(Path directory) throws IOException { 
+	public void buildDirectory(Path directory) throws IOException { 
 		try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
 			for (var path : stream) {
 				if (Files.isDirectory(path)) {
@@ -117,43 +118,12 @@ public final class InvertedIndexBuilder {
 	 * @throws IOException if an IO error occurs during file processing
 	 * @throws IllegalArgumentException if the path is null or does not exist
 	 */
-	public final void build(Path path) throws IOException {
+	public void build(Path path) throws IOException {
 		if (Files.isDirectory(path)) {
 			buildDirectory(path);
 		}
 		else {
 			buildFile(path);
 		}
-	}
-
-	/**
-	 * Writes the word counts to a JSON file.
-	 *
-	 * @param path the path to write the counts to
-	 * @throws IOException if an IO error occurs
-	 */
-	public void writeCounts(Path path) throws IOException {
-		JsonWriter.writeCountsObject(index.getCounts(), path);
-	}
-
-	/**
-	 * Writes the inverted index to a JSON file.
-	 *
-	 * @param path the path to write the index to
-	 * @throws IOException if an IO error occurs
-	 */
-	public void writeIndex(Path path) throws IOException {
-		JsonWriter.writeIndexObject(index.getIndex(), path);
-	}
-
-	/**
-	 * Writes the search results to a JSON file.
-	 *
-	 * @param searchResults the search results to write
-	 * @param path the path to write the search results to
-	 * @throws IOException if an IO error occurs
-	 */
-	public void writeSearchResults(Map<String, List<InvertedIndex.SearchResult>> searchResults, Path path) throws IOException {
-		JsonWriter.writeSearchResults(searchResults, path);
 	}
 }

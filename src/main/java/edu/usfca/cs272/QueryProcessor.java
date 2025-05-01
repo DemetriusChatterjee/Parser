@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -80,25 +81,15 @@ public class QueryProcessor {
 		String queryString = getQueryString(stems);
 		
 		// Check if we already have results for this query
-		if (usePartialSearch) {
-			if (allResultsPartial.containsKey(queryString)) {
-				return allResultsPartial.get(queryString);
-			}
-		} else {
-			if (allResultsExact.containsKey(queryString)) {
-				return allResultsExact.get(queryString);
-			}
+		if (getResults(usePartialSearch).containsKey(queryString)) {
+			return getResults(usePartialSearch).get(queryString);
 		}
 		
 		// Search the index
 		List<InvertedIndex.SearchResult> results = index.search(stems, usePartialSearch);
 		
 		// Store the results
-		if (usePartialSearch) {
-			allResultsPartial.put(queryString, results);
-		} else {
-			allResultsExact.put(queryString, results);
-		}
+		getResults(usePartialSearch).put(queryString, results);
 		
 		return results;
 	}
@@ -136,11 +127,17 @@ public class QueryProcessor {
 	 * @throws IOException if an IO error occurs
 	 */
 	public void toJson(Path path, boolean usePartialResults) throws IOException {
-		if(usePartialResults){
-			JsonWriter.writeSearchResults(allResultsPartial, path);
-		} else {
-			JsonWriter.writeSearchResults(allResultsExact, path);
-		}
+		JsonWriter.writeSearchResults(getResults(usePartialResults), path);
+	}
+	
+	/**
+	 * Returns the results for the given usePartialResults.
+	 * 
+	 * @param usePartialResults whether to use partial search
+	 * @return the results for the given usePartialResults
+	 */
+	private TreeMap<String, List<InvertedIndex.SearchResult>> getResults(boolean usePartialResults) {
+		return usePartialResults ? allResultsPartial : allResultsExact;
 	}
 
 	/**
@@ -154,4 +151,24 @@ public class QueryProcessor {
 			allResultsExact.toString(), allResultsPartial.toString());
 	}
 	
+	/**
+	 * Returns an unmodifiable view of the search result keys.
+	 * 
+	 * @return an unmodifiable view of the search result keys
+	 */
+	public Set<String> getSearchResultKeys() {
+		return Collections.unmodifiableSet(getResults(usePartialSearch).keySet());
+	}
+
+	/**
+	 * Returns an unmodifiable view of the search results for a given query string.
+	 * 
+	 * @param queryString the query string to get results for
+	 * @param usePartialSearch whether to use partial search results
+	 * @return an unmodifiable view of the search results, or null if no results exist
+	 */
+	public List<InvertedIndex.SearchResult> getSearchResult(String queryString, boolean usePartialSearch) {
+		List<InvertedIndex.SearchResult> results = getResults(usePartialSearch).get(queryString);
+		return results != null ? Collections.unmodifiableList(results) : null;
+	}
 }
