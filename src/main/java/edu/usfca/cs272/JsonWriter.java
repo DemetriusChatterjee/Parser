@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.Collection;
 import java.util.Iterator;
 
 /**
@@ -326,7 +327,7 @@ public final class JsonWriter {
 	 * @throws IOException if an IO error occurs
 	 */
 	private static void writeSearchResultArray(
-			List<InvertedIndex.SearchResult> results, // TODO Collection
+			Collection<InvertedIndex.SearchResult> results,
 			Writer writer, int indent) throws IOException {
 		writer.write('[');
 		writer.write('\n');
@@ -362,16 +363,16 @@ public final class JsonWriter {
 	 * @throws IOException if an IO error occurs
 	 */
 	private static void writeSearchResults(
-			Map<String, List<InvertedIndex.SearchResult>> results, // TODO ? extends Collection
+			Map<String, ? extends Collection<InvertedIndex.SearchResult>> results,
 			Writer writer, int indent) throws IOException {
 		writer.write('{');
 		writer.write('\n');
 		
 		if (!results.isEmpty()) {
-			Iterator<Map.Entry<String, List<InvertedIndex.SearchResult>>> iterator = results.entrySet().iterator();
+			var iterator = results.entrySet().iterator();
 			
 			// Write first query and its results
-			Map.Entry<String, List<InvertedIndex.SearchResult>> entry = iterator.next();
+			var entry = iterator.next();
 			writeIndent(writer, indent + 1);
 			writeQuote(entry.getKey(), writer, 0);
 			writer.write(": ");

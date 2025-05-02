@@ -80,18 +80,19 @@ public class QueryProcessor {
 		// Get the query string
 		String queryString = getQueryString(stems);
 		
-		// TODO var currentResults = getResults(usePartialSearch); and reuse currentResults below
+		// Get the current results
+		var currentResults = getResults(usePartialSearch);
 		
 		// Check if we already have results for this query
-		if (getResults(usePartialSearch).containsKey(queryString)) {
-			return getResults(usePartialSearch).get(queryString);
+		if (currentResults.containsKey(queryString)) {
+			return currentResults.get(queryString);
 		}
 		
 		// Search the index
 		List<InvertedIndex.SearchResult> results = index.search(stems, usePartialSearch);
 		
 		// Store the results
-		getResults(usePartialSearch).put(queryString, results);
+		currentResults.put(queryString, results);
 		
 		return results;
 	}
