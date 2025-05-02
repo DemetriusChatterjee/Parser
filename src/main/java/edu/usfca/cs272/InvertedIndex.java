@@ -300,9 +300,9 @@ public class InvertedIndex {
 		 * 
 		 * @param count the new count value
 		 */
-	private void addCount(int count) {
+		private void addCount(int count) {
 			this.count = this.count + count;
-			this.score = (double) count / counts.get(where);
+			this.score = (double) this.count / counts.get(where);
 		}
 		
 		@Override
