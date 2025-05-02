@@ -61,6 +61,8 @@ public class Driver {
 			}
 		}
 		
+		// TODO if (parser.hasFlag("-query")) {
+		
 		// Write output files if flags are provided
 		// Write counts output if flag provided
 		if (parser.hasFlag("-counts")) {

@@ -80,6 +80,8 @@ public class QueryProcessor {
 		// Get the query string
 		String queryString = getQueryString(stems);
 		
+		// TODO var currentResults = getResults(usePartialSearch); and reuse currentResults below
+		
 		// Check if we already have results for this query
 		if (getResults(usePartialSearch).containsKey(queryString)) {
 			return getResults(usePartialSearch).get(queryString);
@@ -168,6 +170,7 @@ public class QueryProcessor {
 	 * @return an unmodifiable view of the search results, or null if no results exist
 	 */
 	public List<InvertedIndex.SearchResult> getSearchResult(String queryString, boolean usePartialSearch) {
+		// TODO Re-stem and join the queryString before doing the get
 		List<InvertedIndex.SearchResult> results = getResults(usePartialSearch).get(queryString);
 		return results != null ? Collections.unmodifiableList(results) : null;
 	}

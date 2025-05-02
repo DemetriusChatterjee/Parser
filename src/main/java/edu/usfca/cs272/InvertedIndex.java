@@ -259,6 +259,7 @@ public class InvertedIndex {
 		JsonWriter.writeIndexObject(index, path);
 	}
 
+	// TODO Remove
 	/**
 	 * Writes the search results to a JSON file.
 	 *
@@ -300,6 +301,7 @@ public class InvertedIndex {
 		 * @param count the total number of matches found
 		 * @param totalWords the total number of words in the file
 		 */
+		// TODO public SearchResult(String where) {
 		public SearchResult(String where, int count, int totalWords) {
 			this.where = where;
 			this.count = count;
@@ -311,9 +313,9 @@ public class InvertedIndex {
 		 * 
 		 * @param count the new count value
 		 */
-		private void updateCount(int count) {
-			if (this.count != count) {
-				this.count = count;
+		private void updateCount(int count) { // TODO addCount
+			if (this.count != count) { // TODO Remove
+				this.count = count; // TODO this.count += count
 				this.score = (double) count / counts.get(where);
 			}
 		}
@@ -385,6 +387,7 @@ public class InvertedIndex {
 	public List<SearchResult> exactSearch(Set<String> queries) {
 		// Create a map to store search results (location -> SearchResult)
 		HashMap<String, SearchResult> matches = new HashMap<>();
+		// TODO List<SearchResult> results = new ArrayList<>();
 		
 		// For each stem in the query
 		for (String query : queries) {
@@ -401,6 +404,18 @@ public class InvertedIndex {
 				
 				// Get or create SearchResult for this location
 				SearchResult result = matches.get(location);
+				
+				/* TODO 
+				if (result == null) {
+						int totalWords = counts.get(location);
+						result = new SearchResult(location);
+						matches.put(location, result);
+						results.add(result);
+				} 
+				
+				result.addCount(count);
+				*/				
+				
 				if (result == null) {
 					int totalWords = counts.get(location);
 					result = new SearchResult(location, count, totalWords);
@@ -413,7 +428,7 @@ public class InvertedIndex {
 		}
 		
 		// Convert matches to sorted list
-		List<SearchResult> results = new ArrayList<>(matches.values());
+		List<SearchResult> results = new ArrayList<>(matches.values()); // TODO Remove
 		results.sort(null); // Uses natural ordering defined by compareTo
 		return results;
 	}
@@ -427,19 +442,22 @@ public class InvertedIndex {
 	 * @return a list of sorted search results
 	 */
 	public List<SearchResult> partialSearch(Set<String> queries) {
-		if (queries.isEmpty()) {
+		if (queries.isEmpty()) { // TODO Remove
 			return new ArrayList<>();
 		}
 		
 		// Create a map to store search results (location -> SearchResult)
 		HashMap<String, SearchResult> matches = new HashMap<>();
+		// TODO Same changes
 		
 		// For each stem in the query
 		for (String query : queries) {
 			// For each word in the index that starts with the stem
-			for (var entry : index.entrySet()) {
+			for (var entry : index.entrySet()) { // TODO Linear search instead... index.tailMap(query).entrySet()
 				String word = entry.getKey();
 				if (word.startsWith(query)) {
+					
+						// TODO This for loop is the same in both... move it into a private searchHelper function
 					// For each location where this word appears
 					for (var locationEntry : entry.getValue().entrySet()) {
 						String location = locationEntry.getKey();
@@ -457,6 +475,7 @@ public class InvertedIndex {
 						}
 					}
 				}
+				// TODO else { break }
 			}
 		}
 		List<SearchResult> results = new ArrayList<>(matches.values());
