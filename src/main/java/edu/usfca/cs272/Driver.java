@@ -61,6 +61,18 @@ public class Driver {
 			}
 		}
 		
+			if (parser.hasFlag("-query")) {
+				Path queryPath = parser.getPath("-query");
+				if (queryPath != null) {
+					try {
+						queryProcessor.processQueryFile(queryPath);
+					}
+					catch (IOException e) {
+						LOGGER.warning("Unable to process query file: " + e.getMessage());
+					}
+				}
+			}
+		
 		// Write output files if flags are provided
 		// Write counts output if flag provided
 		if (parser.hasFlag("-counts")) {
@@ -81,19 +93,6 @@ public class Driver {
 			}
 			catch (IOException e) {
 				LOGGER.warning("Unable to write index to file: " + e.getMessage());
-			}
-		}
-
-		
-		if (parser.hasFlag("-query")) {
-			Path queryPath = parser.getPath("-query");
-			if (queryPath != null) {
-				try {
-					queryProcessor.processQueryFile(queryPath);
-				}
-				catch (IOException e) {
-					LOGGER.warning("Unable to process query file: " + e.getMessage());
-				}
 			}
 		}
 		

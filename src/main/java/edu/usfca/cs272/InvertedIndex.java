@@ -1,5 +1,8 @@
 package edu.usfca.cs272;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -7,9 +10,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.ArrayList;
-import java.io.IOException;
-import java.nio.file.Path;
 
 /**
  * Data structure to store an inverted index and word counts from text files. 
@@ -258,18 +258,7 @@ public class InvertedIndex {
 	public void writeIndex(Path path) throws IOException {
 		JsonWriter.writeIndexObject(index, path);
 	}
-
-	/**
-	 * Writes the search results to a JSON file.
-	 *
-	 * @param searchResults the search results to write
-	 * @param path the path to write the search results to
-	 * @throws IOException if an IO error occurs
-	 */
-	public void writeSearchResults(Map<String, List<SearchResult>> searchResults, Path path) throws IOException {
-		JsonWriter.writeSearchResults(searchResults, path);
-	}
-	
+		
 	/**
 	 * Gets the word count for a specific location.
 	 *
@@ -300,10 +289,10 @@ public class InvertedIndex {
 		 * @param count the total number of matches found
 		 * @param totalWords the total number of words in the file
 		 */
-		public SearchResult(String where, int count, int totalWords) {
+		public SearchResult(String where) {
 			this.where = where;
-			this.count = count;
-			this.score = (double) count / counts.get(where);
+			this.count = 0;
+			this.score = 0;
 		}
 		
 		/**
@@ -311,11 +300,9 @@ public class InvertedIndex {
 		 * 
 		 * @param count the new count value
 		 */
-		private void updateCount(int count) {
-			if (this.count != count) {
-				this.count = count;
-				this.score = (double) count / counts.get(where);
-			}
+		private void addCount(int count) {
+			this.count = this.count + count;
+			this.score = (double) this.count / counts.get(where);
 		}
 		
 		@Override
@@ -385,6 +372,7 @@ public class InvertedIndex {
 	public List<SearchResult> exactSearch(Set<String> queries) {
 		// Create a map to store search results (location -> SearchResult)
 		HashMap<String, SearchResult> matches = new HashMap<>();
+		List<SearchResult> results = new ArrayList<>();
 		
 		// For each stem in the query
 		for (String query : queries) {
@@ -394,26 +382,9 @@ public class InvertedIndex {
 			}
 			
 			TreeMap<String, TreeSet<Integer>> locations = index.get(query);
-			// For each location where this stem appears
-			for (var entry : locations.entrySet()) {
-				String location = entry.getKey();
-				int count = entry.getValue().size(); // Number of times this stem appears in this location
-				
-				// Get or create SearchResult for this location
-				SearchResult result = matches.get(location);
-				if (result == null) {
-					int totalWords = counts.get(location);
-					result = new SearchResult(location, count, totalWords);
-					matches.put(location, result);
-				} else {
-					// Update existing result with additional matches
-					result.updateCount(result.getCount() + count);
-				}
-			}
+			searchHelper(locations, matches, results);
 		}
 		
-		// Convert matches to sorted list
-		List<SearchResult> results = new ArrayList<>(matches.values());
 		results.sort(null); // Uses natural ordering defined by compareTo
 		return results;
 	}
@@ -427,41 +398,51 @@ public class InvertedIndex {
 	 * @return a list of sorted search results
 	 */
 	public List<SearchResult> partialSearch(Set<String> queries) {
-		if (queries.isEmpty()) {
-			return new ArrayList<>();
-		}
 		
 		// Create a map to store search results (location -> SearchResult)
 		HashMap<String, SearchResult> matches = new HashMap<>();
+		List<SearchResult> results = new ArrayList<>();
 		
 		// For each stem in the query
 		for (String query : queries) {
 			// For each word in the index that starts with the stem
-			for (var entry : index.entrySet()) {
+			for (var entry : index.tailMap(query).entrySet()) {
 				String word = entry.getKey();
 				if (word.startsWith(query)) {
-					// For each location where this word appears
-					for (var locationEntry : entry.getValue().entrySet()) {
-						String location = locationEntry.getKey();
-						int count = locationEntry.getValue().size(); // Number of times this word appears in this location
-						
-						// Get or create SearchResult for this location
-						SearchResult result = matches.get(location);
-						if (result == null) {
-							int totalWords = counts.get(location);
-							result = new SearchResult(location, count, totalWords);
-							matches.put(location, result);
-						} else {
-							// Update existing result with additional matches
-							result.updateCount(result.getCount() + count);
-						}
-					}
+					searchHelper(entry.getValue(), matches, results);
+				}else {
+					break;
 				}
 			}
 		}
-		List<SearchResult> results = new ArrayList<>(matches.values());
 		// Sort results by score, count, and location
 		results.sort(null); // Uses natural ordering defined by compareTo
 		return results;
+	}
+
+	/**
+	 * Helper method to process locations and update search results.
+	 * 
+	 * @param locations the locations map to process
+	 * @param matches the map of location to SearchResult
+	 * @param results the list of SearchResults
+	 */
+	private void searchHelper(TreeMap<String, TreeSet<Integer>> locations, 
+			HashMap<String, SearchResult> matches, List<SearchResult> results) {
+		// For each location where this stem appears
+		for (var entry : locations.entrySet()) {
+			String location = entry.getKey();
+			int count = entry.getValue().size(); // Number of times this stem appears in this location
+			
+			// Get or create SearchResult for this location
+			SearchResult result = matches.get(location);
+			if (result == null) {
+				result = new SearchResult(location);
+				matches.put(location, result);
+				results.add(result);
+			} 
+			
+			result.addCount(count);
+		}
 	}
 }

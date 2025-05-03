@@ -80,16 +80,19 @@ public class QueryProcessor {
 		// Get the query string
 		String queryString = getQueryString(stems);
 		
+		// Get the current results
+		var currentResults = getResults(usePartialSearch);
+		
 		// Check if we already have results for this query
-		if (getResults(usePartialSearch).containsKey(queryString)) {
-			return getResults(usePartialSearch).get(queryString);
+		if (currentResults.containsKey(queryString)) {
+			return currentResults.get(queryString);
 		}
 		
 		// Search the index
 		List<InvertedIndex.SearchResult> results = index.search(stems, usePartialSearch);
 		
 		// Store the results
-		getResults(usePartialSearch).put(queryString, results);
+		currentResults.put(queryString, results);
 		
 		return results;
 	}
@@ -168,6 +171,7 @@ public class QueryProcessor {
 	 * @return an unmodifiable view of the search results, or null if no results exist
 	 */
 	public List<InvertedIndex.SearchResult> getSearchResult(String queryString, boolean usePartialSearch) {
+		// TODO Re-stem and join the queryString before doing the get
 		List<InvertedIndex.SearchResult> results = getResults(usePartialSearch).get(queryString);
 		return results != null ? Collections.unmodifiableList(results) : null;
 	}
