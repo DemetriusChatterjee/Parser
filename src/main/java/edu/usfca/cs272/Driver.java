@@ -33,6 +33,7 @@ public class Driver {
 	 *             "-query" for query file path
 	 *             "-results" for search results output path
 	 *             "-partial" to use partial search instead of exact search
+	 *             "-threads" to use threads for processing
 	 */
 	public static void main(final String[] args) {
 		final Instant start = Instant.now();
