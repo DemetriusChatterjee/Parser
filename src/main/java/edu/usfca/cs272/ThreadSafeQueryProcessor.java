@@ -21,6 +21,9 @@ public class ThreadSafeQueryProcessor extends QueryProcessor {
     /** The work queue for parallel processing of queries. */
     private final WorkQueue queue;
 
+    /** Whether to use partial search. */
+    private final boolean usePartialSearch;
+
     /**
      * Initializes a thread-safe query processor with the default number of worker threads.
      *
@@ -28,21 +31,10 @@ public class ThreadSafeQueryProcessor extends QueryProcessor {
      * @param usePartialSearch whether to use partial search
      * @param queue the work queue to use for parallel processing
      */
-    public ThreadSafeQueryProcessor(InvertedIndex index, boolean usePartialSearch, WorkQueue queue) {
+    public ThreadSafeQueryProcessor(ThreadSafeInvertedIndex index, boolean usePartialSearch, WorkQueue queue) {
         super(index, usePartialSearch);
         this.queue = queue;
-    }
-
-    /**
-     * Thread-safe implementation of processing a single query line.
-     * Uses a work queue to process the query in parallel.
-     *
-     * @param line the query line to process
-     * @return a list of search results from the inverted index
-     */
-    @Override
-    public TreeSet<String> processLine(String line) {
-        return super.processLine(line);
+        this.usePartialSearch = usePartialSearch;
     }
 
     /**
@@ -54,20 +46,25 @@ public class ThreadSafeQueryProcessor extends QueryProcessor {
      */
     @Override
     public List<InvertedIndex.SearchResult> processQueryLine(String line) {
-        // Process the line into stems
-        TreeSet<String> stems = processLine(line);
-        if (stems.isEmpty()) {
+        synchronized (this) {
+            // Process the line into stems
+            TreeSet<String> stems = processLine(line);
+            if (stems.isEmpty()) {
+                return super.processQueryLine(line);
+            }
+
+            // Get the query string
+            String queryString = getQueryString(stems);
+            
+            // Check if we already have results for this query
+            List<InvertedIndex.SearchResult> existingResults = super.getSearchResult(queryString, usePartialSearch);
+            if (existingResults != null) {
+                return existingResults;
+            }
+
+            // Process the query
             return super.processQueryLine(line);
         }
-
-        // Execute the query processing in the work queue
-        queue.execute(() -> super.processQueryLine(line));
-
-        // Wait for the task to complete
-        queue.join();
-
-        // Return the results from the parent class
-        return super.processQueryLine(line);
     }
 
     /**
@@ -83,7 +80,7 @@ public class ThreadSafeQueryProcessor extends QueryProcessor {
             String line;
             while ((line = reader.readLine()) != null) {
                 final String queryLine = line;
-                queue.execute(() -> super.processQueryLine(queryLine));
+                queue.execute(() -> processQueryLine(queryLine));
             }
         }
         // Wait for all tasks to complete
