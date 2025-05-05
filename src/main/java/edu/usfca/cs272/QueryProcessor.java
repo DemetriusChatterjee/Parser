@@ -171,8 +171,11 @@ public class QueryProcessor {
 	 * @return an unmodifiable view of the search results, or null if no results exist
 	 */
 	public List<InvertedIndex.SearchResult> getSearchResult(String queryString, boolean usePartialSearch) {
-		// TODO Re-stem and join the queryString before doing the get
-		List<InvertedIndex.SearchResult> results = getResults(usePartialSearch).get(queryString);
+		// Process the query string to ensure consistent format
+		TreeSet<String> stems = processLine(queryString);
+		String processedQuery = getQueryString(stems);
+		
+		List<InvertedIndex.SearchResult> results = getResults(usePartialSearch).get(processedQuery);
 		return results != null ? Collections.unmodifiableList(results) : null;
 	}
 }
