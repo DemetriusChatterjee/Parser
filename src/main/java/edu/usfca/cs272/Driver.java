@@ -57,7 +57,7 @@ public class Driver {
 		// Create work queue if using threads
 		WorkQueue queue = useThreads ? new WorkQueue(numThreads) : null;
 		QueryProcessor queryProcessor = useThreads ? 
-			new ThreadSafeQueryProcessor(index, usePartialSearch, queue) : 
+			new ThreadSafeQueryProcessor((ThreadSafeInvertedIndex) index, usePartialSearch, queue) : 
 			new QueryProcessor(index, usePartialSearch);
 		
 		// Process input path if provided
