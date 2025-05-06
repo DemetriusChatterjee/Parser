@@ -41,30 +41,58 @@ public class ThreadSafeInvertedIndexBuilder extends InvertedIndexBuilder {
      */
     @Override
     public void buildFile(Path path) throws IOException {
-        super.buildFile(path);
-    }
-
+		try (var reader = Files.newBufferedReader(path)) {
+			String line;
+			String location = path.toString();
+			var stemmer = new SnowballStemmer(SnowballStemmer.ALGORITHM.ENGLISH);
+			int position = 1;
+			while ((line = reader.readLine()) != null) {
+				for (String word : FileStemmer.parse(line)) {
+					String stem = stemmer.stem(word).toString();
+					index.add(stem, location, position);
+					position++;
+				}
+			}
+		}
+	}
+    
+    /**
+     * Builds the index from a directory by recursively processing text files.
+     *
+     * @param directory the directory to process
+     * @throws IOException if an IO error occurs during file processing
+     */
     @Override
-    public void buildDirectory(Path directory) throws IOException {
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
-            for (Path path : stream) {
-                if (Files.isDirectory(path)) {
-                    buildDirectory(path);
-                } else if (isTextFile(path)) {
-                    buildFile(path);
-                }
-            }
-        }
-    }
+    public void buildDirectory(Path directory) throws IOException { 
+		try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
+			for (var path : stream) {
+				if (Files.isDirectory(path)) {
+					buildDirectory(path);
+				}
+				else if (isTextFile(path)) {
+					buildFile(path);
+				}
+			}
+		}
+	}
 
+    /**
+     * Builds the index from a file or directory path by processing its contents.
+     * If the path points to a directory, processes all text files in that directory
+     * and its subdirectories recursively.
+     *
+     * @param path the input path to process
+     * @throws IOException if an IO error occurs during file processing
+     * @throws IllegalArgumentException if the path is null or does not exist
+     */
     @Override
     public void build(Path path) throws IOException {
             if (Files.isDirectory(path)) {
-                super.buildDirectory(path);
+                buildDirectory(path);
             } else if (isTextFile(path)) {
                 queue.execute(() -> {
                     try {
-                        super.buildFile(path);
+                        buildFile(path);
                     } catch (IOException e) {
                         throw new RuntimeException("Failed to process file: " + path, e);
                     }
