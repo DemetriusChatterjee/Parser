@@ -33,7 +33,7 @@ public class Driver {
 	 *             "-query" for query file path
 	 *             "-results" for search results output path
 	 *             "-partial" to use partial search instead of exact search
-	 *             "-threads" to use threads for processing
+	 *             "-threads" to use threads for processing and building the index
 	 */
 	public static void main(final String[] args) {
 		final Instant start = Instant.now();
@@ -52,11 +52,16 @@ public class Driver {
 		
 		// Create appropriate index and processor based on threading flag
 		final InvertedIndex index = useThreads ? new ThreadSafeInvertedIndex() : new InvertedIndex();
-		final InvertedIndexBuilder builder = new InvertedIndexBuilder(index);
-		boolean usePartialSearch = parser.hasFlag("-partial");
 		
 		// Create work queue if using threads
 		WorkQueue queue = useThreads ? new WorkQueue(numThreads) : null;
+		
+		final InvertedIndexBuilder builder = useThreads ? 
+			new ThreadSafeInvertedIndexBuilder((ThreadSafeInvertedIndex) index, queue) : 
+			new InvertedIndexBuilder(index);
+
+		boolean usePartialSearch = parser.hasFlag("-partial");
+		
 		QueryProcessor queryProcessor = useThreads ? 
 			new ThreadSafeQueryProcessor((ThreadSafeInvertedIndex) index, usePartialSearch, queue) : 
 			new QueryProcessor(index, usePartialSearch);
