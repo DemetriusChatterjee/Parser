@@ -51,8 +51,7 @@ public class Driver {
 		}
 		
 		// Create appropriate index and processor based on threading flag
-		//final InvertedIndex index = useThreads ? new ThreadSafeInvertedIndex() : new InvertedIndex();
-		final InvertedIndex index = new InvertedIndex(); // Always use non-thread-safe version
+		final InvertedIndex index = useThreads ? new ThreadSafeInvertedIndex() : new InvertedIndex();
 		final InvertedIndexBuilder builder = new InvertedIndexBuilder(index);
 		boolean usePartialSearch = parser.hasFlag("-partial");
 		
