@@ -33,14 +33,33 @@ public class Driver {
 	 *             "-query" for query file path
 	 *             "-results" for search results output path
 	 *             "-partial" to use partial search instead of exact search
+	 *             "-threads" to use threads for processing
 	 */
 	public static void main(final String[] args) {
 		final Instant start = Instant.now();
 		final ArgumentParser parser = new ArgumentParser(args);
-		final InvertedIndex index = new InvertedIndex();
+		
+		// Initialize thread-safe components if -threads flag is present
+		boolean useThreads = parser.hasFlag("-threads");
+		int numThreads = 5; // Default number of threads
+		
+		if (useThreads) {
+			int parsedThreads = parser.getInteger("-threads", 5);
+			if (parsedThreads >= 1) {
+				numThreads = parsedThreads;
+			}
+		}
+		
+		// Create appropriate index and processor based on threading flag
+		final InvertedIndex index = useThreads ? new ThreadSafeInvertedIndex() : new InvertedIndex();
 		final InvertedIndexBuilder builder = new InvertedIndexBuilder(index);
 		boolean usePartialSearch = parser.hasFlag("-partial");
-		QueryProcessor queryProcessor = new QueryProcessor(index, usePartialSearch);
+		
+		// Create work queue if using threads
+		WorkQueue queue = useThreads ? new WorkQueue(numThreads) : null;
+		QueryProcessor queryProcessor = useThreads ? 
+			new ThreadSafeQueryProcessor((ThreadSafeInvertedIndex) index, usePartialSearch, queue) : 
+			new QueryProcessor(index, usePartialSearch);
 		
 		// Process input path if provided
 		if (parser.hasFlag("-text")) {
@@ -61,17 +80,17 @@ public class Driver {
 			}
 		}
 		
-			if (parser.hasFlag("-query")) {
-				Path queryPath = parser.getPath("-query");
-				if (queryPath != null) {
-					try {
-						queryProcessor.processQueryFile(queryPath);
-					}
-					catch (IOException e) {
-						LOGGER.warning("Unable to process query file: " + e.getMessage());
-					}
+		if (parser.hasFlag("-query")) {
+			Path queryPath = parser.getPath("-query");
+			if (queryPath != null) {
+				try {
+					queryProcessor.processQueryFile(queryPath);
+				}
+				catch (IOException e) {
+					LOGGER.warning("Unable to process query file: " + e.getMessage());
 				}
 			}
+		}
 		
 		// Write output files if flags are provided
 		// Write counts output if flag provided
@@ -105,6 +124,11 @@ public class Driver {
 			catch (IOException e) {
 				LOGGER.warning("Unable to write results to file: " + e.getMessage());
 			}
+		}
+
+		// Shutdown work queue if using threads
+		if (useThreads) {
+			queue.join();
 		}
 
 		Duration elapsed = Duration.between(start, Instant.now());
