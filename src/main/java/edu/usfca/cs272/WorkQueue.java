@@ -147,7 +147,7 @@ public class WorkQueue {
 	 * Asks the queue to shutdown. Any unprocessed work (or tasks) will not be
 	 * finished, but threads in-progress will not be interrupted.
 	 */
-	private void shutdown() {
+	void shutdown() {
 		// safe to do unsynchronized due to volatile keyword
 		shutdown = true;
 

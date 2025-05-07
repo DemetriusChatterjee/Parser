@@ -398,4 +398,14 @@ public class ThreadSafeInvertedIndex extends InvertedIndex {
             lock.readLock().unlock();
         }
     }
+
+    @Override
+    public void mergeIndex(InvertedIndex other) {
+        lock.writeLock().lock();
+        try {
+            super.mergeIndex(other);
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
 }
