@@ -98,8 +98,6 @@ public class MultiReaderLock {
 	 * A simple lock used for conditional synchronization as an alternative to using
 	 * a {@code synchronized} block.
 	 *
-	 * Similar but simpler than {@link Lock}.
-	 *
 	 * @author CS 272 Software Development (University of San Francisco)
 	 * @version Spring 2025
 	 */
