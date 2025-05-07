@@ -63,7 +63,7 @@ public class ThreadedInvertedIndexBuilder extends InvertedIndexBuilder {
 				if (Files.isDirectory(path)) {
 					buildDirectory(path);
 				}
-				else if (super.isTextFile(path)) {
+				else if (InvertedIndexBuilder.isTextFile(path)) {
                     //queue.execute(new FileTask(path, index));
                     queue.execute(() -> {
                         try {
@@ -90,7 +90,7 @@ public class ThreadedInvertedIndexBuilder extends InvertedIndexBuilder {
     public void build(Path path) throws IOException {
         if (Files.isDirectory(path)) {
             buildDirectory(path);
-        } else if (super.isTextFile(path)) {
+        } else if (InvertedIndexBuilder.isTextFile(path)) {
             //queue.execute(new FileTask(path, index));
             queue.execute(() -> {
                 try {
