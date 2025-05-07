@@ -5,7 +5,6 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import opennlp.tools.stemmer.snowball.SnowballStemmer;
 
 /**
  * A thread-safe implementation of InvertedIndexBuilder that uses a WorkQueue for
