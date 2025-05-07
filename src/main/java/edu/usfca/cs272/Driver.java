@@ -57,10 +57,15 @@ public class Driver {
 		
 		// Create work queue if using threads
 		WorkQueue queue = useThreads ? new WorkQueue(numThreads) : null;
-		QueryProcessor queryProcessor = useThreads ? 
-			new ThreadSafeQueryProcessor((ThreadSafeInvertedIndex) index, usePartialSearch, queue) : 
-			new QueryProcessor(index, usePartialSearch);
-		
+		QueryProcessor queryProcessor = null;
+		ThreadSafeQueryProcessor threadSafeQueryProcessor = null;
+		if (useThreads) {
+			threadSafeQueryProcessor = new ThreadSafeQueryProcessor((ThreadSafeInvertedIndex) index, usePartialSearch, queue);
+		}else{
+			queryProcessor = new QueryProcessor(index, usePartialSearch);
+		}
+
+
 		// Process input path if provided
 		if (parser.hasFlag("-text")) {
 			Path inputPath = parser.getPath("-text");
@@ -84,7 +89,11 @@ public class Driver {
 			Path queryPath = parser.getPath("-query");
 			if (queryPath != null) {
 				try {
-					queryProcessor.processQueryFile(queryPath);
+					if (useThreads) {
+						threadSafeQueryProcessor.processQueryFile(queryPath);
+					} else {
+						queryProcessor.processQueryFile(queryPath);
+					}
 				}
 				catch (IOException e) {
 					LOGGER.warning("Unable to process query file: " + e.getMessage());
@@ -119,7 +128,11 @@ public class Driver {
 		if (parser.hasFlag("-results")) {
 			try {
 				Path resultsPath = parser.getPath("-results", Path.of("results.json"));
-				queryProcessor.toJson(resultsPath, usePartialSearch);
+				if (useThreads) {
+					threadSafeQueryProcessor.toJson(resultsPath, usePartialSearch);
+				} else {
+					queryProcessor.toJson(resultsPath, usePartialSearch);
+				}
 			}
 			catch (IOException e) {
 				LOGGER.warning("Unable to write results to file: " + e.getMessage());
