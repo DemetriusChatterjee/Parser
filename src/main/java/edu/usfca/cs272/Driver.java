@@ -108,6 +108,10 @@ public class Driver {
 			}
 		}
 		
+		if(useThreads){
+			queue.shutdown();
+		}
+
 		// Write output files if flags are provided
 		// Write counts output if flag provided
 		if (parser.hasFlag("-counts")) {
