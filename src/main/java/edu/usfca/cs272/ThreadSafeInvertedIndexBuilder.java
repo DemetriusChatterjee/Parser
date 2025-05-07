@@ -55,8 +55,7 @@ public class ThreadSafeInvertedIndexBuilder{
      */
     public void buildFile(Path path) throws IOException {
         synchronized (index) {
-            InvertedIndex notThreadSafe = new InvertedIndex();
-            InvertedIndexBuilder builder = new InvertedIndexBuilder(notThreadSafe);
+            InvertedIndexBuilder builder = new InvertedIndexBuilder(index);
             builder.buildFile(path);
         }
     }
