@@ -106,7 +106,7 @@ public class WorkQueue {
 	 * Waits for all pending work (or tasks) to be finished. Does not terminate the
 	 * worker threads so that the work queue can continue to be used.
 	 */
-	private void finish() {
+	void finish() {
 		try {
 			synchronized (this) {
 				while (pending > 0) {
