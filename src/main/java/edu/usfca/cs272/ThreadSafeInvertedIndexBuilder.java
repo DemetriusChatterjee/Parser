@@ -55,19 +55,8 @@ public class ThreadSafeInvertedIndexBuilder{
      * @throws IOException if an IO error occurs during file processing
      */
     public void buildFile(Path path) throws IOException {
-        try (var reader = Files.newBufferedReader(path)) {
-            String line;
-            String location = path.toString();
-            int position = 1;
-            SnowballStemmer stemmer = new SnowballStemmer(SnowballStemmer.ALGORITHM.ENGLISH);
-            while ((line = reader.readLine()) != null) {
-                for (String word : FileStemmer.parse(line)) {
-                    String stem = stemmer.stem(word).toString();
-                    index.add(stem, location, position);
-                    position++;
-                }
-            }
-        }
+        InvertedIndexBuilder builder = new InvertedIndexBuilder(index);
+        builder.buildFile(path);
     }
 
     /**
