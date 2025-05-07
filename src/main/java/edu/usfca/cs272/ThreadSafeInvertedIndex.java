@@ -299,24 +299,6 @@ public class ThreadSafeInvertedIndex extends InvertedIndex {
     }
 
     /**
-     * Thread-safe implementation of searching the index.
-     * Uses read lock to allow concurrent reads.
-     *
-     * @param queries the set of query words to search for
-     * @param usePartialSearch whether to use partial search
-     * @return a list of sorted search results
-     */
-    @Override
-    public List<SearchResult> search(Set<String> queries, boolean usePartialSearch) {
-        lock.readLock().lock();
-        try {
-            return super.search(queries, usePartialSearch);
-        } finally {
-            lock.readLock().unlock();
-        }
-    }
-
-    /**
      * Thread-safe implementation of performing an exact search.
      * Uses read lock to allow concurrent reads.
      *
