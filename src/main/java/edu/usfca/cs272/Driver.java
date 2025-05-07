@@ -52,7 +52,8 @@ public class Driver {
 		
 		// Create appropriate index and processor based on threading flag
 		final InvertedIndex index = useThreads ? new ThreadSafeInvertedIndex() : new InvertedIndex();
-		final InvertedIndexBuilder builder = new InvertedIndexBuilder(index);
+		InvertedIndexBuilder builder = null;
+		ThreadSafeInvertedIndexBuilder threadSafeBuilder = null;
 		boolean usePartialSearch = parser.hasFlag("-partial");
 		
 		// Create work queue if using threads
@@ -61,8 +62,10 @@ public class Driver {
 		ThreadSafeQueryProcessor threadSafeQueryProcessor = null;
 		if (useThreads) {
 			threadSafeQueryProcessor = new ThreadSafeQueryProcessor((ThreadSafeInvertedIndex) index, usePartialSearch, queue);
+			threadSafeBuilder = new ThreadSafeInvertedIndexBuilder((ThreadSafeInvertedIndex) index, queue);
 		}else{
 			queryProcessor = new QueryProcessor(index, usePartialSearch);
+			builder = new InvertedIndexBuilder(index);
 		}
 
 
@@ -71,7 +74,11 @@ public class Driver {
 			Path inputPath = parser.getPath("-text");
 			if (inputPath != null) {
 				try {
-					builder.build(inputPath);
+					if (useThreads) {
+						threadSafeBuilder.build(inputPath);
+					} else {
+						builder.build(inputPath);
+					}
 				}
 				catch (IllegalArgumentException e) {
 					System.err.println("Invalid path: " + inputPath);
