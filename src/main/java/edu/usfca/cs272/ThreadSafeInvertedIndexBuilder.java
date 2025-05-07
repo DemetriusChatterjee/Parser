@@ -55,8 +55,10 @@ public class ThreadSafeInvertedIndexBuilder{
      */
     public void buildFile(Path path) throws IOException {
         synchronized (index) {
-            InvertedIndexBuilder builder = new InvertedIndexBuilder(index);
+            InvertedIndex notThreadSafe = new InvertedIndex();
+            InvertedIndexBuilder builder = new InvertedIndexBuilder(notThreadSafe);
             builder.buildFile(path);
+            index.mergeIndex(notThreadSafe);
         }
     }
 
@@ -73,7 +75,7 @@ public class ThreadSafeInvertedIndexBuilder{
 					buildDirectory(path);
 				}
 				else if (isTextFile(path)) {
-					buildFile(path);
+					queue.execute(new FileTask(path, index));
 				}
 			}
 		}
@@ -89,17 +91,11 @@ public class ThreadSafeInvertedIndexBuilder{
      * @throws IllegalArgumentException if the path is null or does not exist
      */
     public void build(Path path) throws IOException {
-        queue.execute(() -> {
-            try {
-                if (Files.isDirectory(path)) {
-                    buildDirectory(path);
-                } else if (isTextFile(path)) {
-                    buildFile(path);
-                }
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to process path: " + path, e);
-            }
-        });
+        if (Files.isDirectory(path)) {
+            buildDirectory(path);
+        } else if (isTextFile(path)) {
+            queue.execute(new FileTask(path, index));
+        }
         queue.finish();
     }
 }
