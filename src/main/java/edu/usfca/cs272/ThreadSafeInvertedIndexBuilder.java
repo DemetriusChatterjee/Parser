@@ -5,6 +5,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+// TODO Can extend InvertedIndexBuilder at this point
 
 /**
  * A thread-safe implementation of InvertedIndexBuilder that uses a WorkQueue for
@@ -14,7 +15,7 @@ import java.nio.file.Path;
  * @author Demetrius Chatterjee
  * @version Spring 2025
  */
-public class ThreadSafeInvertedIndexBuilder{
+public class ThreadSafeInvertedIndexBuilder{ // TODO Formatting, ThreadedInvertedIndexBuilder
     /**
      * The work queue for parallel processing.
      */
@@ -42,7 +43,7 @@ public class ThreadSafeInvertedIndexBuilder{
 	 * @param path the path to test
 	 * @return true if the path has a .txt or .text extension
 	 */
-	public static boolean isTextFile(Path path) {
+	public static boolean isTextFile(Path path) { // TODO Remove
 		String name = path.toString().toLowerCase();
 		return name.endsWith(".txt") || name.endsWith(".text");
 	}
@@ -54,7 +55,19 @@ public class ThreadSafeInvertedIndexBuilder{
      * @throws IOException if an IO error occurs during file processing
      */
     public void buildFile(Path path) throws IOException {
-        synchronized (index) {
+    		/*
+    		 * TODO 2 issues:
+    		 * 1) the shared data should already be thread-safe
+    		 * 2) even if not this is synchronizing too much
+    		 * 
+    		 * Using existing code 
+    		 * 
+    		 * List<String> stems = FileStemmer.listStems(path);
+    		 * index.addAll(stems, path.toString());
+    		 * 
+    		 * We need to see what that speedup is with the simplier code.
+    		 */
+        synchronized (index) { 
             InvertedIndex notThreadSafe = new InvertedIndex();
             InvertedIndexBuilder builder = new InvertedIndexBuilder(notThreadSafe);
             builder.buildFile(path);

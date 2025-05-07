@@ -10,7 +10,7 @@ import java.nio.file.Path;
  * @author Demetrius Chatterjee and CHATGPT how to avoid writng to the same index from multiple threads so use multiple indexes and then merge them
  * @version Spring 2025
  */
-public class FileTask implements Runnable {
+public class FileTask implements Runnable { // TODO Make this an inner class inside of multithreaded builder
     /** The file to index */
     private final Path file;
     
@@ -43,9 +43,11 @@ public class FileTask implements Runnable {
     @Override
     public void run() {
         try {
+        		// TODO Use the more simple approach here instead
             processFile();
             mergeResults();
         } catch (IOException e) {
+        		// TODO throw new UncheckedIOException(e);
             handleError(e);
         }
     }

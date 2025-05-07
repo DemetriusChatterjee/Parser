@@ -35,7 +35,7 @@ public class WorkQueue {
 	/**
 	 * Increments the pending task count in a thread-safe manner.
 	 */
-	private void incrementPending() {
+	private void incrementPending() { // TODO Make method synchronized
 		synchronized (this) {
 			pending++;
 		}
@@ -44,7 +44,7 @@ public class WorkQueue {
 	/**
 	 * Decrements the pending task count in a thread-safe manner.
 	 */
-	private void decrementPending() {
+	private void decrementPending() { // TODO synchronized
 		synchronized (this) {
 			pending--;
 			if (pending == 0) {
@@ -106,7 +106,7 @@ public class WorkQueue {
 	 * Waits for all pending work (or tasks) to be finished. Does not terminate the
 	 * worker threads so that the work queue can continue to be used.
 	 */
-	void finish() {
+	void finish() { // TODO synchronized
 		try {
 			synchronized (this) {
 				while (pending > 0) {

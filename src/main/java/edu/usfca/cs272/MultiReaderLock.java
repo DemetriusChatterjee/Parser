@@ -159,7 +159,7 @@ public class MultiReaderLock {
 					throw new IllegalStateException("No readers to unlock");
 				}
 				readers--;
-				if(readers == 0) {
+				if (readers == 0) {
 					lock.notifyAll();
 				}
 			}

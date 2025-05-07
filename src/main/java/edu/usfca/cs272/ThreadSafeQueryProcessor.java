@@ -31,7 +31,7 @@ public class ThreadSafeQueryProcessor {
     private final TreeMap<String, List<InvertedIndex.SearchResult>> allResultsPartial;
 
     /** The stemmer to use for stemming query words. */
-    private final SnowballStemmer stemmer;
+    private final SnowballStemmer stemmer; // TODO Remove
 
     /** The inverted index to store the results of the search to. */
     private final ThreadSafeInvertedIndex index;
@@ -65,6 +65,7 @@ public class ThreadSafeQueryProcessor {
      * @return a sorted TreeSet of unique stems from the processed line
      */
     public TreeSet<String> processLine(final String line) {
+    		// TODO return FileStemmer.uniqueStems(line);
         return FileStemmer.uniqueStems(line, stemmer);
     }
 
@@ -90,13 +91,13 @@ public class ThreadSafeQueryProcessor {
         var currentResults = getResults(usePartialSearch);
         //synchronized (currentResults) {
             // Check if we already have results for this query
-            if (currentResults.containsKey(queryString)) {
+            if (currentResults.containsKey(queryString)) { // TODO This whole if should be sync
                 return currentResults.get(queryString);
             }
 
             // Search the index
             List<InvertedIndex.SearchResult> results = index.search(stems, usePartialSearch);
-        //synchronized (currentResults) {    
+        //synchronized (currentResults) { TODO Yes do this instead
             // Store the results
             currentResults.put(queryString, results);
             
