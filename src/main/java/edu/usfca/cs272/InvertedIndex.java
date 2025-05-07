@@ -286,8 +286,6 @@ public class InvertedIndex {
 		 * Creates a new search result.
 		 *
 		 * @param where the file path where matches were found
-		 * @param count the total number of matches found
-		 * @param totalWords the total number of words in the file
 		 */
 		public SearchResult(String where) {
 			this.where = where;
