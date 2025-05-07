@@ -443,4 +443,24 @@ public class InvertedIndex {
 			result.addCount(count);
 		}
 	}
+
+	/**
+	 * Adds all entries from another inverted index to this index. Useful for
+	 * combining local indexes into the main index.
+	 *
+	 * @param other the other inverted index to merge from
+	 */
+	// CITE: From CHATGPT prompting on how to get a speedup by using exsisting code
+	public void mergeIndex(InvertedIndex other) {
+		// Merge the inverted index entries
+		other.index.forEach((word, locations) -> {
+			index.computeIfAbsent(word, k -> new TreeMap<>())
+				.putAll(locations);
+		});
+
+		// Merge the word counts
+		other.counts.forEach((location, count) -> 
+			counts.merge(location, count, Integer::sum)
+		);
+	}
 }
