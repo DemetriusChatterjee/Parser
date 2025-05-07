@@ -1,7 +1,5 @@
 package edu.usfca.cs272;
 
-import static opennlp.tools.stemmer.snowball.SnowballStemmer.ALGORITHM.*;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -12,8 +10,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-
-import opennlp.tools.stemmer.snowball.SnowballStemmer;
 
 /**
  * A thread-safe implementation of QueryProcessor that uses a WorkQueue for parallel
@@ -29,9 +25,6 @@ public class ThreadSafeQueryProcessor {
     
     /** The map to store partial search results for each query. */
     private final TreeMap<String, List<InvertedIndex.SearchResult>> allResultsPartial;
-
-    /** The stemmer to use for stemming query words. */
-    private final SnowballStemmer stemmer;
 
     /** The inverted index to store the results of the search to. */
     private final ThreadSafeInvertedIndex index;
@@ -52,7 +45,6 @@ public class ThreadSafeQueryProcessor {
     public ThreadSafeQueryProcessor(ThreadSafeInvertedIndex index, boolean usePartialSearch, WorkQueue queue) {
         this.allResultsExact = new TreeMap<>();
         this.allResultsPartial = new TreeMap<>();
-        this.stemmer = new SnowballStemmer(ENGLISH);
         this.index = index;
         this.usePartialSearch = usePartialSearch;
         this.queue = queue;
@@ -65,7 +57,7 @@ public class ThreadSafeQueryProcessor {
      * @return a sorted TreeSet of unique stems from the processed line
      */
     public TreeSet<String> processLine(final String line) {
-        return FileStemmer.uniqueStems(line, stemmer);
+        return FileStemmer.uniqueStems(line);
     }
 
     /**
@@ -77,31 +69,29 @@ public class ThreadSafeQueryProcessor {
      */
     public List<InvertedIndex.SearchResult> processQueryLine(String line) {
         // Process the line into stems
-        synchronized (this) {
         TreeSet<String> stems = processLine(line);
         if (stems.isEmpty()) {
             return Collections.emptyList();
         }
-        //synchronized (currentResults) {
+        
         // Get the query string
         String queryString = getQueryString(stems);
         
         // Get the current results
         var currentResults = getResults(usePartialSearch);
-        //synchronized (currentResults) {
+        synchronized (currentResults) {
             // Check if we already have results for this query
             if (currentResults.containsKey(queryString)) {
                 return currentResults.get(queryString);
             }
-
+        }   
             // Search the index
             List<InvertedIndex.SearchResult> results = index.search(stems, usePartialSearch);
-        //synchronized (currentResults) {    
+        synchronized (currentResults) {
             // Store the results
             currentResults.put(queryString, results);
-            
-            return results;
         }
+            return results;
     }
 
     /**

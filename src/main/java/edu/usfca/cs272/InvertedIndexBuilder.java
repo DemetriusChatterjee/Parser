@@ -48,7 +48,6 @@ public class InvertedIndexBuilder {
 		return name.endsWith(".txt") || name.endsWith(".text");
 	}
 	
-
 	/**
 	 * Builds the index from a single text file by processing its contents.
 	 * Extracts stems from the file and adds them to the index with their
