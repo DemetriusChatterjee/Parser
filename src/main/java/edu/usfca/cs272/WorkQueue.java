@@ -35,21 +35,17 @@ public class WorkQueue {
 	/**
 	 * Increments the pending task count in a thread-safe manner.
 	 */
-	private void incrementPending() { // TODO Make method synchronized
-		synchronized (this) {
-			pending++;
-		}
+	private synchronized void incrementPending() {
+		pending++;
 	}
 
 	/**
 	 * Decrements the pending task count in a thread-safe manner.
 	 */
-	private void decrementPending() { // TODO synchronized
-		synchronized (this) {
-			pending--;
-			if (pending == 0) {
-				this.notifyAll();
-			}
+	private synchronized void decrementPending() {
+		pending--;
+		if (pending == 0) {
+			this.notifyAll();
 		}
 	}
 
@@ -106,15 +102,12 @@ public class WorkQueue {
 	 * Waits for all pending work (or tasks) to be finished. Does not terminate the
 	 * worker threads so that the work queue can continue to be used.
 	 */
-	void finish() { // TODO synchronized
+	synchronized void finish() {
 		try {
-			synchronized (this) {
-				while (pending > 0) {
-					this.wait();
-				}
+			while (pending > 0) {
+				this.wait();
 			}
-		}
-		catch (InterruptedException e) {
+		} catch (InterruptedException e) {
 			log.catching(Level.WARN, e);
 			Thread.currentThread().interrupt();
 		}

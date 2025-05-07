@@ -53,7 +53,7 @@ public class Driver {
 		// Create appropriate index and processor based on threading flag
 		final InvertedIndex index = useThreads ? new ThreadSafeInvertedIndex() : new InvertedIndex();
 		InvertedIndexBuilder builder = null;
-		ThreadSafeInvertedIndexBuilder threadSafeBuilder = null;
+		ThreadedInvertedIndexBuilder threadSafeBuilder = null;
 		boolean usePartialSearch = parser.hasFlag("-partial");
 		
 		// Create work queue if using threads
@@ -62,7 +62,7 @@ public class Driver {
 		ThreadSafeQueryProcessor threadSafeQueryProcessor = null;
 		if (useThreads) {
 			threadSafeQueryProcessor = new ThreadSafeQueryProcessor((ThreadSafeInvertedIndex) index, usePartialSearch, queue);
-			threadSafeBuilder = new ThreadSafeInvertedIndexBuilder((ThreadSafeInvertedIndex) index, queue);
+			threadSafeBuilder = new ThreadedInvertedIndexBuilder((ThreadSafeInvertedIndex) index, queue);
 		}else{
 			queryProcessor = new QueryProcessor(index, usePartialSearch);
 			builder = new InvertedIndexBuilder(index);

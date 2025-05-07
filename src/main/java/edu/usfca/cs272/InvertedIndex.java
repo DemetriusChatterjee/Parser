@@ -444,7 +444,6 @@ public class InvertedIndex {
 		}
 	}
 
-	// TODO Can keep for now but not ready to use this for multithreading
 	/**
 	 * Adds all entries from another inverted index to this index. Useful for
 	 * combining local indexes into the main index.
