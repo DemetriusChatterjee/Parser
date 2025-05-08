@@ -34,13 +34,14 @@ public class Driver {
 	 *             "-results" for search results output path
 	 *             "-partial" to use partial search instead of exact search
 	 *             "-threads" to use threads for processing
+	 *             "-html" for seed URI to start web crawling
 	 */
 	public static void main(final String[] args) {
 		final Instant start = Instant.now();
 		final ArgumentParser parser = new ArgumentParser(args);
 		
-		// Initialize thread-safe components if -threads flag is present
-		boolean useThreads = parser.hasFlag("-threads");
+		// Initialize thread-safe components if -threads or -html flag is present
+		boolean useThreads = parser.hasFlag("-threads") || parser.hasFlag("-html");
 		int numThreads = 5; // Default number of threads
 		
 		if (useThreads) {
@@ -54,6 +55,7 @@ public class Driver {
 		final InvertedIndex index = useThreads ? new ThreadSafeInvertedIndex() : new InvertedIndex();
 		InvertedIndexBuilder builder = null;
 		ThreadedInvertedIndexBuilder threadSafeBuilder = null;
+		WebCrawler webCrawler = null;
 		boolean usePartialSearch = parser.hasFlag("-partial");
 		
 		// Create work queue if using threads
@@ -63,14 +65,27 @@ public class Driver {
 		if (useThreads) {
 			threadSafeQueryProcessor = new ThreadSafeQueryProcessor((ThreadSafeInvertedIndex) index, usePartialSearch, queue);
 			threadSafeBuilder = new ThreadedInvertedIndexBuilder((ThreadSafeInvertedIndex) index, queue);
-		}else{
+			webCrawler = new WebCrawler((ThreadSafeInvertedIndex) index, queue, 50); // Default max URIs
+		} else {
 			queryProcessor = new QueryProcessor(index, usePartialSearch);
 			builder = new InvertedIndexBuilder(index);
 		}
 
-
-		// Process input path if provided
-		if (parser.hasFlag("-text")) {
+		// Process web crawling if -html flag is present
+		if (parser.hasFlag("-html")) {
+			Path seedPath = parser.getPath("-html");
+			if (seedPath != null) {
+				try {
+					webCrawler.crawl(seedPath.toUri());
+				} catch (IOException e) {
+					LOGGER.warning("Unable to crawl seed URL: " + e.getMessage());
+				}
+			} else {
+				System.err.println("No seed URL provided for -html flag.");
+			}
+		}
+		// Process input path if provided and not using web crawling
+		else if (parser.hasFlag("-text")) {
 			Path inputPath = parser.getPath("-text");
 			if (inputPath != null) {
 				try {
