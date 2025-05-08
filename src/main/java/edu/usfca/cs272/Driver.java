@@ -75,7 +75,7 @@ public class Driver {
 
 		// Process web crawling if -html flag is present
 		if (parser.hasFlag("-html")) {
-			String seedUrl = parser.getPath("-html").toString();
+			String seedUrl = parser.getString("-html");
 			if (seedUrl != null) {
 				try {
 					webCrawler.crawl(new URI(seedUrl));
@@ -86,8 +86,9 @@ public class Driver {
 				System.err.println("No seed URL provided for -html flag.");
 			}
 		}
+		
 		// Process input path if provided and not using web crawling
-		else if (parser.hasFlag("-text")) {
+		if (parser.hasFlag("-text")) {
 			Path inputPath = parser.getPath("-text");
 			if (inputPath != null) {
 				try {

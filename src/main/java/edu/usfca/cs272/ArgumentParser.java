@@ -172,4 +172,14 @@ public class ArgumentParser {
 			return backup;
 		}
 	}
+
+	/**
+	 * Returns the value mapped to the flag, or null if no mapping exists.
+	 *
+	 * @param flag the flag whose value should be returned
+	 * @return the mapped value or null if none exists
+	 */
+    public String getString(String string) {
+      return map.get(string);
+    }
 }
