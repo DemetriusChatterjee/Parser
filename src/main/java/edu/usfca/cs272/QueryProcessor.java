@@ -97,6 +97,7 @@ public class QueryProcessor implements QueryProcessorInterface {
 		return results;
 	}
 
+	// TODO Move this into the interface and delete from here
 	/**
 	 * Processes a query file and stores search results from the inverted index.
 	 *

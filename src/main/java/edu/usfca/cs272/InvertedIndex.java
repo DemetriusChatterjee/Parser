@@ -375,11 +375,13 @@ public class InvertedIndex {
 		// For each stem in the query
 		for (String query : queries) {
 			// Skip if stem not in index
-			if (!index.containsKey(query)) {
+			if (!index.containsKey(query)) { // TODO Remove
 				continue;
 			}
 			
 			TreeMap<String, TreeSet<Integer>> locations = index.get(query);
+			
+			// TODO if locations != null then call searchHelper
 			searchHelper(locations, matches, results);
 		}
 		
@@ -408,7 +410,7 @@ public class InvertedIndex {
 				String word = entry.getKey();
 				if (word.startsWith(query)) {
 					searchHelper(entry.getValue(), matches, results);
-				}else {
+				} else {
 					break;
 				}
 			}
@@ -447,6 +449,8 @@ public class InvertedIndex {
 	/**
 	 * Adds all entries from another inverted index to this index. Useful for
 	 * combining local indexes into the main index.
+	 * 
+	 * TODO Need to warn users does not work when positions are overlapping between the two inverted indexes
 	 *
 	 * @param other the other inverted index to merge from
 	 */
@@ -465,7 +469,17 @@ public class InvertedIndex {
 				for (var locationEntry : otherLocations.entrySet()) {
 					String location = locationEntry.getKey();
 					var positions = locationEntry.getValue();
-					thisLocations.put(location, positions);
+					
+					/* TODO 
+					var thisPositions = thisLocations.get(location);
+					
+					if thisPositions was null, then put
+					else {
+						thisPositions.addAll(positions);
+					}
+					*/
+
+					thisLocations.put(location, positions); // TODO remove
 				}
 			}
 		}

@@ -56,7 +56,7 @@ public class ThreadSafeQueryProcessor implements QueryProcessorInterface {
      * @param line the line of query text to process
      * @return a sorted TreeSet of unique stems from the processed line
      */
-    public TreeSet<String> processLine(final String line) {
+    public TreeSet<String> processLine(final String line) { // TODO Move into the interface and delete from here
         return FileStemmer.uniqueStems(line);
     }
 
@@ -122,7 +122,7 @@ public class ThreadSafeQueryProcessor implements QueryProcessorInterface {
      * @param stems the stems to use
      * @return the query string
      */
-    public static String getQueryString(TreeSet<String> stems) {
+    public static String getQueryString(TreeSet<String> stems) { // TODO remove
         return String.join(" ", stems);
     }
 
