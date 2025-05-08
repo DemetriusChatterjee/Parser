@@ -46,10 +46,13 @@ public class ThreadedInvertedIndexBuilder extends InvertedIndexBuilder {
      */
     @Override
     public void buildFile(Path path) throws IOException {
+    		// TODO create a task and add it to the work queue
+    		// TODO Move this kind of logic into the task
         List<String> stems = FileStemmer.listStems(path);
         index.addAll(stems, path.toString());
     }
 
+    // TODO Can delete and inherit the super implementation
     /**
      * Builds the index from a directory by recursively processing text files.
      *
@@ -57,7 +60,7 @@ public class ThreadedInvertedIndexBuilder extends InvertedIndexBuilder {
      * @throws IOException if an IO error occurs during file processing
      */
     @Override
-    public void buildDirectory(Path directory) throws IOException { 
+    public void buildDirectory(Path directory) throws IOException { // TODO Indentation
 		try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
 			for (var path : stream) {
 				if (Files.isDirectory(path)) {
@@ -101,6 +104,11 @@ public class ThreadedInvertedIndexBuilder extends InvertedIndexBuilder {
             });
         }
         queue.finish();
+        
+        /* TODO 
+        super.build(path);
+        queue.finish();
+        */
     }
 
 /**
@@ -115,13 +123,13 @@ public class FileTask implements Runnable {
     private final Path file;
     
     /** The thread-safe index */
-    private final ThreadSafeInvertedIndex index;
+    private final ThreadSafeInvertedIndex index; // TODO Remove
     
     /** The local index for this task */
-    private final InvertedIndex local;
+    private final InvertedIndex local; // TODO Create inside of run
     
     /** The builder for constructing the index */
-    private final InvertedIndexBuilder builder;
+    private final InvertedIndexBuilder builder; // TODO Remove
 
     /**
      * Initializes the indexing task.
@@ -143,6 +151,12 @@ public class FileTask implements Runnable {
     @Override
     public void run() {
         try {
+        		/* TODO 
+        		InvertedIndexBuilder.buildFile(file, local);
+        		index.mergeIndex(local);
+        		*/
+        		
+        		
             builder.buildFile(file);
             index.mergeIndex(local);
         } catch (IOException e) {

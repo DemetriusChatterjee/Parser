@@ -40,7 +40,9 @@ public class Driver {
 		final ArgumentParser parser = new ArgumentParser(args);
 		
 		// Initialize thread-safe components if -threads flag is present
-		boolean useThreads = parser.hasFlag("-threads");
+		boolean useThreads = parser.hasFlag("-threads"); 
+		
+	// TODO Move all of this into the if(useThreads) block
 		int numThreads = 5; // Default number of threads
 		
 		if (useThreads) {
@@ -51,19 +53,39 @@ public class Driver {
 		}
 		
 		// Create appropriate index and processor based on threading flag
-		final InvertedIndex index = useThreads ? new ThreadSafeInvertedIndex() : new InvertedIndex();
+		final InvertedIndex index = useThreads ? new ThreadSafeInvertedIndex() : new InvertedIndex(); // TODO Set to null
 		InvertedIndexBuilder builder = null;
 		ThreadedInvertedIndexBuilder threadSafeBuilder = null;
 		boolean usePartialSearch = parser.hasFlag("-partial");
 		
 		// Create work queue if using threads
-		WorkQueue queue = useThreads ? new WorkQueue(numThreads) : null;
+		WorkQueue queue = useThreads ? new WorkQueue(numThreads) : null; // TODO Set to null
 		QueryProcessor queryProcessor = null;
 		ThreadSafeQueryProcessor threadSafeQueryProcessor = null;
+		
 		if (useThreads) {
+				/* TODO 
+				int numThreads = 5; // Default number of threads
+				
+				if (useThreads) {
+					int parsedThreads = parser.getInteger("-threads", 5);
+					if (parsedThreads >= 1) {
+						numThreads = parsedThreads;
+					}
+				} */
+				
+				/* TODO 
+				queue = ????
+				
+				ThreadSafeInvertedIndex safe = new ThreadSafeInvertedIndex();
+				index = safe;
+				*/
+				
+			// TODO Want to avoid the downcast, pass in safe instead
 			threadSafeQueryProcessor = new ThreadSafeQueryProcessor((ThreadSafeInvertedIndex) index, usePartialSearch, queue);
 			threadSafeBuilder = new ThreadedInvertedIndexBuilder((ThreadSafeInvertedIndex) index, queue);
 		}else{
+			// TODO index = new InvertedIndex();
 			queryProcessor = new QueryProcessor(index, usePartialSearch);
 			builder = new InvertedIndexBuilder(index);
 		}
@@ -74,7 +96,7 @@ public class Driver {
 			Path inputPath = parser.getPath("-text");
 			if (inputPath != null) {
 				try {
-					if (useThreads) {
+					if (useThreads) { // TODO Shouldn't need since threadSafe extends the builder
 						threadSafeBuilder.build(inputPath);
 					} else {
 						builder.build(inputPath);
@@ -96,7 +118,7 @@ public class Driver {
 			Path queryPath = parser.getPath("-query");
 			if (queryPath != null) {
 				try {
-					if (useThreads) {
+					if (useThreads) { // TODO Remove, upcast to interface instead
 						threadSafeQueryProcessor.processQueryFile(queryPath);
 					} else {
 						queryProcessor.processQueryFile(queryPath);

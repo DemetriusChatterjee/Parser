@@ -67,7 +67,7 @@ public class ThreadSafeQueryProcessor {
      * @param line the query line to process
      * @return a list of search results from the inverted index
      */
-    public List<InvertedIndex.SearchResult> processQueryLine(String line) {
+    public List<InvertedIndex.SearchResult> processQueryLine(String line) { // TODO Fix indentation
         // Process the line into stems
         TreeSet<String> stems = processLine(line);
         if (stems.isEmpty()) {
