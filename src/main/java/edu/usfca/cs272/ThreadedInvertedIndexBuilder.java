@@ -2,8 +2,6 @@ package edu.usfca.cs272;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -25,7 +23,6 @@ public class ThreadedInvertedIndexBuilder extends InvertedIndexBuilder {
      */
     private final ThreadSafeInvertedIndex index;
 
-    
     /**
      * Constructs a new ThreadSafeInvertedIndexBuilder with the given index and work queue.
      *
@@ -44,38 +41,9 @@ public class ThreadedInvertedIndexBuilder extends InvertedIndexBuilder {
      * @param path the input path to process
      * @throws IOException if an IO error occurs during file processing
      */
-    @Override
     public void buildFile(Path path) throws IOException {
-        List<String> stems = FileStemmer.listStems(path);
-        index.addAll(stems, path.toString());
+        queue.execute(new FileTask(path));
     }
-
-    /**
-     * Builds the index from a directory by recursively processing text files.
-     *
-     * @param directory the directory to process
-     * @throws IOException if an IO error occurs during file processing
-     */
-    @Override
-    public void buildDirectory(Path directory) throws IOException { 
-		try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
-			for (var path : stream) {
-				if (Files.isDirectory(path)) {
-					buildDirectory(path);
-				}
-				else if (InvertedIndexBuilder.isTextFile(path)) {
-                    //queue.execute(new FileTask(path, index));
-                    queue.execute(() -> {
-                        try {
-                            buildFile(path);
-                        } catch (IOException e) {
-                            throw new UncheckedIOException(e);
-                        }
-                    });
-				}
-			}
-		}
-	}
 
     /**
      * Builds the index from a file or directory path by processing its contents.
@@ -86,20 +54,8 @@ public class ThreadedInvertedIndexBuilder extends InvertedIndexBuilder {
      * @throws IOException if an IO error occurs during file processing
      * @throws IllegalArgumentException if the path is null or does not exist
      */
-    @Override
     public void build(Path path) throws IOException {
-        if (Files.isDirectory(path)) {
-            buildDirectory(path);
-        } else if (InvertedIndexBuilder.isTextFile(path)) {
-            //queue.execute(new FileTask(path, index));
-            queue.execute(() -> {
-                try {
-                    buildFile(path);
-                } catch (IOException e) {
-                    throw new UncheckedIOException(e);
-                }
-            });
-        }
+        super.build(path);
         queue.finish();
     }
 
@@ -113,42 +69,31 @@ public class ThreadedInvertedIndexBuilder extends InvertedIndexBuilder {
 public class FileTask implements Runnable {
     /** The file to index */
     private final Path file;
-    
-    /** The thread-safe index */
-    private final ThreadSafeInvertedIndex index;
-    
-    /** The local index for this task */
-    private final InvertedIndex local;
-    
-    /** The builder for constructing the index */
-    private final InvertedIndexBuilder builder;
 
-    /**
-     * Initializes the indexing task.
-     *
-     * @param file  the file to index
-     * @param index the thread-safe index to populate
-     */
-    public FileTask(Path file, ThreadSafeInvertedIndex index) {
-        this.file = file;
-        this.index = index;
-        this.local = new InvertedIndex();
-        this.builder = new InvertedIndexBuilder(local);
-    }
-
-    /**
-     * Processes the file and merges the results into the thread-safe index.
-     * This method is called when the task is executed by the WorkQueue.
-     */
-    @Override
-    public void run() {
-        try {
-            builder.buildFile(file);
-            index.mergeIndex(local);
-        } catch (IOException e) {
-            System.err.println("Unable to process file: " + file);
-            throw new UncheckedIOException(e);
+        /**
+         * Initializes the indexing task.
+         *
+         * @param file  the file to index
+         */
+        public FileTask(Path file) {
+            this.file = file;
         }
-    }
-} 
+
+        /**
+         * Processes the file and merges the results into the thread-safe index.
+         * This method is called when the task is executed by the WorkQueue.
+         */
+        @Override
+        public void run() {
+            try {
+                InvertedIndex local = new InvertedIndex();
+                List<String> stems = FileStemmer.listStems(file);
+                local.addAll(stems, file.toString());
+                index.mergeIndex(local);
+            } catch (IOException e) {
+                System.err.println("Unable to process file: " + file);
+                throw new UncheckedIOException(e);
+            }
+        }
+    } 
 }

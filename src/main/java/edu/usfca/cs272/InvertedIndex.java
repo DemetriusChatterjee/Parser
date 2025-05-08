@@ -453,14 +453,28 @@ public class InvertedIndex {
 	// CITE: From CHATGPT prompting on how to get a speedup by using exsisting code
 	public void mergeIndex(InvertedIndex other) {
 		// Merge the inverted index entries
-		other.index.forEach((word, locations) -> {
-			index.computeIfAbsent(word, k -> new TreeMap<>())
-				.putAll(locations);
-		});
+		for (var otherEntry : other.index.entrySet()) {
+			String otherWord = otherEntry.getKey();
+			var otherLocations = otherEntry.getValue();
+			var thisLocations = this.index.get(otherWord);
+			
+			if (thisLocations == null) {
+				this.index.put(otherWord, otherLocations);
+			}
+			else {
+				for (var locationEntry : otherLocations.entrySet()) {
+					String location = locationEntry.getKey();
+					var positions = locationEntry.getValue();
+					thisLocations.put(location, positions);
+				}
+			}
+		}
 
 		// Merge the word counts
-		other.counts.forEach((location, count) -> 
-			counts.merge(location, count, Integer::sum)
-		);
+		for (var countEntry : other.counts.entrySet()) {
+			String location = countEntry.getKey();
+			int count = countEntry.getValue();
+			counts.merge(location, count, Integer::sum);
+		}
 	}
 }

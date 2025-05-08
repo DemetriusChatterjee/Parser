@@ -40,31 +40,37 @@ public class Driver {
 		final ArgumentParser parser = new ArgumentParser(args);
 		
 		// Initialize thread-safe components if -threads flag is present
-		boolean useThreads = parser.hasFlag("-threads");
-		int numThreads = 5; // Default number of threads
-		
-		if (useThreads) {
-			int parsedThreads = parser.getInteger("-threads", 5);
-			if (parsedThreads >= 1) {
-				numThreads = parsedThreads;
-			}
-		}
-		
-		// Create appropriate index and processor based on threading flag
-		final InvertedIndex index = useThreads ? new ThreadSafeInvertedIndex() : new InvertedIndex();
-		InvertedIndexBuilder builder = null;
-		ThreadedInvertedIndexBuilder threadSafeBuilder = null;
+		boolean useThreads = parser.hasFlag("-threads"); 
+		// Initialize partial search if -partial flag is present
 		boolean usePartialSearch = parser.hasFlag("-partial");
+
+		// Initialize all variables
+		InvertedIndex index = null;
+		InvertedIndexBuilder builder = null;
+		WorkQueue queue = null;
+		QueryProcessorInterface queryProcessorInterface = null;
 		
-		// Create work queue if using threads
-		WorkQueue queue = useThreads ? new WorkQueue(numThreads) : null;
-		QueryProcessor queryProcessor = null;
-		ThreadSafeQueryProcessor threadSafeQueryProcessor = null;
 		if (useThreads) {
-			threadSafeQueryProcessor = new ThreadSafeQueryProcessor((ThreadSafeInvertedIndex) index, usePartialSearch, queue);
-			threadSafeBuilder = new ThreadedInvertedIndexBuilder((ThreadSafeInvertedIndex) index, queue);
-		}else{
-			queryProcessor = new QueryProcessor(index, usePartialSearch);
+			int numThreads = 5; // Default number of threads
+			
+			if (useThreads) {
+				int parsedThreads = parser.getInteger("-threads", 5);
+				if (parsedThreads >= 1) {
+					numThreads = parsedThreads;
+				}
+			}
+
+			queue = new WorkQueue(numThreads);
+			
+			ThreadSafeInvertedIndex safe = new ThreadSafeInvertedIndex();
+			index = safe;
+			ThreadedInvertedIndexBuilder builderSafe = new ThreadedInvertedIndexBuilder(safe, queue);
+			builder = builderSafe;
+
+			queryProcessorInterface = new ThreadSafeQueryProcessor(safe, usePartialSearch, queue);
+		} else {
+			index = new InvertedIndex();
+			queryProcessorInterface = new QueryProcessor(index, usePartialSearch);
 			builder = new InvertedIndexBuilder(index);
 		}
 
@@ -74,11 +80,7 @@ public class Driver {
 			Path inputPath = parser.getPath("-text");
 			if (inputPath != null) {
 				try {
-					if (useThreads) {
-						threadSafeBuilder.build(inputPath);
-					} else {
-						builder.build(inputPath);
-					}
+					builder.build(inputPath);
 				}
 				catch (IllegalArgumentException e) {
 					System.err.println("Invalid path: " + inputPath);
@@ -96,11 +98,7 @@ public class Driver {
 			Path queryPath = parser.getPath("-query");
 			if (queryPath != null) {
 				try {
-					if (useThreads) {
-						threadSafeQueryProcessor.processQueryFile(queryPath);
-					} else {
-						queryProcessor.processQueryFile(queryPath);
-					}
+					queryProcessorInterface.processQueryFile(queryPath);
 				}
 				catch (IOException e) {
 					LOGGER.warning("Unable to process query file: " + e.getMessage());
@@ -139,11 +137,7 @@ public class Driver {
 		if (parser.hasFlag("-results")) {
 			try {
 				Path resultsPath = parser.getPath("-results", Path.of("results.json"));
-				if (useThreads) {
-					threadSafeQueryProcessor.toJson(resultsPath, usePartialSearch);
-				} else {
-					queryProcessor.toJson(resultsPath, usePartialSearch);
-				}
+				queryProcessorInterface.toJson(resultsPath, usePartialSearch);
 			}
 			catch (IOException e) {
 				LOGGER.warning("Unable to write results to file: " + e.getMessage());

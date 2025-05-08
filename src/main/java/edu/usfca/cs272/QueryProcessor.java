@@ -23,7 +23,7 @@ import opennlp.tools.stemmer.snowball.SnowballStemmer;
  * @author Demetrius Chatterjee
  * @version Spring 2025
  */
-public class QueryProcessor {
+public class QueryProcessor implements QueryProcessorInterface {
 	/** The map to store exact search results for each query. */
 	private final TreeMap<String, List<InvertedIndex.SearchResult>> allResultsExact;
 	
