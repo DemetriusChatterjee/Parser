@@ -1,6 +1,8 @@
 package edu.usfca.cs272;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
@@ -73,11 +75,11 @@ public class Driver {
 
 		// Process web crawling if -html flag is present
 		if (parser.hasFlag("-html")) {
-			Path seedPath = parser.getPath("-html");
-			if (seedPath != null) {
+			String seedUrl = parser.getPath("-html").toString();
+			if (seedUrl != null) {
 				try {
-					webCrawler.crawl(seedPath.toUri());
-				} catch (IOException e) {
+					webCrawler.crawl(new URI(seedUrl));
+				} catch (IOException | URISyntaxException e) {
 					LOGGER.warning("Unable to crawl seed URL: " + e.getMessage());
 				}
 			} else {
