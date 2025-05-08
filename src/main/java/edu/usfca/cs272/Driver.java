@@ -64,6 +64,8 @@ public class Driver {
 			
 			ThreadSafeInvertedIndex safe = new ThreadSafeInvertedIndex();
 			index = safe;
+			ThreadedInvertedIndexBuilder builderSafe = new ThreadedInvertedIndexBuilder(safe, queue);
+			builder = builderSafe;
 
 			queryProcessorInterface = new ThreadSafeQueryProcessor(safe, usePartialSearch, queue);
 		} else {
