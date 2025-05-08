@@ -19,7 +19,7 @@ import java.util.TreeSet;
  * @author Demetrius Chatterjee
  * @version Spring 2025
  */
-public class ThreadSafeQueryProcessor {
+public class ThreadSafeQueryProcessor implements QueryProcessorInterface {
     /** The map to store exact search results for each query. */
     private final TreeMap<String, List<InvertedIndex.SearchResult>> allResultsExact;
     
@@ -67,7 +67,7 @@ public class ThreadSafeQueryProcessor {
      * @param line the query line to process
      * @return a list of search results from the inverted index
      */
-    public List<InvertedIndex.SearchResult> processQueryLine(String line) { // TODO Fix indentation
+    public List<InvertedIndex.SearchResult> processQueryLine(String line) {
         // Process the line into stems
         TreeSet<String> stems = processLine(line);
         if (stems.isEmpty()) {
@@ -84,14 +84,17 @@ public class ThreadSafeQueryProcessor {
             if (currentResults.containsKey(queryString)) {
                 return currentResults.get(queryString);
             }
-        }   
-            // Search the index
-            List<InvertedIndex.SearchResult> results = index.search(stems, usePartialSearch);
+        }
+
+        // Search the index
+        List<InvertedIndex.SearchResult> results = index.search(stems, usePartialSearch);
+
         synchronized (currentResults) {
             // Store the results
             currentResults.put(queryString, results);
         }
-            return results;
+
+        return results;
     }
 
     /**

@@ -15,14 +15,6 @@ import java.util.TreeSet;
 
 import opennlp.tools.stemmer.snowball.SnowballStemmer;
 
-/*
- * TODO
- * Use this class to design a common interface that both this and the threaded
- * version implement.
- * 
- * See what is possible to move into the interface
- */
-
 /**
  * A utility class for processing search queries. This class provides methods for cleaning,
  * parsing, and stemming query words from both individual lines and files. It ensures all
@@ -31,7 +23,7 @@ import opennlp.tools.stemmer.snowball.SnowballStemmer;
  * @author Demetrius Chatterjee
  * @version Spring 2025
  */
-public class QueryProcessor {
+public class QueryProcessor implements QueryProcessorInterface {
 	/** The map to store exact search results for each query. */
 	private final TreeMap<String, List<InvertedIndex.SearchResult>> allResultsExact;
 	
