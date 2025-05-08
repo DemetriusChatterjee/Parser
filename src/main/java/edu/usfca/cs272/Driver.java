@@ -65,7 +65,7 @@ public class Driver {
 		if (useThreads) {
 			threadSafeQueryProcessor = new ThreadSafeQueryProcessor((ThreadSafeInvertedIndex) index, usePartialSearch, queue);
 			threadSafeBuilder = new ThreadedInvertedIndexBuilder((ThreadSafeInvertedIndex) index, queue);
-			webCrawler = new WebCrawler((ThreadSafeInvertedIndex) index, queue, 50); // Default max URIs
+			webCrawler = new WebCrawler((ThreadSafeInvertedIndex) index, queue);
 		} else {
 			queryProcessor = new QueryProcessor(index, usePartialSearch);
 			builder = new InvertedIndexBuilder(index);
