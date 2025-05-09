@@ -54,6 +54,7 @@ public class ThreadedInvertedIndexBuilder extends InvertedIndexBuilder {
      * @throws IOException if an IO error occurs during file processing
      * @throws IllegalArgumentException if the path is null or does not exist
      */
+    @Override
     public void build(Path path) throws IOException {
         super.build(path);
         queue.finish();
