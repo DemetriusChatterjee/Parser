@@ -1,6 +1,9 @@
 package edu.usfca.cs272;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
@@ -20,7 +23,9 @@ public interface QueryProcessorInterface {
      * @param line the line of query text to process
      * @return a sorted TreeSet of unique stems from the processed line
      */
-    TreeSet<String> processLine(String line);
+    default TreeSet<String> processLine(String line) {
+        return FileStemmer.uniqueStems(line);
+    }
 
     /**
      * Processes a single query line, stems the words, searches the index, and stores the results.
@@ -36,7 +41,14 @@ public interface QueryProcessorInterface {
      * @param path the path to the query file
      * @throws IOException if unable to read or process the query file
      */
-    void processQueryFile(Path path) throws IOException;
+    default void processQueryFile(Path path) throws IOException {
+        try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                processQueryLine(line);
+            }
+        }
+    }
 
     /**
      * Returns the query string from the given stems.

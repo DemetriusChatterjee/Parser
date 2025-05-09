@@ -51,22 +51,13 @@ public class ThreadSafeQueryProcessor implements QueryProcessorInterface {
     }
 
     /**
-     * Processes a single line of query text into a sorted list of unique stems.
-     *
-     * @param line the line of query text to process
-     * @return a sorted TreeSet of unique stems from the processed line
-     */
-    public TreeSet<String> processLine(final String line) {
-        return FileStemmer.uniqueStems(line);
-    }
-
-    /**
      * Thread-safe implementation of processing a single query line.
      * Uses a work queue to process the query in parallel.
      *
      * @param line the query line to process
      * @return a list of search results from the inverted index
      */
+    @Override
     public List<InvertedIndex.SearchResult> processQueryLine(String line) {
         // Process the line into stems
         TreeSet<String> stems = processLine(line);
@@ -75,7 +66,7 @@ public class ThreadSafeQueryProcessor implements QueryProcessorInterface {
         }
         
         // Get the query string
-        String queryString = getQueryString(stems);
+        String queryString = QueryProcessorInterface.getQueryString(stems);
         
         // Get the current results
         var currentResults = getResults(usePartialSearch);
@@ -104,6 +95,7 @@ public class ThreadSafeQueryProcessor implements QueryProcessorInterface {
      * @param path the path to the query file
      * @throws IOException if unable to read or process the query file
      */
+    @Override
     public void processQueryFile(Path path) throws IOException {
         try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
             String line;
@@ -117,22 +109,13 @@ public class ThreadSafeQueryProcessor implements QueryProcessorInterface {
     }
 
     /**
-     * Returns the query string from the given stems.
-     *
-     * @param stems the stems to use
-     * @return the query string
-     */
-    public static String getQueryString(TreeSet<String> stems) {
-        return String.join(" ", stems);
-    }
-
-    /**
      * Thread-safe implementation of writing search results to a JSON file.
      *
      * @param path the path to write the JSON file to
      * @param usePartialResults whether to use partial search
      * @throws IOException if an IO error occurs
      */
+    @Override
     public void toJson(Path path, boolean usePartialResults) throws IOException {
         var results = getResults(usePartialResults);
         synchronized (results) {
@@ -169,6 +152,7 @@ public class ThreadSafeQueryProcessor implements QueryProcessorInterface {
      * 
      * @return an unmodifiable view of the search result keys
      */
+    @Override
     public Set<String> getSearchResultKeys() {
         var results = getResults(usePartialSearch);
         synchronized (results) {
@@ -183,10 +167,11 @@ public class ThreadSafeQueryProcessor implements QueryProcessorInterface {
      * @param usePartialSearch whether to use partial search results
      * @return an unmodifiable view of the search results, or null if no results exist
      */
+    @Override
     public List<InvertedIndex.SearchResult> getSearchResult(String queryString, boolean usePartialSearch) {
         // Process the query string to ensure consistent format
         TreeSet<String> stems = processLine(queryString);
-        String processedQuery = getQueryString(stems);
+        String processedQuery = QueryProcessorInterface.getQueryString(stems);
         
         var results = getResults(usePartialSearch);
         synchronized (results) {

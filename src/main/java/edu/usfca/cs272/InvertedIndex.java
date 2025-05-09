@@ -374,13 +374,10 @@ public class InvertedIndex {
 		
 		// For each stem in the query
 		for (String query : queries) {
-			// Skip if stem not in index
-			if (!index.containsKey(query)) {
-				continue;
-			}
-			
 			TreeMap<String, TreeSet<Integer>> locations = index.get(query);
-			searchHelper(locations, matches, results);
+			if (locations != null) {
+				searchHelper(locations, matches, results);
+			}
 		}
 		
 		results.sort(null); // Uses natural ordering defined by compareTo
@@ -408,7 +405,7 @@ public class InvertedIndex {
 				String word = entry.getKey();
 				if (word.startsWith(query)) {
 					searchHelper(entry.getValue(), matches, results);
-				}else {
+				} else {
 					break;
 				}
 			}
@@ -447,6 +444,10 @@ public class InvertedIndex {
 	/**
 	 * Adds all entries from another inverted index to this index. Useful for
 	 * combining local indexes into the main index.
+	 * 
+	 * Note: This method assumes that positions between the two inverted indexes
+	 * do not overlap. If positions overlap, the merged index may contain
+	 * duplicate positions which could affect search results and word counts.
 	 *
 	 * @param other the other inverted index to merge from
 	 */
@@ -465,7 +466,13 @@ public class InvertedIndex {
 				for (var locationEntry : otherLocations.entrySet()) {
 					String location = locationEntry.getKey();
 					var positions = locationEntry.getValue();
-					thisLocations.put(location, positions);
+					var thisPositions = thisLocations.get(location);
+					
+					if (thisPositions == null) {
+						thisLocations.put(location, positions);
+					} else {
+						thisPositions.addAll(positions);
+					}
 				}
 			}
 		}

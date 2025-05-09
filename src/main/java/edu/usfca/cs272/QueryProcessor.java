@@ -2,10 +2,7 @@ package edu.usfca.cs272;
 
 import static opennlp.tools.stemmer.snowball.SnowballStemmer.ALGORITHM.*;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
@@ -70,6 +67,7 @@ public class QueryProcessor implements QueryProcessorInterface {
 	 * @param line the query line to process
 	 * @return a list of search results from the inverted index
 	**/
+	@Override
 	public List<InvertedIndex.SearchResult> processQueryLine(String line) {
 		// Process the line into stems
 		TreeSet<String> stems = processLine(line);
@@ -98,21 +96,6 @@ public class QueryProcessor implements QueryProcessorInterface {
 	}
 
 	/**
-	 * Processes a query file and stores search results from the inverted index.
-	 *
-	 * @param path the path to the query file
-	 * @throws IOException if unable to read or process the query file
-	 */
-	public void processQueryFile(Path path) throws IOException {
-		try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
-			String line;
-			while ((line = reader.readLine()) != null) {
-				processQueryLine(line);
-			}
-		}
-	}
-	
-	/**
 	 * Returns the query string from the given stems.
 	 *
 	 * @param stems the stems to use
@@ -129,6 +112,7 @@ public class QueryProcessor implements QueryProcessorInterface {
 	 * @param usePartialResults whether to use partial search
 	 * @throws IOException if an IO error occurs
 	 */
+	@Override
 	public void toJson(Path path, boolean usePartialResults) throws IOException {
 		JsonWriter.writeSearchResults(getResults(usePartialResults), path);
 	}
@@ -159,6 +143,7 @@ public class QueryProcessor implements QueryProcessorInterface {
 	 * 
 	 * @return an unmodifiable view of the search result keys
 	 */
+	@Override
 	public Set<String> getSearchResultKeys() {
 		return Collections.unmodifiableSet(getResults(usePartialSearch).keySet());
 	}
@@ -170,6 +155,7 @@ public class QueryProcessor implements QueryProcessorInterface {
 	 * @param usePartialSearch whether to use partial search results
 	 * @return an unmodifiable view of the search results, or null if no results exist
 	 */
+	@Override
 	public List<InvertedIndex.SearchResult> getSearchResult(String queryString, boolean usePartialSearch) {
 		// Process the query string to ensure consistent format
 		TreeSet<String> stems = processLine(queryString);

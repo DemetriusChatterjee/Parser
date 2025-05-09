@@ -102,7 +102,7 @@ public class WorkQueue {
 	 * Waits for all pending work (or tasks) to be finished. Does not terminate the
 	 * worker threads so that the work queue can continue to be used.
 	 */
-	synchronized void finish() {
+	public synchronized void finish() {
 		try {
 			while (pending > 0) {
 				this.wait();
