@@ -41,6 +41,7 @@ public class ThreadedInvertedIndexBuilder extends InvertedIndexBuilder {
      * @param path the input path to process
      * @throws IOException if an IO error occurs during file processing
      */
+    @Override
     public void buildFile(Path path) throws IOException {
         queue.execute(new FileTask(path));
     }
