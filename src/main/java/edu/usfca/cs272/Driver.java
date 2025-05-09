@@ -6,10 +6,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.logging.Logger;
 
-// TODO Use the @Override annotation
-
-// TODO Conditional pass: make another v3.4 that passes the tests!
-
 /**
  * Class responsible for running this project based on the provided command-line
  * arguments. See the README for details.
