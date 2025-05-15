@@ -1,6 +1,8 @@
 package edu.usfca.cs272;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
@@ -34,6 +36,7 @@ public class Driver {
 	 *             "-results" for search results output path
 	 *             "-partial" to use partial search instead of exact search
 	 *             "-threads" to use threads for processing
+	 * 			   "-html" for seed URI to start web crawling
 	 */
 	public static void main(final String[] args) {
 		final Instant start = Instant.now();
@@ -74,6 +77,25 @@ public class Driver {
 			builder = new InvertedIndexBuilder(index);
 		}
 
+		// Process web crawling if -html flag is present
+		if (parser.hasFlag("-html")) {
+			String seedUrl = parser.getString("-html");
+			if (seedUrl != null) {
+				try {
+					URI seedUri = new URI(seedUrl);
+					if (useThreads) {
+						WebCrawler crawler = new WebCrawler((ThreadSafeInvertedIndex) index, queue);
+						crawler.crawl(seedUri);
+					} else {
+						System.err.println("Web crawling requires threads. Please use -threads flag.");
+					}
+				} catch (IOException | URISyntaxException e) {
+					LOGGER.warning("Unable to crawl seed URL: " + e.getMessage());
+				}
+			} else {
+				System.err.println("No seed URL provided for -html flag.");
+			}
+		}
 
 		// Process input path if provided
 		if (parser.hasFlag("-text")) {
