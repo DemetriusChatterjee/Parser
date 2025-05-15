@@ -97,7 +97,13 @@ public class ThreadSafeQueryProcessor implements QueryProcessorInterface {
      */
     @Override
     public void processQueryFile(Path path) throws IOException {
-        QueryProcessorInterface.super.processQueryFile(path);
+        try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                final String queryLine = line;
+                queue.execute(() -> processQueryLine(queryLine));
+            }
+        }
         // Wait for all tasks to complete
         queue.finish();
     }
